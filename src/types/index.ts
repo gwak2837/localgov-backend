@@ -28,3 +28,12 @@ export type Expenditure = {
   administ_sfrnd_code: any
   sort_ordr: any
 }
+
+export type ErrorHead = {
+  RESULT: {
+    CODE: string
+    MESSAGE: string
+  }
+}
+
+export type Head = [{ list_total_count: number }, { RESULT: { CODE: string; MESSAGE: string } }]
