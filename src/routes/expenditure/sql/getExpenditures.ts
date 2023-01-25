@@ -38,7 +38,7 @@ export interface IGetExpendituresQuery {
   result: IGetExpendituresResult;
 }
 
-const getExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  accnut_year,\n  wdr_sfrnd_code,\n  wdr_sfrnd_code_nm,\n  sfrnd_code,\n  sfrnd_nm_korean,\n  accnut_se_code,\n  accnut_se_nm,\n  dept_code,\n  detail_bsns_code,\n  detail_bsns_nm,\n  excut_de,\n  budget_crntam,\n  nxndr,\n  cty,\n  signgunon,\n  etc_crntam,\n  expndtram,\n  orgnztnam,\n  realm_code,\n  realm_nm,\n  sect_code,\n  sect_nm,\n  administ_sfrnd_code\nFROM expenditure\nWHERE wdr_sfrnd_code = $1\n  AND excut_de = $2\n  AND detail_bsns_code = ANY ($3)\nORDER BY budget_crntam DESC\nLIMIT $4"};
+const getExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  accnut_year,\n  wdr_sfrnd_code,\n  wdr_sfrnd_code_nm,\n  sfrnd_code,\n  sfrnd_nm_korean,\n  accnut_se_code,\n  accnut_se_nm,\n  dept_code,\n  detail_bsns_code,\n  detail_bsns_nm,\n  excut_de,\n  budget_crntam,\n  nxndr,\n  cty,\n  signgunon,\n  etc_crntam,\n  expndtram,\n  orgnztnam,\n  realm_code,\n  realm_nm,\n  sect_code,\n  sect_nm,\n  administ_sfrnd_code\nFROM expenditure\nWHERE wdr_sfrnd_code = $1\n  AND excut_de = $2\n  AND realm_code = ANY ($3)\nORDER BY budget_crntam DESC\nLIMIT $4"};
 
 /**
  * Query generated from SQL:
@@ -70,7 +70,7 @@ const getExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELEC
  * FROM expenditure
  * WHERE wdr_sfrnd_code = $1
  *   AND excut_de = $2
- *   AND detail_bsns_code = ANY ($3)
+ *   AND realm_code = ANY ($3)
  * ORDER BY budget_crntam DESC
  * LIMIT $4
  * ```

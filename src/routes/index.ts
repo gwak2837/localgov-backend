@@ -14,16 +14,6 @@ import {
 } from '../common/constants'
 import expenditureRoute from './expenditure'
 
-// import authFlareLaneRoute from './auth/flare-lane'
-// import authGoogleRoute from './auth/google'
-// import authKakaoRoute from './auth/kakao'
-// import authNaverRoute from './auth/naver'
-// import notificationRoute from './notification'
-// import productRoute from './product'
-// import productSubscribeRoute from './product/subscribe'
-// import uploadRoute from './upload'
-// import userRoute from './user'
-
 const fastify = Fastify({
   // logger: NODE_ENV === 'development',
   http2: true,

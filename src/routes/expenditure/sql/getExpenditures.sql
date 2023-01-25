@@ -26,6 +26,6 @@ SELECT id,
 FROM expenditure
 WHERE wdr_sfrnd_code = $1
   AND excut_de = $2
-  AND detail_bsns_code = ANY ($3)
+  AND realm_code = ANY ($3)
 ORDER BY budget_crntam DESC
 LIMIT $4;
