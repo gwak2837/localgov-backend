@@ -1,5 +1,7 @@
 // 자동
 export const NODE_ENV = process.env.NODE_ENV as string
+export const CLOUD_RUN_TASK_INDEX = process.env.CLOUD_RUN_TASK_INDEX
+export const CLOUD_RUN_TASK_COUNT = process.env.CLOUD_RUN_TASK_COUNT
 
 // 공통
 export const PORT = process.env.PORT as string

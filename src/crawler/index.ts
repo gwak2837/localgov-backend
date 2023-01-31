@@ -1,18 +1,29 @@
 import fetch from 'node-fetch'
 
-import { LOFIN_KEY } from '../src/common/constants'
-import { pool } from '../src/common/postgres'
-import { toDate8, toISODate } from '../src/common/utils'
-import { ErrorHead, Expenditure, Head } from '../src/types'
+import { CLOUD_RUN_TASK_COUNT, CLOUD_RUN_TASK_INDEX, LOFIN_KEY } from '../common/constants'
+import { pool } from '../common/postgres'
+import { toDate8, toISODate } from '../common/utils'
+import { ErrorHead, Expenditure, Head } from '../types'
+import { ICountExpendituresResult } from './countExpenditures'
+import countExpenditures from './countExpenditures.sql'
+import { ICreateExpendituresResult } from './createExpenditures'
 import createExpenditures from './createExpenditures.sql'
+import { IDeleteExpendituresResult } from './deleteExpenditures'
+import deleteExpenditures from './deleteExpenditures.sql'
 
-const date = new Date('2022-12-31')
+main()
 
-for (; date.getFullYear() > 2021; date.setDate(date.getDate() - 1)) {
-  getAllLocalGovExpenditures(date)
+async function main() {
+  const date = new Date('2022-12-31')
+  date.setDate(date.getDate() - CLOUD_RUN_TASK_INDEX)
+
+  for (; date.getFullYear() > 2021; date.setDate(date.getDate() - CLOUD_RUN_TASK_COUNT)) {
+    await getAllLocalGovExpenditures(date)
+  }
 }
 
 async function getAllLocalGovExpenditures(date: Date) {
+  console.log('👀 - date', date)
   const localGovernments = {
     '1100000': '서울',
     '2600000': '부산',
@@ -34,25 +45,36 @@ async function getAllLocalGovExpenditures(date: Date) {
   }
 
   for (const localGovCode of Object.keys(localGovernments)) {
+    console.log('👀 - localGovCode', localGovCode)
     const { data, head } = await fetchLocalFinance(1, 1, localGovCode, toDate8(date))
     if (!data) continue
 
     const size = 1000
     const totalExpenditureCount = head[0].list_total_count
 
+    const { rows } = await pool.query<ICountExpendituresResult>(countExpenditures, [
+      localGovCode,
+      date,
+    ])
+
+    if (rows[0].count === totalExpenditureCount) {
+      continue
+    } else {
+      await pool.query<IDeleteExpendituresResult>(deleteExpenditures, [localGovCode, date])
+    }
+
     for (let i = 1; (i - 1) * size < totalExpenditureCount; i++) {
-      console.log(localGovCode, date.toDateString(), i)
       const { data: expenditures, head } = await fetchLocalFinance(
         i,
         size,
         localGovCode,
         toDate8(date)
       )
-      console.log('👀 - head', head)
+      console.log('👀 - i', i, head)
       if (!expenditures) continue
 
       // sort_ordr 열 제거, 형식 맞추기
-      pool.query(createExpenditures, [
+      pool.query<ICreateExpendituresResult>(createExpenditures, [
         expenditures.map((expenditure) => +expenditure.accnut_year),
         expenditures.map((expenditure) => expenditure.wdr_sfrnd_code),
         expenditures.map((expenditure) => expenditure.wdr_sfrnd_code_nm),

@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox'
 
-import { BadRequestError, UnauthorizedError } from '../../common/fastify'
+import { BadRequestError } from '../../common/fastify'
 import { pool } from '../../common/postgres'
 import { IGetExpendituresResult } from './sql/getExpenditures'
 import getExpenditures from './sql/getExpenditures.sql'

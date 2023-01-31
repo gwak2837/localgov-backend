@@ -5,7 +5,7 @@ const NODE_ENV = process.env.NODE_ENV
 esbuild
   .build({
     bundle: true,
-    entryPoints: ['crawler/index.ts'],
+    entryPoints: ['src/crawler/index.ts'],
     loader: {
       '.sql': 'text',
     },
