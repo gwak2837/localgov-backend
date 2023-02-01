@@ -19,35 +19,70 @@
 
 ## 클라우드 설정
 
-```
+```bash
 gcloud init
 ```
 
-Artifact Registry 생성
+Artifact Registry 저장소 생성
+
+```bash
+gcloud artifacts repositories create lofin-seoul \
+  --location=asia-northeast3 \
+  --repository-format=docker
+```
+
+cloudbuild.yml 생성
+
+```yml
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}', '.']
+images:
+  - '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}'
+```
+
+Cloud Build 결과물을 Artifact Registry 저장소에 저장
+
+```bash
+gcloud builds submit \
+  --config=cloudbuild.yaml \
+  --substitutions=_LOCATION="asia-northeast3",_REPOSITORY="lofin-seoul",_IMAGE="lofin-crawler" .
+```
+
+Cloud Run Task 생성
+
+```bash
+gcloud beta run jobs create lofin-crawler \
+  --image asia-northeast3-docker.pkg.dev/lofin-376407/lofin-seoul/lofin-crawler:latest \
+  --tasks 2 \
+  --max-retries 3 \
+  --region asia-northeast3
+```
+
+Cloud Run Task 실행
 
 ```
-gcloud artifacts repositories create lofin-seoul --location=asia-northeast3 --repository-format=docker
+gcloud beta run jobs execute lofin-crawler
 ```
 
 Cloud Build 설정
 
 ```
-gcloud beta builds lofin-crawler create github \
-    --repo-name=localgov-backend \
-    --repo-owner=gwak2837 \
-    --branch-pattern=main \
-    --build-config=./Dockerfile.crawler \
-    --include-logs-with-status
-```
+gcloud projects add-iam-policy-binding lofin-376407 \
+    --member=serviceAccount:$(gcloud projects describe lofin-376407 \
+    --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+    --role="roles/clouddeploy.jobRunner"
+gcloud iam service-accounts add-iam-policy-binding $(gcloud projects describe lofin-376407 \
+    --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+    --member=serviceAccount:$(gcloud projects describe lofin-376407 \
+    --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+    --role="roles/iam.serviceAccountUser" \
+    --project=lofin-376407
+gcloud projects add-iam-policy-binding lofin-376407 \
+    --member=serviceAccount:$(gcloud projects describe lofin-376407 \
+    --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+    --role="roles/run.developer"
 
-Cloud Run Task 생성
-
-```
-gcloud beta run jobs create lofin-crawler \
-    --image gcr.io/lofin-376407/logger-job \
-    --tasks 5 \
-    --max-retries 5 \
-    --region asia-northeast3
 ```
 
 VPC 생성

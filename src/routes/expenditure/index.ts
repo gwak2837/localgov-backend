@@ -11,7 +11,7 @@ export default async function routes(fastify: TFastify) {
     querystring: Type.Object({
       localCode: Type.String(),
       date: Type.String(),
-      projectCode: Type.Array(Type.String()),
+      projectCodes: Type.Array(Type.String()),
       count: Type.Optional(Type.Number()),
     }),
   }
@@ -25,7 +25,7 @@ export default async function routes(fastify: TFastify) {
     const { rows } = await pool.query<IGetExpendituresResult>(getExpenditures, [
       querystring.localCode,
       new Date(date),
-      querystring.projectCode,
+      querystring.projectCodes,
       querystring.count ?? 20,
     ])
 

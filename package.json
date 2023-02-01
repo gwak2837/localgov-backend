@@ -1,16 +1,16 @@
 {
-  "name": "localgov-backend",
+  "name": "lofin-backend",
   "version": "0.1.0",
-  "description": "localgov-backend",
-  "homepage": "https://github.com/gwak2837/localgov-backend#readme",
+  "description": "lofin-backend",
+  "homepage": "https://github.com/gwak2837/lofin-backend#readme",
   "bugs": {
-    "url": "https://github.com/gwak2837/localgov-backend/issues",
+    "url": "https://github.com/gwak2837/lofin-backend/issues",
     "email": "gwak2837@kakao.com"
   },
   "license": "GPL-3.0-only",
   "author": "Taeuk Gwak <gwak2837@kakao.com>",
   "main": "out/index.cjs",
-  "repository": "https://github.com/gwak2837/localgov-backend.git",
+  "repository": "https://github.com/gwak2837/lofin-backend.git",
   "scripts": {
     "dev": "src/dev.sh",
     "build": "NODE_ENV=production node esbuild.js",
@@ -28,14 +28,14 @@
     "@fastify/cors": "^8.2.0",
     "@fastify/error": "^3.2.0",
     "@fastify/jwt": "^6.5.0",
-    "@fastify/multipart": "^7.3.0",
+    "@fastify/multipart": "^7.4.0",
     "@fastify/rate-limit": "^7.6.0",
-    "@sinclair/typebox": "^0.25.16",
+    "@sinclair/typebox": "^0.25.21",
     "dotenv": "^16.0.3",
-    "fastify": "^4.10.2",
+    "fastify": "^4.12.0",
     "node-fetch": "^3.3.0",
-    "pg": "^8.8.0",
-    "redis": "^4.5.1",
+    "pg": "^8.9.0",
+    "redis": "^4.6.4",
     "telegraf": "^4.11.2"
   },
   "devDependencies": {
@@ -46,7 +46,7 @@
     "@types/pg-copy-streams": "^1.2.1",
     "@typescript-eslint/eslint-plugin": "^5.46.1",
     "@typescript-eslint/parser": "^5.46.1",
-    "esbuild": "^0.16.10",
+    "esbuild": "^0.17.5",
     "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard": "^17.0.0",
@@ -54,7 +54,7 @@
     "eslint-plugin-jest": "^27.1.7",
     "eslint-plugin-n": "^15.6.0",
     "eslint-plugin-promise": "^6.1.1",
-    "husky": "^8.0.2",
+    "husky": "^8.0.3",
     "nodemon": "^2.0.20",
     "pg-copy-streams": "^6.0.4",
     "prettier": "2.8.0",
@@ -64,9 +64,8 @@
     "node": ">=18.2.0"
   },
   "private": true,
-  "packageManager": "yarn@3.3.0",
+  "packageManager": "yarn@3.4.0",
   "resolutions": {
-    "gaxios/node-fetch": "^3.2.10",
     "clone-deep": "^4.0.1"
   },
   "type": "module"

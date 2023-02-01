@@ -22,6 +22,7 @@ const fastify = Fastify({
     https: {
       key: `-----BEGIN PRIVATE KEY-----\n${LOCALHOST_HTTPS_KEY}\n-----END PRIVATE KEY-----`,
       cert: `-----BEGIN CERTIFICATE-----\n${LOCALHOST_HTTPS_CERT}\n-----END CERTIFICATE-----`,
+      allowHTTP1: true,
     },
   }),
 }).withTypeProvider<TypeBoxTypeProvider>()

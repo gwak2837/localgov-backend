@@ -1,11 +1,11 @@
 -- public 스키마 삭제 후 생성
 DROP SCHEMA IF EXISTS public CASCADE;
 
-CREATE SCHEMA public AUTHORIZATION localgov;
+CREATE SCHEMA public AUTHORIZATION lofin_admin;
 
 COMMENT ON SCHEMA public IS 'standard public schema';
 
-GRANT ALL ON SCHEMA public TO localgov;
+GRANT ALL ON SCHEMA public TO lofin_admin;
 
 CREATE TABLE expenditure (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
