@@ -53,9 +53,9 @@ Cloud Run Task 생성
 
 ```bash
 gcloud beta run jobs create lofin-crawler \
-  --image asia-northeast3-docker.pkg.dev/lofin-376407/lofin-seoul/lofin-crawler:latest \
+  --image asia-northeast3-docker.pkg.dev/lofin-2023/lofin-seoul/lofin-crawler:latest \
   --tasks 2 \
-  --max-retries 3 \
+  --max-retries 1 \
   --region asia-northeast3
 ```
 

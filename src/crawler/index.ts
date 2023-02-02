@@ -6,18 +6,16 @@ import { toDate8, toISODate } from '../common/utils'
 import { ErrorHead, Expenditure, Head } from '../types'
 import { ICountExpendituresResult } from './countExpenditures'
 import countExpenditures from './countExpenditures.sql'
-import { ICreateExpendituresResult } from './createExpenditures'
 import createExpenditures from './createExpenditures.sql'
-import { IDeleteExpendituresResult } from './deleteExpenditures'
 import deleteExpenditures from './deleteExpenditures.sql'
 
 main()
 
 async function main() {
   const date = new Date('2022-12-31')
-  date.setDate(date.getDate() - CLOUD_RUN_TASK_INDEX)
+  date.setDate(date.getDate() - +CLOUD_RUN_TASK_INDEX)
 
-  for (; date.getFullYear() > 2021; date.setDate(date.getDate() - CLOUD_RUN_TASK_COUNT)) {
+  for (; date.getFullYear() > 2021; date.setDate(date.getDate() - +CLOUD_RUN_TASK_COUNT)) {
     await getAllLocalGovExpenditures(date)
   }
 }
@@ -57,10 +55,11 @@ async function getAllLocalGovExpenditures(date: Date) {
       date,
     ])
 
-    if (rows[0].count === totalExpenditureCount) {
+    const count = rows[0].count
+    if (count && +count === totalExpenditureCount) {
       continue
     } else {
-      await pool.query<IDeleteExpendituresResult>(deleteExpenditures, [localGovCode, date])
+      await pool.query(deleteExpenditures, [localGovCode, date])
     }
 
     for (let i = 1; (i - 1) * size < totalExpenditureCount; i++) {
@@ -70,11 +69,11 @@ async function getAllLocalGovExpenditures(date: Date) {
         localGovCode,
         toDate8(date)
       )
-      console.log('👀 - i', i, head)
+      console.log('👀', i, head)
       if (!expenditures) continue
 
       // sort_ordr 열 제거, 형식 맞추기
-      pool.query<ICreateExpendituresResult>(createExpenditures, [
+      pool.query(createExpenditures, [
         expenditures.map((expenditure) => +expenditure.accnut_year),
         expenditures.map((expenditure) => expenditure.wdr_sfrnd_code),
         expenditures.map((expenditure) => expenditure.wdr_sfrnd_code_nm),
@@ -108,7 +107,7 @@ async function fetchLocalFinance(index: number, size: number, local: string, dat
   const a = await fetch(
     `https://lofin.mois.go.kr/HUB/QWGJK?key=${LOFIN_KEY}&Type=json&pIndex=${index}&pSize=${size}&accnut_year=${year}&wdr_sfrnd_code=${local}&excut_de=${date}`
   )
-  const result = await a.json()
+  const result = (await a.json()) as any
   if (result.RESULT?.CODE) return { head: result.RESULT as ErrorHead, data: null }
 
   const head = result.QWGJK[0].head as Head

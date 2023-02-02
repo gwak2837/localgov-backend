@@ -81,7 +81,7 @@ export default async function startServer() {
   try {
     return await fastify.listen({
       port: +PORT,
-      host: PROJECT_ENV === 'local-docker' ? '0.0.0.0' : 'localhost',
+      host: K_SERVICE || PROJECT_ENV === 'local-docker' ? '0.0.0.0' : 'localhost',
     })
   } catch (err) {
     console.error(err)
