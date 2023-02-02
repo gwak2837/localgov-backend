@@ -19,13 +19,13 @@ pool
     throw new Error('Cannot connect to PostgreSQL server... \n' + error)
   })
 
-startRedisClient()
-  .then((value) =>
-    console.log(`📮 Connected to ${REDIS_CONNECTION_STRING} at ${value.toLocaleString()}`)
-  )
-  .catch((error) => {
-    console.error('Cannot connect to Redis server... \n' + error)
-  })
+// startRedisClient()
+//   .then((value) =>
+//     console.log(`📮 Connected to ${REDIS_CONNECTION_STRING} at ${value.toLocaleString()}`)
+//   )
+//   .catch((error) => {
+//     console.error('Cannot connect to Redis server... \n' + error)
+//   })
 
 startServer()
   .then((url) => {
