@@ -16,7 +16,7 @@ pool
     )
   )
   .catch((error) => {
-    throw new Error('Cannot connect to PostgreSQL server... ' + error)
+    throw new Error('Cannot connect to PostgreSQL server... \n' + error)
   })
 
 startRedisClient()
@@ -24,7 +24,7 @@ startRedisClient()
     console.log(`📮 Connected to ${REDIS_CONNECTION_STRING} at ${value.toLocaleString()}`)
   )
   .catch((error) => {
-    throw new Error('Cannot connect to Redis server... ' + error)
+    console.error('Cannot connect to Redis server... \n' + error)
   })
 
 startServer()
@@ -34,5 +34,5 @@ startServer()
       console.log(`🚀 On Your Network: http://${nets.en0[1].address}:${PORT}`)
   })
   .catch((error) => {
-    throw new Error('Cannot start API server... ' + error)
+    throw new Error('Cannot start API server... \n' + error)
   })
