@@ -16,8 +16,6 @@ RUN yarn build:crawler
 # Copy bundle only
 FROM node:18-alpine AS runner
 
-EXPOSE $PORT
-
 ENV NODE_ENV=production
 
 WORKDIR /app

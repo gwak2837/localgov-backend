@@ -6,6 +6,7 @@ import { Type } from '@sinclair/typebox'
 import Fastify from 'fastify'
 
 import {
+  K_SERVICE,
   LOCALHOST_HTTPS_CERT,
   LOCALHOST_HTTPS_KEY,
   NODE_ENV,
