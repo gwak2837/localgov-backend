@@ -18,13 +18,14 @@ const fastify = Fastify({
   // logger: NODE_ENV === 'development',
   http2: true,
 
-  ...(PROJECT_ENV.startsWith('local') && {
-    https: {
-      key: `-----BEGIN PRIVATE KEY-----\n${LOCALHOST_HTTPS_KEY}\n-----END PRIVATE KEY-----`,
-      cert: `-----BEGIN CERTIFICATE-----\n${LOCALHOST_HTTPS_CERT}\n-----END CERTIFICATE-----`,
-      allowHTTP1: true,
-    },
-  }),
+  ...(LOCALHOST_HTTPS_KEY &&
+    LOCALHOST_HTTPS_CERT && {
+      https: {
+        key: `-----BEGIN PRIVATE KEY-----\n${LOCALHOST_HTTPS_KEY}\n-----END PRIVATE KEY-----`,
+        cert: `-----BEGIN CERTIFICATE-----\n${LOCALHOST_HTTPS_CERT}\n-----END CERTIFICATE-----`,
+        allowHTTP1: true,
+      },
+    }),
 }).withTypeProvider<TypeBoxTypeProvider>()
 
 export type TFastify = typeof fastify

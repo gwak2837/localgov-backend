@@ -24,4 +24,4 @@ WORKDIR /app
 
 COPY --from=builder /app/out out
 
-ENTRYPOINT ["yarn", "start"]
+ENTRYPOINT ["node", "out/index.cjs"]
