@@ -1,6 +1,6 @@
 import { Type } from '@sinclair/typebox'
 
-import { BadRequestError } from '../../common/fastify'
+import { BadRequestError, NotFoundError } from '../../common/fastify'
 import { pool } from '../../common/postgres'
 import { IGetExpendituresResult } from './sql/getExpenditures'
 import getExpenditures from './sql/getExpenditures.sql'
@@ -22,12 +22,14 @@ export default async function routes(fastify: TFastify) {
     const date = Date.parse(querystring.date)
     if (isNaN(date)) throw BadRequestError('Invalid format of `date`')
 
-    const { rows } = await pool.query<IGetExpendituresResult>(getExpenditures, [
+    const { rowCount, rows } = await pool.query<IGetExpendituresResult>(getExpenditures, [
       querystring.localCode,
       new Date(date),
       querystring.projectCodes,
       querystring.count ?? 20,
     ])
+
+    if (rowCount === 0) throw NotFoundError('No expenditure')
 
     return rows
   })
