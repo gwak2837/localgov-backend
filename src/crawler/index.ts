@@ -1,6 +1,7 @@
 import fetch from 'node-fetch'
 
 import { CLOUD_RUN_TASK_COUNT, CLOUD_RUN_TASK_INDEX, LOFIN_KEY } from '../common/constants'
+import { locals } from '../common/lofin'
 import { pool } from '../common/postgres'
 import { toDate8, toISODate } from '../common/utils'
 import { ErrorHead, Expenditure, Head } from '../types'
@@ -12,7 +13,7 @@ import deleteExpenditures from './deleteExpenditures.sql'
 main()
 
 async function main() {
-  const date = new Date('2022-12-31')
+  const date = new Date('2022-11-03')
   date.setDate(date.getDate() - +CLOUD_RUN_TASK_INDEX)
 
   for (; date.getFullYear() > 2021; date.setDate(date.getDate() - +CLOUD_RUN_TASK_COUNT)) {
@@ -21,29 +22,8 @@ async function main() {
 }
 
 async function getAllLocalGovExpenditures(date: Date) {
-  console.log('👀 - date', date)
-  const localGovernments = {
-    '1100000': '서울',
-    '2600000': '부산',
-    '2700000': '대구',
-    '2800000': '인천',
-    '2900000': '광주',
-    '3000000': '대전',
-    '3100000': '울산',
-    '3200000': '세종',
-    '4100000': '경기',
-    '4200000': '강원',
-    '4300000': '충북',
-    '4400000': '충남',
-    '4500000': '전북',
-    '4600000': '전남',
-    '4700000': '경북',
-    '4800000': '경남',
-    '4900000': '제주',
-  }
-
-  for (const localGovCode of Object.keys(localGovernments)) {
-    console.log('👀 - localGovCode', localGovCode)
+  for (const localGovCode of Object.keys(locals)) {
+    console.log('👀 - date', date, 'localGovCode', localGovCode)
     const { data, head } = await fetchLocalFinance(1, 1, localGovCode, toDate8(date))
     if (!data) continue
 
@@ -51,15 +31,15 @@ async function getAllLocalGovExpenditures(date: Date) {
     const totalExpenditureCount = head[0].list_total_count
 
     const { rows } = await pool.query<ICountExpendituresResult>(countExpenditures, [
-      localGovCode,
       date,
+      localGovCode,
     ])
 
     const count = rows[0].count
     if (count && +count === totalExpenditureCount) {
       continue
     } else {
-      await pool.query(deleteExpenditures, [localGovCode, date])
+      await pool.query(deleteExpenditures, [date, localGovCode])
     }
 
     for (let i = 1; (i - 1) * size < totalExpenditureCount; i++) {
@@ -74,16 +54,10 @@ async function getAllLocalGovExpenditures(date: Date) {
 
       // sort_ordr 열 제거, 형식 맞추기
       pool.query(createExpenditures, [
-        expenditures.map((expenditure) => +expenditure.accnut_year),
-        expenditures.map((expenditure) => expenditure.wdr_sfrnd_code),
-        expenditures.map((expenditure) => expenditure.wdr_sfrnd_code_nm),
-        expenditures.map((expenditure) => expenditure.sfrnd_code),
-        expenditures.map((expenditure) => expenditure.sfrnd_nm_korean),
+        expenditures.map((expenditure) => +expenditure.sfrnd_code),
         expenditures.map((expenditure) => expenditure.accnut_se_code),
-        expenditures.map((expenditure) => expenditure.accnut_se_nm),
-        expenditures.map((expenditure) => expenditure.dept_code),
+        expenditures.map((expenditure) => +expenditure.dept_code),
         expenditures.map((expenditure) => expenditure.detail_bsns_code),
-        expenditures.map((expenditure) => expenditure.detail_bsns_nm),
         expenditures.map((expenditure) => new Date(toISODate(expenditure.excut_de))),
         expenditures.map((expenditure) => +expenditure.budget_crntam),
         expenditures.map((expenditure) => +expenditure.nxndr),
@@ -93,10 +67,8 @@ async function getAllLocalGovExpenditures(date: Date) {
         expenditures.map((expenditure) => +expenditure.expndtram),
         expenditures.map((expenditure) => +expenditure.orgnztnam),
         expenditures.map((expenditure) => expenditure.realm_code),
-        expenditures.map((expenditure) => expenditure.realm_nm),
         expenditures.map((expenditure) => expenditure.sect_code),
-        expenditures.map((expenditure) => expenditure.sect_nm),
-        expenditures.map((expenditure) => expenditure.administ_sfrnd_code),
+        expenditures.map((expenditure) => +expenditure.administ_sfrnd_code),
       ])
     }
   }
