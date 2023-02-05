@@ -5,3 +5,11 @@ export function toISODate(date8: string) {
 export function toDate8(date: Date) {
   return date.toISOString().slice(0, 10).split('-').join('')
 }
+
+export function invertObject(obj: Record<any, any>) {
+  return Object.keys(obj).reduce((ret, key) => {
+    const a = obj[key]
+    ret[a] = key
+    return ret
+  }, {} as Record<any, any>)
+}

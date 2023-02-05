@@ -9,16 +9,10 @@ GRANT ALL ON SCHEMA public2 TO lofin_admin;
 
 CREATE TABLE expenditure (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  accnut_year int NOT NULL,
-  wdr_sfrnd_code text NOT NULL,
-  wdr_sfrnd_code_nm text NOT NULL,
-  sfrnd_code text NOT NULL,
-  sfrnd_nm_korean text NOT NULL,
+  sfrnd_code int NOT NULL,
   accnut_se_code text NOT NULL,
-  accnut_se_nm text NOT NULL,
-  dept_code text NOT NULL,
+  dept_code int NOT NULL,
   detail_bsns_code text NOT NULL,
-  detail_bsns_nm text NOT NULL,
   excut_de timestamptz,
   budget_crntam bigint NOT NULL,
   nxndr bigint NOT NULL,
@@ -28,8 +22,19 @@ CREATE TABLE expenditure (
   expndtram bigint NOT NULL,
   orgnztnam bigint NOT NULL,
   realm_code text NOT NULL,
-  realm_nm text NOT NULL,
   sect_code text NOT NULL,
-  sect_nm text NOT NULL,
-  administ_sfrnd_code text NOT NULL
+  administ_sfrnd_code int NOT NULL
 );
+
+CREATE INDEX expenditure__date__local_gov__project ON expenditure (
+  excut_de,
+  sfrnd_code,
+  realm_code,
+  budget_crntam DESC
+);
+
+CREATE INDEX expenditure__date__local_gov ON expenditure (excut_de, sfrnd_code, budget_crntam DESC);
+
+CREATE INDEX expenditure__date__project ON expenditure (excut_de, realm_code, budget_crntam DESC);
+
+CREATE INDEX expenditure__date ON expenditure (excut_de, budget_crntam DESC);

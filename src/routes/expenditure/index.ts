@@ -1,6 +1,7 @@
 import { Type } from '@sinclair/typebox'
 
 import { BadRequestError, NotFoundError } from '../../common/fastify'
+import { localGovernments, locals } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { IGetExpendituresResult } from './sql/getExpenditures'
 import getExpenditures from './sql/getExpenditures.sql'
@@ -9,27 +10,38 @@ import { TFastify } from '..'
 export default async function routes(fastify: TFastify) {
   const schema = {
     querystring: Type.Object({
-      localCode: Type.String(),
       date: Type.String(),
-      projectCodes: Type.Array(Type.String()),
+      localGovCode: Type.Optional(Type.Number()),
+      selectAllLocalGov: Type.Optional(Type.Boolean()),
+      projectCodes: Type.Optional(Type.Array(Type.String())),
       count: Type.Optional(Type.Number()),
     }),
   }
 
-  fastify.get('/expenditure', { schema }, async (req, reply) => {
-    const querystring = req.query
+  const localCodes = Object.keys(locals).map((codes) => +codes)
+  const localGovCodes = Object.keys(localGovernments).map((codes) => +codes)
 
-    const date = Date.parse(querystring.date)
-    if (isNaN(date)) throw BadRequestError('Invalid format of `date`')
+  fastify.get('/expenditure', { schema }, async (req) => {
+    const { date, localGovCode, selectAllLocalGov, projectCodes, count } = req.query
+
+    const parsedDate = Date.parse(date)
+    if (isNaN(parsedDate)) throw BadRequestError('Invalid format of `date`')
+
+    if (localGovCode) {
+      if (!(selectAllLocalGov ? localCodes : localGovCodes).includes(localGovCode))
+        throw BadRequestError('Invalid `localGovCode`')
+    }
 
     const { rowCount, rows } = await pool.query<IGetExpendituresResult>(getExpenditures, [
-      querystring.localCode,
-      new Date(date),
-      querystring.projectCodes,
-      querystring.count ?? 20,
+      new Date(parsedDate),
+      localGovCode,
+      selectAllLocalGov,
+      projectCodes,
+      count ?? 20,
     ])
 
-    if (rowCount === 0) throw NotFoundError('No expenditure')
+    if (rowCount === 0)
+      throw NotFoundError('No expenditure could be found that satisfies these conditions...')
 
     return rows
   })

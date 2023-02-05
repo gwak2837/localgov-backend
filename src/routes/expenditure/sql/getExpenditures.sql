@@ -1,15 +1,9 @@
 /* @name getExpenditures */
 SELECT id,
-  accnut_year,
-  wdr_sfrnd_code,
-  wdr_sfrnd_code_nm,
   sfrnd_code,
-  sfrnd_nm_korean,
   accnut_se_code,
-  accnut_se_nm,
   dept_code,
   detail_bsns_code,
-  detail_bsns_nm,
   excut_de,
   budget_crntam,
   nxndr,
@@ -19,13 +13,21 @@ SELECT id,
   expndtram,
   orgnztnam,
   realm_code,
-  realm_nm,
   sect_code,
-  sect_nm,
   administ_sfrnd_code
 FROM expenditure
-WHERE wdr_sfrnd_code = $1
-  AND excut_de = $2
-  AND realm_code = ANY ($3)
+WHERE excut_de = $1
+  AND (
+    $2::int IS NULL
+    OR CASE
+      WHEN $3 = TRUE THEN sfrnd_code >= $2
+      AND sfrnd_code < $2 + 100000
+      ELSE sfrnd_code = $2
+    END
+  )
+  AND (
+    $4::text [] IS NULL
+    OR realm_code = ANY ($4)
+  )
 ORDER BY budget_crntam DESC
-LIMIT $4;
+LIMIT $5;

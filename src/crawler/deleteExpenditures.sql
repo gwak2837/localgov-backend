@@ -1,4 +1,5 @@
 /* @name deleteExpenditures */
 DELETE FROM expenditure
-WHERE wdr_sfrnd_code = $1
-  AND excut_de = $2;
+WHERE excut_de = $1
+  AND sfrnd_code >= $2
+  AND sfrnd_code < $2 + 100000;
