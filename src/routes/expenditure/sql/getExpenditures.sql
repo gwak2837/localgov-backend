@@ -20,7 +20,7 @@ WHERE excut_de = $1
   AND (
     $2::int IS NULL
     OR CASE
-      WHEN $3 = TRUE THEN sfrnd_code >= $2
+      WHEN $3 THEN sfrnd_code >= $2
       AND sfrnd_code < $2 + 100000
       ELSE sfrnd_code = $2
     END

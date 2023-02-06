@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 
 import { BadRequestError, NotFoundError } from '../../common/fastify'
-import { localGovernments, locals } from '../../common/lofin'
+import { localGovernments, locals, realms, sectors } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { IGetExpendituresResult } from './sql/getExpenditures'
 import getExpenditures from './sql/getExpenditures.sql'
@@ -43,6 +43,23 @@ export default async function routes(fastify: TFastify) {
     if (rowCount === 0)
       throw NotFoundError('No expenditure could be found that satisfies these conditions...')
 
-    return rows
+    return {
+      date,
+      expenditures: rows.map((row) => ({
+        id: row.id,
+        sfrnd_name: localGovernments[row.sfrnd_code] ?? row.sfrnd_code,
+        accnut_se_nm: row.accnut_se_code,
+        detail_bsns_nm: row.detail_bsns_code,
+        budget_crntam: row.budget_crntam,
+        nxndr: row.nxndr,
+        cty: row.cty,
+        signgunon: row.signgunon,
+        etc_crntam: row.etc_crntam,
+        expndtram: row.expndtram,
+        orgnztnam: row.orgnztnam,
+        realm_name: realms[row.realm_code] ?? row.realm_code,
+        sect_name: sectors[row.sect_code] ?? row.sect_code,
+      })),
+    }
   })
 }

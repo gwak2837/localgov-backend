@@ -30,7 +30,7 @@ export interface IGetExpendituresQuery {
   result: IGetExpendituresResult;
 }
 
-const getExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  sfrnd_code,\n  accnut_se_code,\n  dept_code,\n  detail_bsns_code,\n  excut_de,\n  budget_crntam,\n  nxndr,\n  cty,\n  signgunon,\n  etc_crntam,\n  expndtram,\n  orgnztnam,\n  realm_code,\n  sect_code,\n  administ_sfrnd_code\nFROM expenditure\nWHERE excut_de = $1\n  AND (\n    $2::int IS NULL\n    OR CASE\n      WHEN $3 = TRUE THEN sfrnd_code >= $2\n      AND sfrnd_code < $2 + 100000\n      ELSE sfrnd_code = $2\n    END\n  )\n  AND (\n    $4::text [] IS NULL\n    OR realm_code = ANY ($4)\n  )\nORDER BY budget_crntam DESC\nLIMIT $5"};
+const getExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  sfrnd_code,\n  accnut_se_code,\n  dept_code,\n  detail_bsns_code,\n  excut_de,\n  budget_crntam,\n  nxndr,\n  cty,\n  signgunon,\n  etc_crntam,\n  expndtram,\n  orgnztnam,\n  realm_code,\n  sect_code,\n  administ_sfrnd_code\nFROM expenditure\nWHERE excut_de = $1\n  AND (\n    $2::int IS NULL\n    OR CASE\n      WHEN $3 THEN sfrnd_code >= $2\n      AND sfrnd_code < $2 + 100000\n      ELSE sfrnd_code = $2\n    END\n  )\n  AND (\n    $4::text [] IS NULL\n    OR realm_code = ANY ($4)\n  )\nORDER BY budget_crntam DESC\nLIMIT $5"};
 
 /**
  * Query generated from SQL:
@@ -56,7 +56,7 @@ const getExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELEC
  *   AND (
  *     $2::int IS NULL
  *     OR CASE
- *       WHEN $3 = TRUE THEN sfrnd_code >= $2
+ *       WHEN $3 THEN sfrnd_code >= $2
  *       AND sfrnd_code < $2 + 100000
  *       ELSE sfrnd_code = $2
  *     END
