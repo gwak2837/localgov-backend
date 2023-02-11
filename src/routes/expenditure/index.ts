@@ -48,8 +48,8 @@ export default async function routes(fastify: TFastify) {
       expenditures: rows.map((row) => ({
         id: row.id,
         sfrnd_name: localGovernments[row.sfrnd_code] ?? row.sfrnd_code,
-        accnut_se_nm: row.accnut_se_code,
-        detail_bsns_nm: row.detail_bsns_code,
+        accnut_se_nm: row.accnut_se_nm,
+        detail_bsns_nm: row.detail_bsns_nm,
         budget_crntam: row.budget_crntam,
         nxndr: row.nxndr,
         cty: row.cty,

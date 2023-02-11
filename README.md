@@ -19,6 +19,8 @@
 
 ## 클라우드 설정
 
+GCP CLI 로그인
+
 ```bash
 gcloud init
 ```
@@ -54,9 +56,10 @@ Cloud Run Task 생성
 ```bash
 gcloud beta run jobs create lofin-crawler \
   --image asia-northeast3-docker.pkg.dev/lofin-2023/lofin-seoul/lofin-crawler:latest \
-  --tasks 2 \
-  --max-retries 1 \
-  --region asia-northeast3
+  --tasks 10 \
+  --max-retries 2 \
+  --region asia-northeast3 \
+  --set-cloudsql-instances lofin-2023:asia-northeast3:lofin
 ```
 
 Cloud Run Task 실행

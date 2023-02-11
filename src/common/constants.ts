@@ -1,8 +1,8 @@
 // 자동
 export const NODE_ENV = process.env.NODE_ENV as string
 export const K_SERVICE = process.env.K_SERVICE as string // GCP에서 실행 중일 때
-export const CLOUD_RUN_TASK_INDEX = process.env.CLOUD_RUN_TASK_INDEX as string
-export const CLOUD_RUN_TASK_COUNT = process.env.CLOUD_RUN_TASK_COUNT as string
+export const CLOUD_RUN_TASK_INDEX = process.env.CLOUD_RUN_TASK_INDEX ?? '0'
+export const CLOUD_RUN_TASK_COUNT = process.env.CLOUD_RUN_TASK_COUNT ?? '1'
 
 // 공통
 export const PORT = process.env.PORT as string
