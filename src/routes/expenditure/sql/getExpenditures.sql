@@ -13,8 +13,7 @@ SELECT id,
   expndtram,
   orgnztnam,
   realm_code,
-  sect_code,
-  administ_sfrnd_code
+  sect_code
 FROM expenditure
 WHERE excut_de = $1
   AND (
@@ -26,7 +25,7 @@ WHERE excut_de = $1
     END
   )
   AND (
-    $4::text [] IS NULL
+    $4::int [] IS NULL
     OR realm_code = ANY ($4)
   )
 ORDER BY budget_crntam DESC

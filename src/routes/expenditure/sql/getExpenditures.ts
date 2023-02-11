@@ -6,20 +6,19 @@ export type IGetExpendituresParams = void;
 
 /** 'GetExpenditures' return type */
 export interface IGetExpendituresResult {
-  accnut_se_code: string;
-  administ_sfrnd_code: number;
+  accnut_se_nm: string;
   budget_crntam: string;
   cty: string;
   dept_code: number;
-  detail_bsns_code: string;
+  detail_bsns_nm: string;
   etc_crntam: string;
   excut_de: Date | null;
   expndtram: string;
   id: string;
   nxndr: string;
   orgnztnam: string;
-  realm_code: string;
-  sect_code: string;
+  realm_code: number;
+  sect_code: number;
   sfrnd_code: number;
   signgunon: string;
 }
@@ -30,16 +29,16 @@ export interface IGetExpendituresQuery {
   result: IGetExpendituresResult;
 }
 
-const getExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  sfrnd_code,\n  accnut_se_code,\n  dept_code,\n  detail_bsns_code,\n  excut_de,\n  budget_crntam,\n  nxndr,\n  cty,\n  signgunon,\n  etc_crntam,\n  expndtram,\n  orgnztnam,\n  realm_code,\n  sect_code,\n  administ_sfrnd_code\nFROM expenditure\nWHERE excut_de = $1\n  AND (\n    $2::int IS NULL\n    OR CASE\n      WHEN $3 THEN sfrnd_code >= $2\n      AND sfrnd_code < $2 + 100000\n      ELSE sfrnd_code = $2\n    END\n  )\n  AND (\n    $4::text [] IS NULL\n    OR realm_code = ANY ($4)\n  )\nORDER BY budget_crntam DESC\nLIMIT $5"};
+const getExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  sfrnd_code,\n  accnut_se_nm,\n  dept_code,\n  detail_bsns_nm,\n  excut_de,\n  budget_crntam,\n  nxndr,\n  cty,\n  signgunon,\n  etc_crntam,\n  expndtram,\n  orgnztnam,\n  realm_code,\n  sect_code\nFROM expenditure\nWHERE excut_de = $1\n  AND (\n    $2::int IS NULL\n    OR CASE\n      WHEN $3 THEN sfrnd_code >= $2\n      AND sfrnd_code < $2 + 100000\n      ELSE sfrnd_code = $2\n    END\n  )\n  AND (\n    $4::int [] IS NULL\n    OR realm_code = ANY ($4)\n  )\nORDER BY budget_crntam DESC\nLIMIT $5"};
 
 /**
  * Query generated from SQL:
  * ```
  * SELECT id,
  *   sfrnd_code,
- *   accnut_se_code,
+ *   accnut_se_nm,
  *   dept_code,
- *   detail_bsns_code,
+ *   detail_bsns_nm,
  *   excut_de,
  *   budget_crntam,
  *   nxndr,
@@ -49,8 +48,7 @@ const getExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELEC
  *   expndtram,
  *   orgnztnam,
  *   realm_code,
- *   sect_code,
- *   administ_sfrnd_code
+ *   sect_code
  * FROM expenditure
  * WHERE excut_de = $1
  *   AND (
@@ -62,7 +60,7 @@ const getExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELEC
  *     END
  *   )
  *   AND (
- *     $4::text [] IS NULL
+ *     $4::int [] IS NULL
  *     OR realm_code = ANY ($4)
  *   )
  * ORDER BY budget_crntam DESC
