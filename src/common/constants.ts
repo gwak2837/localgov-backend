@@ -1,8 +1,6 @@
 // 자동
 export const NODE_ENV = process.env.NODE_ENV as string
 export const K_SERVICE = process.env.K_SERVICE as string // GCP에서 실행 중일 때
-export const CLOUD_RUN_TASK_INDEX = process.env.CLOUD_RUN_TASK_INDEX ?? '0'
-export const CLOUD_RUN_TASK_COUNT = process.env.CLOUD_RUN_TASK_COUNT ?? '1'
 
 // 공통
 export const PORT = process.env.PORT as string
@@ -25,3 +23,8 @@ export const POSTGRES_KEY = process.env.POSTGRES_KEY as string
 export const REDIS_CA = process.env.REDIS_CA as string
 export const REDIS_CLIENT_KEY = process.env.REDIS_CLIENT_KEY as string
 export const REDIS_CLIENT_CERT = process.env.REDIS_CLIENT_CERT as string
+
+// 크롤러 전용
+export const CLOUD_RUN_TASK_INDEX = process.env.CLOUD_RUN_TASK_INDEX ?? '0'
+export const CLOUD_RUN_TASK_COUNT = process.env.CLOUD_RUN_TASK_COUNT ?? '1'
+export const LOCAL_EXPENDITURE_DATE = process.env.LOCAL_EXPENDITURE_DATE as string

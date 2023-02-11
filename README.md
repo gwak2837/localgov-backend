@@ -54,12 +54,17 @@ gcloud builds submit \
 Cloud Run Task 생성
 
 ```bash
+gcloud beta run jobs delete lofin-crawler \
+  --region asia-northeast3
 gcloud beta run jobs create lofin-crawler \
+  --env-vars-file "./.env task" \
   --image asia-northeast3-docker.pkg.dev/lofin-2023/lofin-seoul/lofin-crawler:latest \
-  --tasks 10 \
   --max-retries 2 \
+  --memory 1Gi \
   --region asia-northeast3 \
-  --set-cloudsql-instances lofin-2023:asia-northeast3:lofin
+  --set-cloudsql-instances lofin-2023:asia-northeast3:lofin \
+  --tasks 100 \
+  --task-timeout 3600
 ```
 
 Cloud Run Task 실행

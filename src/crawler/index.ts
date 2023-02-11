@@ -1,7 +1,12 @@
 import retry from 'async-retry'
 import fetch from 'node-fetch'
 
-import { CLOUD_RUN_TASK_COUNT, CLOUD_RUN_TASK_INDEX, LOFIN_KEY } from '../common/constants'
+import {
+  CLOUD_RUN_TASK_COUNT,
+  CLOUD_RUN_TASK_INDEX,
+  LOCAL_EXPENDITURE_DATE,
+  LOFIN_KEY,
+} from '../common/constants'
 import { locals } from '../common/lofin'
 import { pool } from '../common/postgres'
 import { toDate8, toISODate } from '../common/utils'
@@ -14,7 +19,7 @@ import deleteExpenditures from './deleteExpenditures.sql'
 main()
 
 async function main() {
-  const date = new Date('2022-12-31')
+  const date = new Date(LOCAL_EXPENDITURE_DATE)
   date.setDate(date.getDate() - +CLOUD_RUN_TASK_INDEX)
 
   for (; date.getFullYear() > 2021; date.setDate(date.getDate() - +CLOUD_RUN_TASK_COUNT)) {
@@ -49,7 +54,6 @@ async function getAllLocalGovExpenditures(date: Date) {
 
     for (let i = 1; (i - 1) * size < totalExpenditureCount; i++) {
       const { data: expenditures } = await fetchLocalFinance(i, size, localGovCode, toDate8(date))
-      console.log('👀', i)
       if (!expenditures) continue
 
       // sort_ordr 열 제거, 형식 맞추기
