@@ -7,6 +7,7 @@ export const PORT = process.env.PORT as string
 export const PROJECT_ENV = process.env.PROJECT_ENV as string
 export const FRONTEND_URL = process.env.FRONTEND_URL as string
 export const LOFIN_KEY = process.env.LOFIN_KEY
+export const CEFIN_KEY = process.env.CEFIN_KEY
 
 export const PGURI = process.env.PGURI as string
 

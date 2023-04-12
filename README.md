@@ -2,6 +2,8 @@
 
 정책 전문가패널 구축을 통한 정책랩 제안
 
+## 프로젝트 메모
+
 ## 💻 개발 환경
 
 - macOS 12.6
@@ -45,25 +47,24 @@ images:
 
 Cloud Build 결과물을 Artifact Registry 저장소에 저장
 
+Cloud Run Task 생성
+
 ```bash
 gcloud builds submit \
   --config=cloudbuild.yaml \
   --substitutions=_LOCATION="asia-northeast3",_REPOSITORY="lofin-seoul",_IMAGE="lofin-crawler" .
-```
-
-Cloud Run Task 생성
-
-```bash
 gcloud beta run jobs delete lofin-crawler \
   --region asia-northeast3
 gcloud beta run jobs create lofin-crawler \
+  --cpu 1 \
   --env-vars-file "./.env task" \
+  --execute-now \
   --image asia-northeast3-docker.pkg.dev/lofin-2023/lofin-seoul/lofin-crawler:latest \
-  --max-retries 2 \
+  --max-retries 0 \
   --memory 1Gi \
   --region asia-northeast3 \
   --set-cloudsql-instances lofin-2023:asia-northeast3:lofin \
-  --tasks 100 \
+  --tasks 20 \
   --task-timeout 3600
 ```
 

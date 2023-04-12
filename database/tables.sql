@@ -7,13 +7,9 @@ COMMENT ON SCHEMA public2 IS 'standard public2 schema';
 
 GRANT ALL ON SCHEMA public2 TO lofin_admin;
 
-CREATE TABLE expenditure (
+CREATE TABLE local_expenditure (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   sfrnd_code int NOT NULL,
-  accnut_se_code int NOT NULL,
-  accnut_se_nm text NOT NULL,
-  dept_code int NOT NULL,
-  detail_bsns_code text NOT NULL,
   detail_bsns_nm text NOT NULL,
   excut_de timestamptz,
   budget_crntam bigint NOT NULL,
@@ -27,18 +23,31 @@ CREATE TABLE expenditure (
   sect_code int NOT NULL
 );
 
-CREATE INDEX expenditure__date__local_gov__project ON expenditure (
+CREATE INDEX expenditure__date__local_gov__project ON local_expenditure (
   excut_de,
   sfrnd_code,
   realm_code,
   budget_crntam DESC
 );
 
-CREATE INDEX expenditure__date__local_gov ON expenditure (excut_de, sfrnd_code, budget_crntam DESC);
+CREATE INDEX expenditure__date__local_gov ON local_expenditure (excut_de, sfrnd_code, budget_crntam DESC);
 
-CREATE INDEX expenditure__date__project ON expenditure (excut_de, realm_code, budget_crntam DESC);
+CREATE INDEX expenditure__date__project ON local_expenditure (excut_de, realm_code, budget_crntam DESC);
 
-CREATE INDEX expenditure__date ON expenditure (excut_de, budget_crntam DESC);
+CREATE INDEX expenditure__date ON local_expenditure (excut_de, budget_crntam DESC);
+
+CREATE TABLE center_expenditure (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  FSCL_YY int NOT NULL,
+  OFFC_NM text NOT NULL,
+  FLD_NM text NOT NULL,
+  SECT_NM text NOT NULL,
+  PGM_NM text NOT NULL,
+  ACTV_NM text NOT NULL,
+  SACTV_NM text NOT NULL,
+  BZ_CLS_NM text NOT NULL,
+  Y_YY_DFN_MEDI_KCUR_AMT bigint NOT NULL
+);
 
 CREATE TABLE smart_evaluation (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,

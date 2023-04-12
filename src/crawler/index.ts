@@ -2,6 +2,7 @@ import retry from 'async-retry'
 import fetch from 'node-fetch'
 
 import {
+  CEFIN_KEY,
   CLOUD_RUN_TASK_COUNT,
   CLOUD_RUN_TASK_INDEX,
   LOCAL_EXPENDITURE_DATE,
@@ -10,27 +11,36 @@ import {
 import { locals } from '../common/lofin'
 import { pool } from '../common/postgres'
 import { toDate8, toISODate } from '../common/utils'
-import { ErrorHead, Expenditure, Head } from '../types'
+import { CenterExpenditure, ErrorHead, Expenditure, Head } from '../types'
+import countCenterExpenditures from './countCenterExpenditures.sql'
 import { ICountExpendituresResult } from './countExpenditures'
 import countExpenditures from './countExpenditures.sql'
+import createCenterExpenditures from './createCenterExpenditures.sql'
 import createExpenditures from './createExpenditures.sql'
+import deleteCenterExpenditures from './deleteCenterExpenditures.sql'
 import deleteExpenditures from './deleteExpenditures.sql'
 
 main()
 
 async function main() {
-  const date = new Date(LOCAL_EXPENDITURE_DATE)
-  date.setDate(date.getDate() - +CLOUD_RUN_TASK_INDEX)
+  // const date = new Date(LOCAL_EXPENDITURE_DATE)
+  // date.setDate(date.getDate() - +CLOUD_RUN_TASK_INDEX)
+  // for (; date.getFullYear() > 2021; date.setDate(date.getDate() - +CLOUD_RUN_TASK_COUNT)) {
+  //   await retry(() => getLocalGovExpenditures(date), {
+  //     retries: 10,
+  //     onRetry: (e, attemp) => console.warn(attemp, e.message),
+  //   })
+  // }
 
-  for (; date.getFullYear() > 2021; date.setDate(date.getDate() - +CLOUD_RUN_TASK_COUNT)) {
-    await retry(() => getAllLocalGovExpenditures(date), {
+  for (let year = 2023 - +CLOUD_RUN_TASK_INDEX; year > 2006; year -= +CLOUD_RUN_TASK_COUNT) {
+    await retry(() => getCenterGovExpenditures(year), {
       retries: 10,
       onRetry: (e, attemp) => console.warn(attemp, e.message),
     })
   }
 }
 
-async function getAllLocalGovExpenditures(date: Date) {
+async function getLocalGovExpenditures(date: Date) {
   for (const localGovCode of Object.keys(locals)) {
     console.log('👀 - date', date, 'localGovCode', localGovCode, locals[+localGovCode])
     const { data, head } = await fetchLocalFinance(1, 1, localGovCode, toDate8(date))
@@ -53,16 +63,13 @@ async function getAllLocalGovExpenditures(date: Date) {
     }
 
     for (let i = 1; (i - 1) * size < totalExpenditureCount; i++) {
+      console.log('👀 - i', i)
       const { data: expenditures } = await fetchLocalFinance(i, size, localGovCode, toDate8(date))
       if (!expenditures) continue
 
       // sort_ordr 열 제거, 형식 맞추기
       pool.query(createExpenditures, [
         expenditures.map((expenditure) => +expenditure.sfrnd_code),
-        expenditures.map((expenditure) => expenditure.accnut_se_code),
-        expenditures.map((expenditure) => expenditure.accnut_se_nm),
-        expenditures.map((expenditure) => +expenditure.dept_code),
-        expenditures.map((expenditure) => expenditure.detail_bsns_code),
         expenditures.map((expenditure) => expenditure.detail_bsns_nm),
         expenditures.map((expenditure) => new Date(toISODate(expenditure.excut_de))),
         expenditures.map((expenditure) => +expenditure.budget_crntam),
@@ -90,4 +97,53 @@ async function fetchLocalFinance(index: number, size: number, local: string, dat
   const head = result.QWGJK[0].head as Head
 
   return { head, data: result.QWGJK[1].row as Expenditure[] }
+}
+
+async function getCenterGovExpenditures(year: number) {
+  console.log('👀 - year', year)
+  const { data, head } = await fetchCenterFinance(1, 1, year)
+  if (!data) return
+
+  const size = 1000
+  const totalExpenditureCount = head[0].list_total_count
+  console.log('👀 - totalExpenditureCount', totalExpenditureCount)
+
+  const { rows } = await pool.query<ICountExpendituresResult>(countCenterExpenditures, [year])
+
+  const count = rows[0].count
+  if (count && +count === totalExpenditureCount) {
+    return
+  } else {
+    await pool.query(deleteCenterExpenditures, [year])
+  }
+
+  for (let i = 1; (i - 1) * size < totalExpenditureCount; i++) {
+    const { data: expenditures } = await fetchCenterFinance(i, size, year)
+    if (!expenditures) continue
+
+    pool.query(createCenterExpenditures, [
+      expenditures.map((expenditure) => +expenditure.FSCL_YY),
+      expenditures.map((expenditure) => expenditure.OFFC_NM),
+      expenditures.map((expenditure) => expenditure.FLD_NM),
+      expenditures.map((expenditure) => expenditure.SECT_NM),
+      expenditures.map((expenditure) => expenditure.PGM_NM),
+      expenditures.map((expenditure) => expenditure.ACTV_NM),
+      expenditures.map((expenditure) => expenditure.SACTV_NM),
+      expenditures.map((expenditure) => expenditure.BZ_CLS_NM),
+      expenditures.map((expenditure) => +expenditure.Y_YY_DFN_MEDI_KCUR_AMT),
+    ])
+  }
+}
+
+async function fetchCenterFinance(index: number, size: number, year: number) {
+  const a = await fetch(
+    `https://openapi.openfiscaldata.go.kr/TotalExpenditure5?Key=${CEFIN_KEY}&Type=json&pIndex=${index}&pSize=${size}&FSCL_YY=${year}&BDG_FND_DIV_CD=0&ANEXP_INQ_STND_CD=1`
+  )
+  const result = (await a.json()) as any
+  if (result.RESULT?.CODE) return { head: result.RESULT as ErrorHead, data: null }
+  if (result.message) return { head: result.message, data: null }
+
+  const head = result.TotalExpenditure5[0].head as Head
+
+  return { head, data: result.TotalExpenditure5[1].row as CenterExpenditure[] }
 }

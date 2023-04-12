@@ -29,6 +29,25 @@ export type Expenditure = {
   sort_ordr: any
 }
 
+export type CenterExpenditure = {
+  FSCL_YY: string
+  OFFC_NM: string
+  FSCL_NM: string
+  ACCT_NM: string | null
+  FLD_NM: string
+  SECT_NM: string
+  PGM_NM: string
+  ACTV_NM: string
+  SACTV_NM: string
+  BZ_CLS_NM: string
+  FIN_DE_EP_NM: string
+  ANEXP_INQ_STND_CD: string
+  Y_PREY_FIRST_KCUR_AMT: number
+  Y_PREY_FNL_FRC_AMT: number
+  Y_YY_MEDI_KCUR_AMT: number
+  Y_YY_DFN_MEDI_KCUR_AMT: number
+}
+
 export type ErrorHead = {
   RESULT: {
     CODE: string
