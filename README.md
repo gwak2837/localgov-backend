@@ -56,7 +56,7 @@ gcloud builds submit \
 gcloud beta run jobs delete lofin-crawler \
   --region asia-northeast3
 gcloud beta run jobs create lofin-crawler \
-  --cpu 1 \
+  --cpu 2 \
   --env-vars-file "./.env task" \
   --execute-now \
   --image asia-northeast3-docker.pkg.dev/lofin-2023/lofin-seoul/lofin-crawler:latest \
@@ -64,7 +64,7 @@ gcloud beta run jobs create lofin-crawler \
   --memory 1Gi \
   --region asia-northeast3 \
   --set-cloudsql-instances lofin-2023:asia-northeast3:lofin \
-  --tasks 20 \
+  --tasks 17 \
   --task-timeout 3600
 ```
 

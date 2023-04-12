@@ -139,7 +139,8 @@ async function fetchCenterFinance(index: number, size: number, year: number) {
   const a = await fetch(
     `https://openapi.openfiscaldata.go.kr/TotalExpenditure5?Key=${CEFIN_KEY}&Type=json&pIndex=${index}&pSize=${size}&FSCL_YY=${year}&BDG_FND_DIV_CD=0&ANEXP_INQ_STND_CD=1`
   )
-  const result = (await a.json()) as any
+  const result = JSON.parse((await a.json()) as string) as any
+
   if (result.RESULT?.CODE) return { head: result.RESULT as ErrorHead, data: null }
   if (result.message) return { head: result.message, data: null }
 

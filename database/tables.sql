@@ -39,7 +39,7 @@ CREATE INDEX expenditure__date ON local_expenditure (excut_de, budget_crntam DES
 CREATE TABLE center_expenditure (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   FSCL_YY int NOT NULL,
-  OFFC_NM text NOT NULL,
+  OFFC_NM text,
   FLD_NM text NOT NULL,
   SECT_NM text NOT NULL,
   PGM_NM text NOT NULL,
