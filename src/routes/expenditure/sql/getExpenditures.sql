@@ -1,8 +1,6 @@
 /* @name getExpenditures */
 SELECT id,
   sfrnd_code,
-  accnut_se_nm,
-  dept_code,
   detail_bsns_nm,
   excut_de,
   budget_crntam,

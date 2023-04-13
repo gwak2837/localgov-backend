@@ -13,7 +13,8 @@ import {
   PORT,
   PROJECT_ENV,
 } from '../common/constants'
-import expenditureRoute from './expenditure'
+import centerExpenditure from './centerExpenditure'
+import expenditure from './expenditure'
 
 const fastify = Fastify({
   // logger: NODE_ENV === 'development',
@@ -34,10 +35,10 @@ export type TFastify = typeof fastify
 fastify.register(cors, {
   origin: [
     'http://localhost:3000',
-    'https://yeou.app',
-    'https://yeou.vercel.app',
-    'https://yeou-git-dev-gwak2837.vercel.app',
-    /^https:\/\/yeou-[a-z0-9]{1,20}-gwak2837\.vercel\.app/,
+    'https://lofin.app',
+    'https://lofin.vercel.app',
+    'https://lofin-git-dev-gwak2837.vercel.app',
+    /^https:\/\/lofin-[a-z0-9]{1,20}-gwak2837\.vercel\.app/,
   ],
 })
 
@@ -76,7 +77,8 @@ fastify.get('/', schema, async (request, _) => {
   return { hello: 'world', foo, bar }
 })
 
-fastify.register(expenditureRoute)
+fastify.register(centerExpenditure)
+fastify.register(expenditure)
 
 export default async function startServer() {
   try {
