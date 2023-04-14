@@ -1,11 +1,19 @@
 /** Types generated for queries found in "src/crawler/countCenterExpenditures.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** Query 'CountCenterExpenditures' is invalid, so its result is assigned type 'never' */
-export type ICountCenterExpendituresResult = never;
+/** 'CountCenterExpenditures' parameters type */
+export type ICountCenterExpendituresParams = void;
 
-/** Query 'CountCenterExpenditures' is invalid, so its parameters are assigned type 'never' */
-export type ICountCenterExpendituresParams = never;
+/** 'CountCenterExpenditures' return type */
+export interface ICountCenterExpendituresResult {
+  count: string | null;
+}
+
+/** 'CountCenterExpenditures' query type */
+export interface ICountCenterExpendituresQuery {
+  params: ICountCenterExpendituresParams;
+  result: ICountCenterExpendituresResult;
+}
 
 const countCenterExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT COUNT(id)\nFROM center_expenditure\nWHERE FSCL_YY = $1"};
 

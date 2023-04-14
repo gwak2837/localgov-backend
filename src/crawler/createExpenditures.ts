@@ -1,17 +1,11 @@
 /** Types generated for queries found in "src/crawler/createExpenditures.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** 'CreateExpenditures' parameters type */
-export type ICreateExpendituresParams = void;
+/** Query 'CreateExpenditures' is invalid, so its result is assigned type 'never' */
+export type ICreateExpendituresResult = never;
 
-/** 'CreateExpenditures' return type */
-export type ICreateExpendituresResult = void;
-
-/** 'CreateExpenditures' query type */
-export interface ICreateExpendituresQuery {
-  params: ICreateExpendituresParams;
-  result: ICreateExpendituresResult;
-}
+/** Query 'CreateExpenditures' is invalid, so its parameters are assigned type 'never' */
+export type ICreateExpendituresParams = never;
 
 const createExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"INSERT INTO expenditure (\n    sfrnd_code,\n    accnut_se_code,\n    accnut_se_nm,\n    dept_code,\n    detail_bsns_code,\n    detail_bsns_nm,\n    excut_de,\n    budget_crntam,\n    nxndr,\n    cty,\n    signgunon,\n    etc_crntam,\n    expndtram,\n    orgnztnam,\n    realm_code,\n    sect_code\n  )\nSELECT *\nFROM unnest(\n    $1::int [],\n    $2::int [],\n    $3::text [],\n    $4::int [],\n    $5::text [],\n    $6::text [],\n    $7::timestamptz [],\n    $8::bigint [],\n    $9::bigint [],\n    $10::bigint [],\n    $11::bigint [],\n    $12::bigint [],\n    $13::bigint [],\n    $14::bigint [],\n    $15::int [],\n    $16::int []\n  )"};
 

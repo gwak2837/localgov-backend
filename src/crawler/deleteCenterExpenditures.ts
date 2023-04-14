@@ -1,11 +1,17 @@
 /** Types generated for queries found in "src/crawler/deleteCenterExpenditures.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** Query 'DeleteCenterExpenditures' is invalid, so its result is assigned type 'never' */
-export type IDeleteCenterExpendituresResult = never;
+/** 'DeleteCenterExpenditures' parameters type */
+export type IDeleteCenterExpendituresParams = void;
 
-/** Query 'DeleteCenterExpenditures' is invalid, so its parameters are assigned type 'never' */
-export type IDeleteCenterExpendituresParams = never;
+/** 'DeleteCenterExpenditures' return type */
+export type IDeleteCenterExpendituresResult = void;
+
+/** 'DeleteCenterExpenditures' query type */
+export interface IDeleteCenterExpendituresQuery {
+  params: IDeleteCenterExpendituresParams;
+  result: IDeleteCenterExpendituresResult;
+}
 
 const deleteCenterExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"DELETE FROM center_expenditure\nWHERE FSCL_YY = $1"};
 

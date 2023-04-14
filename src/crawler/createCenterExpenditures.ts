@@ -1,11 +1,17 @@
 /** Types generated for queries found in "src/crawler/createCenterExpenditures.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** Query 'CreateCenterExpenditures' is invalid, so its result is assigned type 'never' */
-export type ICreateCenterExpendituresResult = never;
+/** 'CreateCenterExpenditures' parameters type */
+export type ICreateCenterExpendituresParams = void;
 
-/** Query 'CreateCenterExpenditures' is invalid, so its parameters are assigned type 'never' */
-export type ICreateCenterExpendituresParams = never;
+/** 'CreateCenterExpenditures' return type */
+export type ICreateCenterExpendituresResult = void;
+
+/** 'CreateCenterExpenditures' query type */
+export interface ICreateCenterExpendituresQuery {
+  params: ICreateCenterExpendituresParams;
+  result: ICreateCenterExpendituresResult;
+}
 
 const createCenterExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"INSERT INTO center_expenditure (\n    FSCL_YY,\n    OFFC_NM,\n    FLD_NM,\n    SECT_NM,\n    PGM_NM,\n    ACTV_NM,\n    SACTV_NM,\n    BZ_CLS_NM,\n    Y_YY_DFN_MEDI_KCUR_AMT\n  )\nSELECT *\nFROM unnest(\n    $1::int [],\n    $2::text [],\n    $3::text [],\n    $4::text [],\n    $5::text [],\n    $6::text [],\n    $7::text [],\n    $8::text [],\n    $9::bigint []\n  )"};
 

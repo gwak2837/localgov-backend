@@ -1,4 +1,4 @@
-export const locals = {
+export const provinces = {
   1100000: '서울',
   2600000: '부산',
   2700000: '대구',
@@ -18,7 +18,7 @@ export const locals = {
   4900000: '제주',
 } as Record<number, string>
 
-export const localGovernments = {
+export const locals = {
   1100000: '서울본청',
   1111000: '서울종로구',
   1112000: '서울중구',

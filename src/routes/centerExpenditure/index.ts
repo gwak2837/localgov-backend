@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 
 import { BadRequestError, NotFoundError } from '../../common/fastify'
-import { localGovernments, locals, realms, sectors } from '../../common/lofin'
+import { locals, provinces, realms, sectors } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { TFastify } from '..'
 
@@ -16,7 +16,7 @@ export default async function routes(fastify: TFastify) {
     }),
   }
 
-  fastify.get('/centerExpenditure', { schema }, async (req) => {
+  fastify.get('/expenditure/center', { schema }, async (req) => {
     return ''
   })
 }

@@ -6,8 +6,6 @@ export const K_SERVICE = process.env.K_SERVICE as string // GCP에서 실행 중
 export const PORT = process.env.PORT as string
 export const PROJECT_ENV = process.env.PROJECT_ENV as string
 export const FRONTEND_URL = process.env.FRONTEND_URL as string
-export const LOFIN_KEY = process.env.LOFIN_KEY
-export const CEFIN_KEY = process.env.CEFIN_KEY
 
 export const PGURI = process.env.PGURI as string
 
@@ -29,3 +27,5 @@ export const REDIS_CLIENT_CERT = process.env.REDIS_CLIENT_CERT as string
 export const CLOUD_RUN_TASK_INDEX = process.env.CLOUD_RUN_TASK_INDEX ?? '0'
 export const CLOUD_RUN_TASK_COUNT = process.env.CLOUD_RUN_TASK_COUNT ?? '1'
 export const LOCAL_EXPENDITURE_DATE = process.env.LOCAL_EXPENDITURE_DATE as string
+export const LOFIN_KEY = process.env.LOFIN_KEY
+export const CEFIN_KEY = process.env.CEFIN_KEY

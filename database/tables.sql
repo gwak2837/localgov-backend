@@ -36,6 +36,8 @@ CREATE INDEX expenditure__date__project ON local_expenditure (excut_de, realm_co
 
 CREATE INDEX expenditure__date ON local_expenditure (excut_de, budget_crntam DESC);
 
+CREATE INDEX expenditure__sfrnd_code__realm_code ON expenditure (sfrnd_code, realm_code);
+
 CREATE TABLE center_expenditure (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   FSCL_YY int NOT NULL,

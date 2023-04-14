@@ -8,7 +8,7 @@ import {
   LOCAL_EXPENDITURE_DATE,
   LOFIN_KEY,
 } from '../common/constants'
-import { locals } from '../common/lofin'
+import { provinces } from '../common/lofin'
 import { pool } from '../common/postgres'
 import { toDate8, toISODate } from '../common/utils'
 import { CenterExpenditure, ErrorHead, Expenditure, Head } from '../types'
@@ -41,8 +41,8 @@ async function main() {
 }
 
 async function getLocalGovExpenditures(date: Date) {
-  for (const localGovCode of Object.keys(locals)) {
-    console.log('👀 - date', date, 'localGovCode', localGovCode, locals[+localGovCode])
+  for (const localGovCode of Object.keys(provinces)) {
+    console.log('👀 - date', date, 'localGovCode', localGovCode, provinces[+localGovCode])
     const { data, head } = await fetchLocalFinance(1, 1, localGovCode, toDate8(date))
     if (!data) continue
 
