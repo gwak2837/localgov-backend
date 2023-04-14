@@ -30,8 +30,6 @@ export default async function routes(fastify: TFastify) {
     if (localCode && !provinceCodes.includes(localCode) && !localCodes.includes(localCode))
       throw BadRequestError('Invalid `localCode`')
 
-    console.log('👀 - req.query:', req.query, isWholeProvince)
-
     const { rowCount, rows } = await pool.query<IGetLocalExpendituresResult>(getLocalExpenditures, [
       dateFrom,
       dateTo,
@@ -45,7 +43,13 @@ export default async function routes(fastify: TFastify) {
     return {
       expenditures: rows.map((row) => ({
         realm: realms[row.realm_code],
-        budgetSum: row.budget_crntam_sum,
+        budget_crntam_sum: row.budget_crntam_sum,
+        nxndr_sum: row.nxndr_sum,
+        cty_sum: row.cty_sum,
+        signgunon_sum: row.signgunon_sum,
+        etc_crntam_sum: row.etc_crntam_sum,
+        expndtram_sum: row.expndtram_sum,
+        orgnztnam_sum: row.orgnztnam_sum,
       })),
     }
   })
@@ -77,8 +81,6 @@ export default async function routes(fastify: TFastify) {
 
     if (localCode && !provinceCodes.includes(localCode) && !localCodes.includes(localCode))
       throw BadRequestError('Invalid `localCode`')
-
-    console.log('👀 - req.query:', req.query, isWholeProvince)
 
     const { rowCount, rows } = await pool.query<IGetLocalExpendituresByRealmResult>(
       getLocalExpendituresByRealm,

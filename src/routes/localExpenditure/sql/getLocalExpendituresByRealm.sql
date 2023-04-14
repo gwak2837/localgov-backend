@@ -1,6 +1,12 @@
 /* @name getLocalExpendituresByRealm */
 SELECT detail_bsns_nm,
-  sum(budget_crntam) AS budget_crntam_sum
+  sum(budget_crntam) AS budget_crntam_sum,
+  sum(nxndr) AS nxndr_sum,
+  sum(cty) AS cty_sum,
+  sum(signgunon) AS signgunon_sum,
+  sum(etc_crntam) AS etc_crntam_sum,
+  sum(expndtram) AS expndtram_sum,
+  sum(orgnztnam) AS orgnztnam_sum
 FROM expenditure
 WHERE excut_de >= $1
   AND excut_de < $2
