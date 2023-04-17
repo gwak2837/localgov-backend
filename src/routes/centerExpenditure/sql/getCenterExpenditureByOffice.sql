@@ -1,5 +1,5 @@
-/* @name getCenterExpenditures */
-SELECT OFFC_NM,
+/* @name getCenterExpenditureByOffice */
+SELECT SACTV_NM,
   sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT_SUM
 FROM center_expenditure
 WHERE CASE
@@ -7,5 +7,7 @@ WHERE CASE
     ELSE FSCL_YY >= $1
     AND FSCL_YY <= $2
   END
-GROUP BY OFFC_NM
-ORDER BY Y_YY_DFN_MEDI_KCUR_AMT_SUM DESC;
+  AND OFFC_NM = $3
+GROUP BY SACTV_NM
+ORDER BY Y_YY_DFN_MEDI_KCUR_AMT_SUM DESC
+LIMIT $4;

@@ -9,7 +9,7 @@ SELECT realm_code,
   sum(orgnztnam) AS orgnztnam_sum
 FROM expenditure
 WHERE excut_de >= $1
-  AND excut_de < $2
+  AND excut_de <= $2
   AND (
     $3::int IS NULL
     OR CASE
