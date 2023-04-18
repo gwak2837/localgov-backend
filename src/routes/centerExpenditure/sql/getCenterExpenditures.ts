@@ -6,15 +6,8 @@ export type IGetCenterExpendituresParams = void;
 
 /** 'GetCenterExpenditures' return type */
 export interface IGetCenterExpendituresResult {
-  actv_nm: string;
-  bz_cls_nm: string;
-  fld_nm: string;
-  id: string;
   offc_nm: string | null;
-  pgm_nm: string;
-  sactv_nm: string;
-  sect_nm: string;
-  y_yy_dfn_medi_kcur_amt: string;
+  y_yy_dfn_medi_kcur_amt_sum: string | null;
 }
 
 /** 'GetCenterExpenditures' query type */
@@ -23,24 +16,21 @@ export interface IGetCenterExpendituresQuery {
   result: IGetCenterExpendituresResult;
 }
 
-const getCenterExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  OFFC_NM,\n  FLD_NM,\n  SECT_NM,\n  PGM_NM,\n  ACTV_NM,\n  SACTV_NM,\n  BZ_CLS_NM,\n  Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY = $1\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC\nLIMIT $2"};
+const getCenterExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT OFFC_NM,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT_SUM\nFROM center_expenditure\nWHERE CASE\n    WHEN $2::int IS NULL THEN FSCL_YY = $1\n    ELSE FSCL_YY >= $1\n    AND FSCL_YY <= $2\n  END\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT_SUM DESC"};
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT id,
- *   OFFC_NM,
- *   FLD_NM,
- *   SECT_NM,
- *   PGM_NM,
- *   ACTV_NM,
- *   SACTV_NM,
- *   BZ_CLS_NM,
- *   Y_YY_DFN_MEDI_KCUR_AMT
+ * SELECT OFFC_NM,
+ *   sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT_SUM
  * FROM center_expenditure
- * WHERE FSCL_YY = $1
- * ORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC
- * LIMIT $2
+ * WHERE CASE
+ *     WHEN $2::int IS NULL THEN FSCL_YY = $1
+ *     ELSE FSCL_YY >= $1
+ *     AND FSCL_YY <= $2
+ *   END
+ * GROUP BY OFFC_NM
+ * ORDER BY Y_YY_DFN_MEDI_KCUR_AMT_SUM DESC
  * ```
  */
 export const getCenterExpenditures = new PreparedQuery<IGetCenterExpendituresParams,IGetCenterExpendituresResult>(getCenterExpendituresIR);

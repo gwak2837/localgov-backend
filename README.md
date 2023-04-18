@@ -21,10 +21,20 @@
 
 ## 클라우드 설정
 
-GCP CLI 로그인
+#### cloud-sql-proxy 다운로드
+
+```bash
+curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.1.2/cloud-sql-proxy.darwin.arm64
+chmod +x cloud-sql-proxy
+```
+
+#### GCP CLI 로그인
+
+https://cloud.google.com/sdk/docs/install?hl=ko
 
 ```bash
 gcloud init
+gcloud auth application-default login
 ```
 
 Artifact Registry 저장소 생성
