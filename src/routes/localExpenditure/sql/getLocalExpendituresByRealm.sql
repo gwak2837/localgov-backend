@@ -18,10 +18,7 @@ WHERE excut_de >= $1
       ELSE sfrnd_code = $3
     END
   )
-  AND (
-    $5::int IS NULL
-    OR realm_code = $5
-  )
+  AND realm_code = $5
 GROUP BY detail_bsns_nm
 ORDER BY budget_crntam_sum DESC
 LIMIT $6;

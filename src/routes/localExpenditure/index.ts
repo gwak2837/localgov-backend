@@ -27,9 +27,19 @@ export default async function routes(fastify: TFastify) {
     const { dateFrom, dateTo, localCode } = req.query
     const isWholeProvince = localCode ? localCode > 0 && localCode < 100 : false
 
+    // Request validation
+    const dateFrom2 = Date.parse(dateFrom)
+    if (isNaN(dateFrom2)) throw BadRequestError('Invalid `dateFrom`')
+
+    const dateTo2 = Date.parse(dateTo)
+    if (isNaN(dateTo2)) throw BadRequestError('Invalid `dateTo`')
+
+    if (dateFrom2 > dateTo2) throw BadRequestError('Invalid `dateFrom`')
+
     if (localCode && !provinceCodes.includes(localCode) && !localCodes.includes(localCode))
       throw BadRequestError('Invalid `localCode`')
 
+    // SQL
     const { rowCount, rows } = await pool.query<IGetLocalExpendituresResult>(getLocalExpenditures, [
       dateFrom,
       dateTo,
@@ -62,7 +72,7 @@ export default async function routes(fastify: TFastify) {
       // undefined: 전국
       localCode: Type.Optional(Type.Number()),
 
-      projectCode: Type.Optional(Type.Number()),
+      projectCode: Type.Number(),
       count: Type.Optional(Type.Number()),
     }),
   }
@@ -71,6 +81,7 @@ export default async function routes(fastify: TFastify) {
     const { dateFrom, dateTo, localCode, projectCode, count } = req.query
     const isWholeProvince = localCode ? localCode > 0 && localCode < 100 : false
 
+    // Request validation
     if (count && count > 100) throw BadRequestError('Invalid `count`')
 
     const dateFrom2 = Date.parse(dateFrom)
@@ -79,9 +90,12 @@ export default async function routes(fastify: TFastify) {
     const dateTo2 = Date.parse(dateTo)
     if (isNaN(dateTo2)) throw BadRequestError('Invalid `dateTo`')
 
+    if (dateFrom2 > dateTo2) throw BadRequestError('Invalid `dateFrom`')
+
     if (localCode && !provinceCodes.includes(localCode) && !localCodes.includes(localCode))
       throw BadRequestError('Invalid `localCode`')
 
+    // SQL
     const { rowCount, rows } = await pool.query<IGetLocalExpendituresByRealmResult>(
       getLocalExpendituresByRealm,
       [
