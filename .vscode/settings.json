@@ -17,6 +17,12 @@
   "typescript.tsdk": ".yarn/sdks/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "sort-imports.default-sort-style": "module",
+  "turboConsoleLog.includeFileNameAndLineNum": false,
+  "turboConsoleLog.logMessagePrefix": "👀",
+  "sqltools.format": {
+    "linesBetweenQueries": 2,
+    "reservedWordCase": "upper"
+  },
   "[sql]": {
     "editor.defaultFormatter": "mtxr.sqltools"
   },

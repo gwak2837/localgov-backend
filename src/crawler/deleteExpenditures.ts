@@ -13,12 +13,12 @@ export interface IDeleteExpendituresQuery {
   result: IDeleteExpendituresResult;
 }
 
-const deleteExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"DELETE FROM expenditure\nWHERE excut_de = $1\n  AND sfrnd_code >= $2\n  AND sfrnd_code < $2 + 100000"};
+const deleteExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"DELETE FROM local_expenditure\nWHERE excut_de = $1\n  AND sfrnd_code >= $2\n  AND sfrnd_code < $2 + 100000"};
 
 /**
  * Query generated from SQL:
  * ```
- * DELETE FROM expenditure
+ * DELETE FROM local_expenditure
  * WHERE excut_de = $1
  *   AND sfrnd_code >= $2
  *   AND sfrnd_code < $2 + 100000

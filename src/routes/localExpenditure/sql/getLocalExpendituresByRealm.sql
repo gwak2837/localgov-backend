@@ -7,7 +7,7 @@ SELECT detail_bsns_nm,
   sum(etc_crntam) AS etc_crntam_sum,
   sum(expndtram) AS expndtram_sum,
   sum(orgnztnam) AS orgnztnam_sum
-FROM expenditure
+FROM local_expenditure
 WHERE excut_de >= $1
   AND excut_de < $2
   AND (

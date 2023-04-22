@@ -13,12 +13,12 @@ export interface ICreateExpendituresQuery {
   result: ICreateExpendituresResult;
 }
 
-const createExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"INSERT INTO expenditure (\n    sfrnd_code,\n    detail_bsns_nm,\n    excut_de,\n    budget_crntam,\n    nxndr,\n    cty,\n    signgunon,\n    etc_crntam,\n    expndtram,\n    orgnztnam,\n    realm_code,\n    sect_code\n  )\nSELECT *\nFROM unnest(\n    $1::int [],\n    $2::text [],\n    $3::timestamptz [],\n    $4::bigint [],\n    $5::bigint [],\n    $6::bigint [],\n    $7::bigint [],\n    $8::bigint [],\n    $9::bigint [],\n    $10::bigint [],\n    $11::int [],\n    $12::int []\n  )"};
+const createExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"INSERT INTO local_expenditure (\n    sfrnd_code,\n    detail_bsns_nm,\n    excut_de,\n    budget_crntam,\n    nxndr,\n    cty,\n    signgunon,\n    etc_crntam,\n    expndtram,\n    orgnztnam,\n    realm_code,\n    sect_code\n  )\nSELECT *\nFROM unnest(\n    $1::int [],\n    $2::text [],\n    $3::timestamptz [],\n    $4::bigint [],\n    $5::bigint [],\n    $6::bigint [],\n    $7::bigint [],\n    $8::bigint [],\n    $9::bigint [],\n    $10::bigint [],\n    $11::int [],\n    $12::int []\n  )"};
 
 /**
  * Query generated from SQL:
  * ```
- * INSERT INTO expenditure (
+ * INSERT INTO local_expenditure (
  *     sfrnd_code,
  *     detail_bsns_nm,
  *     excut_de,

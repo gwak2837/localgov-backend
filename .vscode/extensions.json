@@ -11,6 +11,7 @@
     "ckolkman.vscode-postgres",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "arcanis.vscode-zipfs"
+    "arcanis.vscode-zipfs",
+    "ChakrounAnas.turbo-console-log"
   ]
 }

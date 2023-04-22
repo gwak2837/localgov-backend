@@ -15,13 +15,13 @@ export interface ICountExpendituresQuery {
   result: ICountExpendituresResult;
 }
 
-const countExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT COUNT(id)\nFROM expenditure\nWHERE excut_de = $1\n  AND sfrnd_code >= $2\n  AND sfrnd_code < $2 + 100000"};
+const countExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT COUNT(id)\nFROM local_expenditure\nWHERE excut_de = $1\n  AND sfrnd_code >= $2\n  AND sfrnd_code < $2 + 100000"};
 
 /**
  * Query generated from SQL:
  * ```
  * SELECT COUNT(id)
- * FROM expenditure
+ * FROM local_expenditure
  * WHERE excut_de = $1
  *   AND sfrnd_code >= $2
  *   AND sfrnd_code < $2 + 100000

@@ -1,5 +1,5 @@
 /* @name createExpenditures */
-INSERT INTO expenditure (
+INSERT INTO local_expenditure (
     sfrnd_code,
     detail_bsns_nm,
     excut_de,

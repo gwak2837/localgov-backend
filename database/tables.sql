@@ -23,20 +23,9 @@ CREATE TABLE local_expenditure (
   sect_code int NOT NULL
 );
 
-CREATE INDEX expenditure__date__local_gov__project ON local_expenditure (
-  excut_de,
-  sfrnd_code,
-  realm_code,
-  budget_crntam DESC
-);
+CREATE INDEX excut_de__sfrnd_code__realm_code__detail_bsns_nm ON local_expenditure(excut_de, sfrnd_code, realm_code, detail_bsns_nm);
 
-CREATE INDEX expenditure__date__local_gov ON local_expenditure (excut_de, sfrnd_code, budget_crntam DESC);
-
-CREATE INDEX expenditure__date__project ON local_expenditure (excut_de, realm_code, budget_crntam DESC);
-
-CREATE INDEX expenditure__date ON local_expenditure (excut_de, budget_crntam DESC);
-
-CREATE INDEX expenditure__sfrnd_code__realm_code ON expenditure (sfrnd_code, realm_code);
+CREATE INDEX excut_de__realm_code__detail_bsns_nm ON local_expenditure(excut_de, realm_code, detail_bsns_nm);
 
 CREATE TABLE center_expenditure (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -50,6 +39,8 @@ CREATE TABLE center_expenditure (
   BZ_CLS_NM text NOT NULL,
   Y_YY_DFN_MEDI_KCUR_AMT bigint NOT NULL
 );
+
+CREATE INDEX FSCL_YY__OFFC_NM__SACTV_NM ON center_expenditure(FSCL_YY, OFFC_NM, SACTV_NM);
 
 CREATE TABLE smart_evaluation (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
