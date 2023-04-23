@@ -115,6 +115,12 @@ export default async function routes(fastify: TFastify) {
       expenditures: rows.map((row) => ({
         detailBusinessName: row.detail_bsns_nm,
         budgetSum: row.budget_crntam_sum,
+        nxndrSum: row.nxndr_sum,
+        citySum: row.cty_sum,
+        sigunguSum: row.signgunon_sum,
+        etcSum: row.etc_crntam_sum,
+        expndtramSum: row.expndtram_sum,
+        organizationSum: row.orgnztnam_sum,
       })),
     }
   })
