@@ -14,11 +14,12 @@ export default async function routes(fastify: TFastify) {
     querystring: Type.Object({
       dateFrom: Type.String(),
       dateTo: Type.String(),
+      count: Type.Optional(Type.Number()),
     }),
   }
 
   fastify.get('/expenditure/center', { schema }, async (req) => {
-    const { dateFrom, dateTo } = req.query
+    const { dateFrom, dateTo, count } = req.query
 
     // Request validation
     const dateFrom2 = Date.parse(dateFrom)
@@ -32,17 +33,14 @@ export default async function routes(fastify: TFastify) {
     // SQL
     const { rowCount, rows } = await pool.query<IGetCenterExpendituresResult>(
       getCenterExpenditures,
-      [dateFrom, dateTo]
+      [dateFrom, dateTo, count ?? 30]
     )
 
     if (rowCount === 0)
       throw NotFoundError('No expenditure could be found that satisfies these conditions...')
 
     return {
-      expenditures: rows.map((row) => ({
-        officeName: row.offc_nm,
-        budgetSum: row.y_yy_dfn_medi_kcur_amt_sum,
-      })),
+      expenditures: rows,
     }
   })
 
@@ -50,7 +48,6 @@ export default async function routes(fastify: TFastify) {
     querystring: Type.Object({
       dateFrom: Type.String(),
       dateTo: Type.String(),
-
       officeName: Type.String(),
       count: Type.Optional(Type.Number()),
     }),
@@ -82,10 +79,7 @@ export default async function routes(fastify: TFastify) {
       throw NotFoundError('No expenditure could be found that satisfies these conditions...')
 
     return {
-      expenditures: rows.map((row) => ({
-        sectorName: row.sactv_nm,
-        budgetSum: row.y_yy_dfn_medi_kcur_amt_sum,
-      })),
+      expenditures: rows,
     }
   })
 }
