@@ -60,6 +60,7 @@ Cloud Build 결과물을 Artifact Registry 저장소에 저장
 Cloud Run Task 생성
 
 ```bash
+yarn build:crawler
 gcloud builds submit \
   --config=cloudbuild.yaml \
   --substitutions=_LOCATION="asia-northeast3",_REPOSITORY="lofin-seoul",_IMAGE="lofin-crawler" .

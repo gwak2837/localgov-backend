@@ -8,6 +8,9 @@ INSERT INTO center_expenditure (
     ACTV_NM,
     SACTV_NM,
     BZ_CLS_NM,
+    Y_PREY_FIRST_KCUR_AMT,
+    Y_PREY_FNL_FRC_AMT,
+    Y_YY_MEDI_KCUR_AMT,
     Y_YY_DFN_MEDI_KCUR_AMT
   )
 SELECT *
@@ -20,5 +23,8 @@ FROM unnest(
     $6::text [],
     $7::text [],
     $8::text [],
-    $9::bigint []
+    $9::bigint [],
+    $10::bigint [],
+    $11::bigint [],
+    $12::bigint []
   );

@@ -37,6 +37,9 @@ CREATE TABLE center_expenditure (
   ACTV_NM text NOT NULL,
   SACTV_NM text NOT NULL,
   BZ_CLS_NM text NOT NULL,
+  Y_PREY_FIRST_KCUR_AMT bigint NOT NULL,
+  Y_PREY_FNL_FRC_AMT bigint NOT NULL,
+  Y_YY_MEDI_KCUR_AMT bigint NOT NULL,
   Y_YY_DFN_MEDI_KCUR_AMT bigint NOT NULL
 );
 

@@ -1,25 +1,9 @@
-# Install all packages and transpile TypeScript into JavaScript
-FROM node:18 AS builder
+FROM node:18-alpine
 
 ENV NODE_ENV=production
 
 WORKDIR /app
 
-COPY .yarn .yarn
-COPY .yarnrc.yml package.json yarn.lock ./
-RUN yarn
+COPY out/crawler.cjs ./
 
-COPY esbuild.crawler.js tsconfig.json ./
-COPY src src
-RUN yarn build:crawler
-
-# Copy bundle only
-FROM node:18-alpine AS runner
-
-ENV NODE_ENV=production
-
-WORKDIR /app
-
-COPY --from=builder /app/out out
-
-ENTRYPOINT ["node", "out/crawler.cjs"]
+ENTRYPOINT ["node", "./crawler.cjs"]

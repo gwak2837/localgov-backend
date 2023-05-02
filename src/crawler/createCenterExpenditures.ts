@@ -13,7 +13,7 @@ export interface ICreateCenterExpendituresQuery {
   result: ICreateCenterExpendituresResult;
 }
 
-const createCenterExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"INSERT INTO center_expenditure (\n    FSCL_YY,\n    OFFC_NM,\n    FLD_NM,\n    SECT_NM,\n    PGM_NM,\n    ACTV_NM,\n    SACTV_NM,\n    BZ_CLS_NM,\n    Y_YY_DFN_MEDI_KCUR_AMT\n  )\nSELECT *\nFROM unnest(\n    $1::int [],\n    $2::text [],\n    $3::text [],\n    $4::text [],\n    $5::text [],\n    $6::text [],\n    $7::text [],\n    $8::text [],\n    $9::bigint []\n  )"};
+const createCenterExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"INSERT INTO center_expenditure (\n    FSCL_YY,\n    OFFC_NM,\n    FLD_NM,\n    SECT_NM,\n    PGM_NM,\n    ACTV_NM,\n    SACTV_NM,\n    BZ_CLS_NM,\n    Y_PREY_FIRST_KCUR_AMT,\n    Y_PREY_FNL_FRC_AMT,\n    Y_YY_MEDI_KCUR_AMT,\n    Y_YY_DFN_MEDI_KCUR_AMT\n  )\nSELECT *\nFROM unnest(\n    $1::int [],\n    $2::text [],\n    $3::text [],\n    $4::text [],\n    $5::text [],\n    $6::text [],\n    $7::text [],\n    $8::text [],\n    $9::bigint [],\n    $10::bigint [],\n    $11::bigint [],\n    $12::bigint []\n  )"};
 
 /**
  * Query generated from SQL:
@@ -27,6 +27,9 @@ const createCenterExpendituresIR: any = {"usedParamSet":{},"params":[],"statemen
  *     ACTV_NM,
  *     SACTV_NM,
  *     BZ_CLS_NM,
+ *     Y_PREY_FIRST_KCUR_AMT,
+ *     Y_PREY_FNL_FRC_AMT,
+ *     Y_YY_MEDI_KCUR_AMT,
  *     Y_YY_DFN_MEDI_KCUR_AMT
  *   )
  * SELECT *
@@ -39,7 +42,10 @@ const createCenterExpendituresIR: any = {"usedParamSet":{},"params":[],"statemen
  *     $6::text [],
  *     $7::text [],
  *     $8::text [],
- *     $9::bigint []
+ *     $9::bigint [],
+ *     $10::bigint [],
+ *     $11::bigint [],
+ *     $12::bigint []
  *   )
  * ```
  */
