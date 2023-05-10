@@ -57,7 +57,7 @@ images:
 
 Cloud Build 결과물을 Artifact Registry 저장소에 저장
 
-Cloud Run Task 생성
+Cloud Run Task 생성 및 실행
 
 ```bash
 yarn build:crawler
@@ -75,13 +75,8 @@ gcloud beta run jobs create lofin-crawler \
   --memory 1Gi \
   --region asia-northeast3 \
   --set-cloudsql-instances lofin-2023:asia-northeast3:lofin \
-  --tasks 17 \
+  --tasks 30 \
   --task-timeout 3600
-```
-
-Cloud Run Task 실행
-
-```
 gcloud beta run jobs execute lofin-crawler
 ```
 

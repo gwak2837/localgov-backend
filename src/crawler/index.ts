@@ -23,26 +23,28 @@ import deleteExpenditures from './deleteExpenditures.sql'
 main()
 
 async function main() {
-  // const date = new Date(LOCAL_EXPENDITURE_DATE)
-  // date.setDate(date.getDate() - +CLOUD_RUN_TASK_INDEX)
-  // for (; date.getFullYear() > 2021; date.setDate(date.getDate() - +CLOUD_RUN_TASK_COUNT)) {
-  //   await retry(() => getLocalGovExpenditures(date), {
-  //     retries: 10,
-  //     onRetry: (e, attemp) => console.warn(attemp, e.message),
-  //   })
-  // }
-
-  for (let year = 2023 - +CLOUD_RUN_TASK_INDEX; year > 2006; year -= +CLOUD_RUN_TASK_COUNT) {
-    await retry(() => getCenterGovExpenditures(year), {
+  const date = new Date(LOCAL_EXPENDITURE_DATE)
+  date.setDate(date.getDate() - +CLOUD_RUN_TASK_INDEX)
+  for (; date.getFullYear() > 2021; date.setDate(date.getDate() - +CLOUD_RUN_TASK_COUNT)) {
+    await retry(() => getLocalGovExpenditures(date), {
       retries: 10,
       onRetry: (e, attemp) => console.warn(attemp, e.message),
     })
   }
+
+  // for (let year = 2023 - +CLOUD_RUN_TASK_INDEX; year > 2006; year -= +CLOUD_RUN_TASK_COUNT) {
+  //   await retry(() => getCenterGovExpenditures(year), {
+  //     retries: 10,
+  //     onRetry: (e, attemp) => console.warn(attemp, e.message),
+  //   })
+  // }
 }
 
 async function getLocalGovExpenditures(date: Date) {
-  for (const localGovCode of Object.keys(provinces)) {
-    console.log('👀 - date', date, 'localGovCode', localGovCode, provinces[+localGovCode])
+  for (const localGovCode_ of Object.keys(provinces)) {
+    const localGovCode = `${localGovCode_}00000`
+
+    console.log('👀 - date', date, 'localGovCode', localGovCode, provinces[+localGovCode_])
     const { data, head } = await fetchLocalFinance(1, 1, localGovCode, toDate8(date))
     if (!data) continue
 

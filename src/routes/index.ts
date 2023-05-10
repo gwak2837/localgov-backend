@@ -14,6 +14,7 @@ import {
   PROJECT_ENV,
 } from '../common/constants'
 import centerExpenditure from './centerExpenditure'
+import commitment from './commitment'
 import localExpenditure from './localExpenditure'
 
 const fastify = Fastify({
@@ -79,6 +80,7 @@ fastify.get('/', schema, async (request, _) => {
 
 fastify.register(centerExpenditure)
 fastify.register(localExpenditure)
+fastify.register(commitment)
 
 export default async function startServer() {
   try {

@@ -61,3 +61,30 @@ CREATE TABLE smart_evaluation (
   t1 int NOT NULL,
   t2 int NOT NULL
 );
+
+/* 
+ sgTypecode
+ 1: 대통령선거
+ 3: 시 ∙ 도시자선거
+ 4: 구 ∙ 시 ∙ 군의장선거
+ 11: 교육감선거 
+ */
+CREATE TABLE candidate (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  sgId int NOT NULL,
+  sgName text NOT NULL,
+  sgTypecode int NOT NULL,
+  sggName text NOT NULL,
+  sidoName text NOT NULL,
+  wiwName text,
+  partyName text,
+  krName text NOT NULL
+);
+
+CREATE TABLE commitment (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  prmsRealmName text,
+  prmsTitle text NOT NULL,
+  prmmCont text,
+  candidate_id bigint REFERENCES candidate ON DELETE CASCADE
+);

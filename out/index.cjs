@@ -33863,14 +33863,14 @@ var require_util = __commonJS({
       });
     }
     exports.useFunc = useFunc;
-    var Type4;
-    (function(Type5) {
-      Type5[Type5["Num"] = 0] = "Num";
-      Type5[Type5["Str"] = 1] = "Str";
-    })(Type4 = exports.Type || (exports.Type = {}));
+    var Type5;
+    (function(Type6) {
+      Type6[Type6["Num"] = 0] = "Num";
+      Type6[Type6["Str"] = 1] = "Str";
+    })(Type5 = exports.Type || (exports.Type = {}));
     function getErrorPath(dataProp, dataPropType, jsPropertySyntax) {
       if (dataProp instanceof codegen_1.Name) {
-        const isNumber = dataPropType === Type4.Num;
+        const isNumber = dataPropType === Type5.Num;
         return jsPropertySyntax ? isNumber ? (0, codegen_1._)`"[" + ${dataProp} + "]"` : (0, codegen_1._)`"['" + ${dataProp} + "']"` : isNumber ? (0, codegen_1._)`"/" + ${dataProp}` : (0, codegen_1._)`"/" + ${dataProp}.replace(/~/g, "~0").replace(/\\//g, "~1")`;
       }
       return jsPropertySyntax ? (0, codegen_1.getProperty)(dataProp).toString() : "/" + escapeJsonPointer(dataProp);
@@ -111817,9 +111817,9 @@ var require_find_my_way = __commonJS({
         }
       }
     };
-    Router.prototype._rebuild = function(routes3) {
+    Router.prototype._rebuild = function(routes4) {
       this.reset();
-      for (const route of routes3) {
+      for (const route of routes4) {
         const { method, path, opts, handler, store } = route;
         this._on(method, path, opts, handler, store);
         this.routes.push({ method, path, opts, handler, store });
@@ -116164,7 +116164,7 @@ pool.on("error", (err) => {
 var import_cors = __toESM(require_cors(), 1);
 var import_multipart = __toESM(require_multipart2(), 1);
 var import_rate_limit = __toESM(require_rate_limit(), 1);
-var import_typebox3 = __toESM(require_typebox(), 1);
+var import_typebox4 = __toESM(require_typebox(), 1);
 var import_fastify4 = __toESM(require_fastify(), 1);
 
 // src/routes/centerExpenditure/index.ts
@@ -116343,8 +116343,23 @@ async function routes(fastify2) {
   });
 }
 
-// src/routes/localExpenditure/index.ts
+// src/routes/commitment/index.ts
 var import_typebox2 = __toESM(require_typebox(), 1);
+async function routes2(fastify2) {
+  const schema2 = {
+    querystring: import_typebox2.Type.Object({
+      dateFrom: import_typebox2.Type.String(),
+      dateTo: import_typebox2.Type.String(),
+      count: import_typebox2.Type.Optional(import_typebox2.Type.Number())
+    })
+  };
+  fastify2.get("/commitment", { schema: schema2 }, async (req, reply) => {
+    return { hello: "index" };
+  });
+}
+
+// src/routes/localExpenditure/index.ts
+var import_typebox3 = __toESM(require_typebox(), 1);
 
 // src/common/lofin.ts
 var provinces = {
@@ -116635,15 +116650,15 @@ var getLocalExpenditures_default = "/* @name getLocalExpenditures */\nSELECT rea
 var getLocalExpendituresByRealm_default = "/* @name getLocalExpendituresByRealm */\nSELECT detail_bsns_nm,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE excut_de >= $1\n  AND excut_de < $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $4 THEN sfrnd_code >= $3\n      AND sfrnd_code < $3 + 100000\n      ELSE sfrnd_code = $3\n    END\n  )\n  AND realm_code = $5\nGROUP BY detail_bsns_nm\nORDER BY budget_crntam_sum DESC\nLIMIT $6;";
 
 // src/routes/localExpenditure/index.ts
-async function routes2(fastify2) {
+async function routes3(fastify2) {
   const provinceCodes = Object.keys(provinces).map((codes) => +codes);
   const localCodes = Object.keys(locals).map((codes) => +codes);
   const schema2 = {
-    querystring: import_typebox2.Type.Object({
-      dateFrom: import_typebox2.Type.String(),
-      dateTo: import_typebox2.Type.String(),
+    querystring: import_typebox3.Type.Object({
+      dateFrom: import_typebox3.Type.String(),
+      dateTo: import_typebox3.Type.String(),
       // undefined: 전국
-      localCode: import_typebox2.Type.Optional(import_typebox2.Type.Number())
+      localCode: import_typebox3.Type.Optional(import_typebox3.Type.Number())
     })
   };
   fastify2.get("/expenditure/local", { schema: schema2 }, async (req) => {
@@ -116681,13 +116696,13 @@ async function routes2(fastify2) {
     };
   });
   const schema3 = {
-    querystring: import_typebox2.Type.Object({
-      dateFrom: import_typebox2.Type.String(),
-      dateTo: import_typebox2.Type.String(),
+    querystring: import_typebox3.Type.Object({
+      dateFrom: import_typebox3.Type.String(),
+      dateTo: import_typebox3.Type.String(),
       // undefined: 전국
-      localCode: import_typebox2.Type.Optional(import_typebox2.Type.Number()),
-      projectCode: import_typebox2.Type.Number(),
-      count: import_typebox2.Type.Optional(import_typebox2.Type.Number())
+      localCode: import_typebox3.Type.Optional(import_typebox3.Type.Number()),
+      projectCode: import_typebox3.Type.Number(),
+      count: import_typebox3.Type.Optional(import_typebox3.Type.Number())
     })
   };
   fastify2.get("/expenditure/local/realm", { schema: schema3 }, async (req) => {
@@ -116772,15 +116787,15 @@ fastify.register(import_multipart.default, {
 });
 var schema = {
   schema: {
-    querystring: import_typebox3.Type.Object({
-      foo: import_typebox3.Type.Optional(import_typebox3.Type.Number()),
-      bar: import_typebox3.Type.Optional(import_typebox3.Type.String())
+    querystring: import_typebox4.Type.Object({
+      foo: import_typebox4.Type.Optional(import_typebox4.Type.Number()),
+      bar: import_typebox4.Type.Optional(import_typebox4.Type.String())
     }),
     response: {
-      200: import_typebox3.Type.Object({
-        hello: import_typebox3.Type.String(),
-        foo: import_typebox3.Type.Optional(import_typebox3.Type.Number()),
-        bar: import_typebox3.Type.Optional(import_typebox3.Type.String())
+      200: import_typebox4.Type.Object({
+        hello: import_typebox4.Type.String(),
+        foo: import_typebox4.Type.Optional(import_typebox4.Type.Number()),
+        bar: import_typebox4.Type.Optional(import_typebox4.Type.String())
       })
     }
   }
@@ -116790,6 +116805,7 @@ fastify.get("/", schema, async (request, _) => {
   return { hello: "world", foo, bar };
 });
 fastify.register(routes);
+fastify.register(routes3);
 fastify.register(routes2);
 async function startServer() {
   try {
