@@ -116352,6 +116352,9 @@ var createCommitment_default = "/* @name createCommitment */\nINSERT INTO commit
 // src/routes/commitment/sql/deleteCommitments.sql
 var deleteCommitments_default = "/* @name deleteCommitments */\nDELETE FROM commitment\nWHERE id = ANY($1);";
 
+// src/routes/commitment/sql/getCommitments.sql
+var getCommitments_default = "/* @name getCommitments */\nSELECT commitment.id,\n  prmsRealmName,\n  prmsTitle,\n  prmmCont,\n  candidate_id,\n  candidate.id AS candidate__id,\n  sgId AS candidate__sgId,\n  sgName AS candidate__sgName,\n  sgTypecode AS candidate__sgTypecode,\n  sggName AS candidate__sggName,\n  sidoName AS candidate__sidoName,\n  wiwName AS candidate__wiwName,\n  partyName AS candidate__partyName,\n  krName AS candidate__krName\nFROM commitment\n  JOIN candidate ON candidate.id = commitment.candidate_id\nWHERE sgId BETWEEN $1 AND $2\n  AND commitment.id < $3\nORDER BY commitment.id DESC\nLIMIT $4;";
+
 // src/routes/commitment/sql/updateCommitments.sql
 var updateCommitments_default = "/* @name updateCommitments */\nUPDATE commitment\nSET prmsRealmName = new.prmsRealmName,\n  prmsTitle = new.prmsTitle,\n  prmmCont = new.prmmCont\nFROM (\n    SELECT unnest($1::int []) AS id,\n      unnest($2::text []) AS prmsRealmName,\n      unnest($3::text []) AS prmsTitle,\n      unnest($4::text []) AS prmmCont\n  ) AS new\nWHERE commitment.id = new.id;";
 
@@ -116367,7 +116370,7 @@ async function routes2(fastify2) {
   };
   fastify2.get("/commitment", { schema: schema2 }, async (req, reply) => {
     const { dateFrom, dateTo, lastId, count } = req.query;
-    const { rowCount, rows } = await pool.query(createCommitment_default, [
+    const { rowCount, rows } = await pool.query(getCommitments_default, [
       dateFrom,
       dateTo,
       lastId ?? Number.MAX_SAFE_INTEGER,

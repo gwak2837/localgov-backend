@@ -6,6 +6,7 @@ import { ICreateCommitmentResult } from './sql/createCommitment'
 import createCommitment from './sql/createCommitment.sql'
 import deleteCommitments from './sql/deleteCommitments.sql'
 import { IGetCommitmentsResult } from './sql/getCommitments'
+import getCommitments from './sql/getCommitments.sql'
 import updateCommitments from './sql/updateCommitments.sql'
 import { TFastify } from '..'
 
@@ -22,7 +23,7 @@ export default async function routes(fastify: TFastify) {
   fastify.get('/commitment', { schema }, async (req, reply) => {
     const { dateFrom, dateTo, lastId, count } = req.query
 
-    const { rowCount, rows } = await pool.query<IGetCommitmentsResult>(createCommitment, [
+    const { rowCount, rows } = await pool.query<IGetCommitmentsResult>(getCommitments, [
       dateFrom,
       dateTo,
       lastId ?? Number.MAX_SAFE_INTEGER,
