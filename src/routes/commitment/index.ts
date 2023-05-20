@@ -1,6 +1,12 @@
 import { Type } from '@sinclair/typebox'
 
-import { UnauthorizedError } from '../../common/fastify'
+import { BadRequestError, NotFoundError } from '../../common/fastify'
+import { pool } from '../../common/postgres'
+import { ICreateCommitmentResult } from './sql/createCommitment'
+import createCommitment from './sql/createCommitment.sql'
+import deleteCommitments from './sql/deleteCommitments.sql'
+import { IGetCommitmentsResult } from './sql/getCommitments'
+import updateCommitments from './sql/updateCommitments.sql'
 import { TFastify } from '..'
 
 export default async function routes(fastify: TFastify) {
@@ -8,11 +14,78 @@ export default async function routes(fastify: TFastify) {
     querystring: Type.Object({
       dateFrom: Type.String(),
       dateTo: Type.String(),
+      lastId: Type.Optional(Type.Number()),
       count: Type.Optional(Type.Number()),
     }),
   }
 
   fastify.get('/commitment', { schema }, async (req, reply) => {
-    return { hello: 'index' }
+    const { dateFrom, dateTo, lastId, count } = req.query
+
+    const { rowCount, rows } = await pool.query<IGetCommitmentsResult>(createCommitment, [
+      dateFrom,
+      dateTo,
+      lastId ?? Number.MAX_SAFE_INTEGER,
+      count ?? 20,
+    ])
+    if (rowCount === 0) throw NotFoundError('No result')
+
+    return { commitments: rows }
+  })
+
+  const schema2 = {
+    body: Type.Object({
+      realm: Type.String(),
+      title: Type.String(),
+      content: Type.String(),
+      candidateId: Type.Number(),
+    }),
+  }
+
+  fastify.post('/commitment', { schema: schema2 }, async (req, reply) => {
+    const { realm, title, content, candidateId } = req.body
+
+    const { rowCount, rows } = await pool.query<ICreateCommitmentResult>(createCommitment, [
+      realm,
+      title,
+      content,
+      candidateId,
+    ])
+    if (rowCount === 0) throw BadRequestError('Failed to create a commitment')
+
+    return { id: rows[0].id }
+  })
+
+  const schema3 = {
+    body: Type.Object({
+      id: Type.Optional(Type.Array(Type.Number())),
+      realm: Type.Optional(Type.Array(Type.String())),
+      title: Type.Optional(Type.Array(Type.String())),
+      content: Type.Optional(Type.Array(Type.String())),
+    }),
+  }
+
+  fastify.put('/commitment', { schema: schema3 }, async (req, reply) => {
+    const { id, realm, title, content } = req.body
+
+    const { rowCount } = await pool.query(updateCommitments, [id, realm, title, content])
+    if (rowCount === 0) throw NotFoundError('No rows were affected')
+
+    return { updatedRowCount: rowCount }
+  })
+
+  const schema4 = {
+    querystring: Type.Object({
+      ids: Type.Array(Type.Number()),
+    }),
+  }
+
+  fastify.delete('/commitment', { schema: schema4 }, async (req, reply) => {
+    const { ids } = req.query
+
+    const { rowCount } = await pool.query(deleteCommitments, [ids])
+    if (rowCount === 0) throw NotFoundError('No rows were affected')
+
+    return { deletedRowCount: rowCount }
   })
 }

@@ -116165,7 +116165,7 @@ var import_cors = __toESM(require_cors(), 1);
 var import_multipart = __toESM(require_multipart2(), 1);
 var import_rate_limit = __toESM(require_rate_limit(), 1);
 var import_typebox4 = __toESM(require_typebox(), 1);
-var import_fastify4 = __toESM(require_fastify(), 1);
+var import_fastify5 = __toESM(require_fastify(), 1);
 
 // src/routes/centerExpenditure/index.ts
 var import_typebox = __toESM(require_typebox(), 1);
@@ -116345,16 +116345,84 @@ async function routes(fastify2) {
 
 // src/routes/commitment/index.ts
 var import_typebox2 = __toESM(require_typebox(), 1);
+
+// src/routes/commitment/sql/createCommitment.sql
+var createCommitment_default = "/* @name createCommitment */\nINSERT INTO commitment (prmsRealmName, prmsTitle, prmmCont, candidate_id)\nVALUES($1, $2, $3, $4)\nRETURNING id;";
+
+// src/routes/commitment/sql/deleteCommitments.sql
+var deleteCommitments_default = "/* @name deleteCommitments */\nDELETE FROM commitment\nWHERE id = ANY($1);";
+
+// src/routes/commitment/sql/updateCommitments.sql
+var updateCommitments_default = "/* @name updateCommitments */\nUPDATE commitment\nSET prmsRealmName = new.prmsRealmName,\n  prmsTitle = new.prmsTitle,\n  prmmCont = new.prmmCont\nFROM (\n    SELECT unnest($1::int []) AS id,\n      unnest($2::text []) AS prmsRealmName,\n      unnest($3::text []) AS prmsTitle,\n      unnest($4::text []) AS prmmCont\n  ) AS new\nWHERE commitment.id = new.id;";
+
+// src/routes/commitment/index.ts
 async function routes2(fastify2) {
   const schema2 = {
     querystring: import_typebox2.Type.Object({
       dateFrom: import_typebox2.Type.String(),
       dateTo: import_typebox2.Type.String(),
+      lastId: import_typebox2.Type.Optional(import_typebox2.Type.Number()),
       count: import_typebox2.Type.Optional(import_typebox2.Type.Number())
     })
   };
   fastify2.get("/commitment", { schema: schema2 }, async (req, reply) => {
-    return { hello: "index" };
+    const { dateFrom, dateTo, lastId, count } = req.query;
+    const { rowCount, rows } = await pool.query(createCommitment_default, [
+      dateFrom,
+      dateTo,
+      lastId ?? Number.MAX_SAFE_INTEGER,
+      count ?? 20
+    ]);
+    if (rowCount === 0)
+      throw NotFoundError("No result");
+    return { commitments: rows };
+  });
+  const schema22 = {
+    body: import_typebox2.Type.Object({
+      realm: import_typebox2.Type.String(),
+      title: import_typebox2.Type.String(),
+      content: import_typebox2.Type.String(),
+      candidateId: import_typebox2.Type.Number()
+    })
+  };
+  fastify2.post("/commitment", { schema: schema22 }, async (req, reply) => {
+    const { realm, title, content, candidateId } = req.body;
+    const { rowCount, rows } = await pool.query(createCommitment_default, [
+      realm,
+      title,
+      content,
+      candidateId
+    ]);
+    if (rowCount === 0)
+      throw BadRequestError("Failed to create a commitment");
+    return { id: rows[0].id };
+  });
+  const schema3 = {
+    body: import_typebox2.Type.Object({
+      id: import_typebox2.Type.Optional(import_typebox2.Type.Array(import_typebox2.Type.Number())),
+      realm: import_typebox2.Type.Optional(import_typebox2.Type.Array(import_typebox2.Type.String())),
+      title: import_typebox2.Type.Optional(import_typebox2.Type.Array(import_typebox2.Type.String())),
+      content: import_typebox2.Type.Optional(import_typebox2.Type.Array(import_typebox2.Type.String()))
+    })
+  };
+  fastify2.put("/commitment", { schema: schema3 }, async (req, reply) => {
+    const { id, realm, title, content } = req.body;
+    const { rowCount } = await pool.query(updateCommitments_default, [id, realm, title, content]);
+    if (rowCount === 0)
+      throw NotFoundError("No rows were affected");
+    return { updatedRowCount: rowCount };
+  });
+  const schema4 = {
+    querystring: import_typebox2.Type.Object({
+      ids: import_typebox2.Type.Array(import_typebox2.Type.Number())
+    })
+  };
+  fastify2.delete("/commitment", { schema: schema4 }, async (req, reply) => {
+    const { ids } = req.query;
+    const { rowCount } = await pool.query(deleteCommitments_default, [ids]);
+    if (rowCount === 0)
+      throw NotFoundError("No rows were affected");
+    return { deletedRowCount: rowCount };
   });
 }
 
@@ -116749,7 +116817,7 @@ async function routes3(fastify2) {
 }
 
 // src/routes/index.ts
-var fastify = (0, import_fastify4.default)({
+var fastify = (0, import_fastify5.default)({
   // logger: NODE_ENV === 'development',
   http2: true,
   ...LOCALHOST_HTTPS_KEY && LOCALHOST_HTTPS_CERT && {
