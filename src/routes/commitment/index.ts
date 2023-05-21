@@ -59,17 +59,17 @@ export default async function routes(fastify: TFastify) {
 
   const schema3 = {
     body: Type.Object({
-      id: Type.Optional(Type.Array(Type.Number())),
-      realm: Type.Optional(Type.Array(Type.String())),
-      title: Type.Optional(Type.Array(Type.String())),
-      content: Type.Optional(Type.Array(Type.String())),
+      ids: Type.Array(Type.Number()),
+      realms: Type.Array(Type.String()),
+      titles: Type.Array(Type.String()),
+      contents: Type.Array(Type.String()),
     }),
   }
 
   fastify.put('/commitment', { schema: schema3 }, async (req, reply) => {
-    const { id, realm, title, content } = req.body
+    const { ids, realms, titles, contents } = req.body
 
-    const { rowCount } = await pool.query(updateCommitments, [id, realm, title, content])
+    const { rowCount } = await pool.query(updateCommitments, [ids, realms, titles, contents])
     if (rowCount === 0) throw NotFoundError('No rows were affected')
 
     return { updatedRowCount: rowCount }

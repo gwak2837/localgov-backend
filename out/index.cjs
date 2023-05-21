@@ -116402,15 +116402,15 @@ async function routes2(fastify2) {
   });
   const schema3 = {
     body: import_typebox2.Type.Object({
-      id: import_typebox2.Type.Optional(import_typebox2.Type.Array(import_typebox2.Type.Number())),
-      realm: import_typebox2.Type.Optional(import_typebox2.Type.Array(import_typebox2.Type.String())),
-      title: import_typebox2.Type.Optional(import_typebox2.Type.Array(import_typebox2.Type.String())),
-      content: import_typebox2.Type.Optional(import_typebox2.Type.Array(import_typebox2.Type.String()))
+      ids: import_typebox2.Type.Array(import_typebox2.Type.Number()),
+      realms: import_typebox2.Type.Array(import_typebox2.Type.String()),
+      titles: import_typebox2.Type.Array(import_typebox2.Type.String()),
+      contents: import_typebox2.Type.Array(import_typebox2.Type.String())
     })
   };
   fastify2.put("/commitment", { schema: schema3 }, async (req, reply) => {
-    const { id, realm, title, content } = req.body;
-    const { rowCount } = await pool.query(updateCommitments_default, [id, realm, title, content]);
+    const { ids, realms: realms2, titles, contents } = req.body;
+    const { rowCount } = await pool.query(updateCommitments_default, [ids, realms2, titles, contents]);
     if (rowCount === 0)
       throw NotFoundError("No rows were affected");
     return { updatedRowCount: rowCount };
@@ -116838,10 +116838,10 @@ ${LOCALHOST_HTTPS_CERT}
 fastify.register(import_cors.default, {
   origin: [
     "http://localhost:3000",
-    "https://lofin.app",
-    "https://lofin.vercel.app",
-    "https://lofin-git-dev-gwak2837.vercel.app",
-    /^https:\/\/lofin-[a-z0-9]{1,20}-gwak2837\.vercel\.app/
+    "https://pickup9.app",
+    "https://pickup9.vercel.app",
+    "https://pickup9-git-dev-gwak2837.vercel.app",
+    /^https:\/\/pickup9-[a-z0-9]{1,20}-gwak2837\.vercel\.app/
   ]
 });
 fastify.register(import_rate_limit.default, {
