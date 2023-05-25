@@ -64,10 +64,10 @@ CREATE TABLE smart_evaluation (
 
 /* 
  sgTypecode
- 1: 대통령선거
- 3: 시 ∙ 도시자선거
- 4: 구 ∙ 시 ∙ 군의장선거
- 11: 교육감선거 
+ 1: 대통령 선거
+ 3: 시 ∙ 도지사 선거
+ 4: 구 ∙ 시 ∙ 군의장 선거
+ 11: 교육감 선거 
  */
 CREATE TABLE candidate (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,

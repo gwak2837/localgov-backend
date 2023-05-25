@@ -15,18 +15,26 @@ export default async function routes(fastify: TFastify) {
     querystring: Type.Object({
       dateFrom: Type.String(),
       dateTo: Type.String(),
+      sido: Type.Optional(Type.String()),
+      sigungu: Type.Optional(Type.String()),
+      voteType: Type.Optional(Type.Number()),
+      name: Type.Optional(Type.String()),
       lastId: Type.Optional(Type.Number()),
       count: Type.Optional(Type.Number()),
     }),
   }
 
-  fastify.get('/commitment', { schema }, async (req, reply) => {
-    const { dateFrom, dateTo, lastId, count } = req.query
+  fastify.get('/commitment', { schema }, async (req) => {
+    const { dateFrom, dateTo, sido, sigungu, voteType, name, lastId, count } = req.query
 
     const { rowCount, rows } = await pool.query<IGetCommitmentsResult>(getCommitments, [
+      lastId ?? Number.MAX_SAFE_INTEGER,
       dateFrom,
       dateTo,
-      lastId ?? Number.MAX_SAFE_INTEGER,
+      sido,
+      sigungu,
+      voteType,
+      name,
       count ?? 20,
     ])
     if (rowCount === 0) throw NotFoundError('No result')

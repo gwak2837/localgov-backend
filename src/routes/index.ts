@@ -13,6 +13,7 @@ import {
   PORT,
   PROJECT_ENV,
 } from '../common/constants'
+import candidate from './candidate'
 import centerExpenditure from './centerExpenditure'
 import commitment from './commitment'
 import localExpenditure from './localExpenditure'
@@ -78,9 +79,10 @@ fastify.get('/', schema, async (request, _) => {
   return { hello: 'world', foo, bar }
 })
 
+fastify.register(candidate)
 fastify.register(centerExpenditure)
-fastify.register(localExpenditure)
 fastify.register(commitment)
+fastify.register(localExpenditure)
 
 export default async function startServer() {
   try {
