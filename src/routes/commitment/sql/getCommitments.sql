@@ -33,7 +33,7 @@ WHERE commitment.id < $1
     OR sgTypecode = $6
   )
   AND (
-    $7::int IS NULL
+    $7::text IS NULL
     OR krName = $7
   )
 ORDER BY commitment.id DESC
