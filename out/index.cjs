@@ -116226,8 +116226,8 @@ async function routes(fastify2) {
         sgId: candidate.sgid,
         sgTypecode: candidate.sgtypecode,
         sgName: decodeElectionTypeCode(candidate.sgtypecode),
-        sggName: candidate.sggname,
         sidoName: candidate.sidoname,
+        sigunguName: candidate.sggname,
         wiwName: candidate.wiwname,
         partyName: candidate.partyname,
         krName: candidate.krname
