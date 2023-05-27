@@ -32,12 +32,12 @@ async function main() {
     })
   }
 
-  // for (let year = 2023 - +CLOUD_RUN_TASK_INDEX; year > 2006; year -= +CLOUD_RUN_TASK_COUNT) {
-  //   await retry(() => getCenterGovExpenditures(year), {
-  //     retries: 10,
-  //     onRetry: (e, attemp) => console.warn(attemp, e.message),
-  //   })
-  // }
+  for (let year = 2023 - +CLOUD_RUN_TASK_INDEX; year > 2006; year -= +CLOUD_RUN_TASK_COUNT) {
+    await retry(() => getCenterGovExpenditures(year), {
+      retries: 10,
+      onRetry: (e, attemp) => console.warn(attemp, e.message),
+    })
+  }
 }
 
 async function getLocalGovExpenditures(date: Date) {
@@ -58,6 +58,7 @@ async function getLocalGovExpenditures(date: Date) {
     ])
 
     const count = rows[0].count
+    console.log('👀 ~ count:', count)
     if (count && +count === totalExpenditureCount) {
       continue
     } else {
@@ -65,7 +66,7 @@ async function getLocalGovExpenditures(date: Date) {
     }
 
     for (let i = 1; (i - 1) * size < totalExpenditureCount; i++) {
-      console.log('👀 - i', i)
+      process.stdout.write(`${i} `)
       const { data: expenditures } = await fetchLocalFinance(i, size, localGovCode, toDate8(date))
       if (!expenditures) continue
 
@@ -85,6 +86,8 @@ async function getLocalGovExpenditures(date: Date) {
         expenditures.map((expenditure) => expenditure.sect_code),
       ])
     }
+
+    console.log('')
   }
 }
 
@@ -120,6 +123,8 @@ async function getCenterGovExpenditures(year: number) {
   }
 
   for (let i = 1; (i - 1) * size < totalExpenditureCount; i++) {
+    process.stdout.write(`${i} `)
+
     const { data: expenditures } = await fetchCenterFinance(i, size, year)
     if (!expenditures) continue
 
@@ -138,6 +143,8 @@ async function getCenterGovExpenditures(year: number) {
       expenditures.map((expenditure) => +expenditure.Y_YY_DFN_MEDI_KCUR_AMT),
     ])
   }
+
+  console.log('')
 }
 
 async function fetchCenterFinance(index: number, size: number, year: number) {

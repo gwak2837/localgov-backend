@@ -116165,24 +116165,109 @@ var import_cors = __toESM(require_cors(), 1);
 var import_multipart = __toESM(require_multipart2(), 1);
 var import_rate_limit = __toESM(require_rate_limit(), 1);
 var import_typebox5 = __toESM(require_typebox(), 1);
-var import_fastify5 = __toESM(require_fastify(), 1);
+var import_fastify6 = __toESM(require_fastify(), 1);
 
 // src/routes/candidate/index.ts
 var import_typebox = __toESM(require_typebox(), 1);
 
+// src/routes/candidate/sql/createCandidate.sql
+var createCandidate_default = "/* @name createCandidate */\nINSERT INTO candidate(\n    sgId,\n    sgName,\n    sgTypecode,\n    sggName,\n    sidoName,\n    wiwName,\n    partyName,\n    krName\n  )\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8)\nRETURNING id;";
+
+// src/routes/candidate/sql/deleteCandidates.sql
+var deleteCandidates_default = "/* @name deleteCandidates */\nDELETE FROM candidate\nWHERE id = ANY($1);";
+
 // src/routes/candidate/sql/getCandidates.sql
 var getCandidates_default = "/* @name getCandidates */\nSELECT id,\n  sgId,\n  sgName,\n  sggName,\n  sidoName,\n  wiwName,\n  partyName,\n  krName\nFROM candidate;";
+
+// src/routes/candidate/sql/updateCandidate.sql
+var updateCandidate_default = "/* @name updateCandidate */\nUPDATE candidate\nSET sgId = $2,\n  sgName = $3,\n  sgTypecode = $4,\n  sggName = $5,\n  sidoName = $6,\n  wiwName = $7,\n  partyName = $8,\n  krName = $9\nWHERE id = $1;";
 
 // src/routes/candidate/index.ts
 async function routes(fastify2) {
   const schema2 = {
-    querystring: import_typebox.Type.Object({
-      count: import_typebox.Type.Optional(import_typebox.Type.Number())
-    })
+    querystring: import_typebox.Type.Object({})
   };
   fastify2.get("/candidate", { schema: schema2 }, async (req, reply) => {
     const { rows } = await pool.query(getCandidates_default);
     return { candidates: rows };
+  });
+  const schema22 = {
+    body: import_typebox.Type.Object({
+      sgId: import_typebox.Type.Number(),
+      sgName: import_typebox.Type.String(),
+      sgTypecode: import_typebox.Type.Number(),
+      sggName: import_typebox.Type.String(),
+      sidoName: import_typebox.Type.String(),
+      wiwName: import_typebox.Type.Optional(import_typebox.Type.String()),
+      partyName: import_typebox.Type.Optional(import_typebox.Type.String()),
+      krName: import_typebox.Type.String()
+    })
+  };
+  fastify2.post("/candidate", { schema: schema22 }, async (req, reply) => {
+    const { sgId, sgName, sgTypecode, sggName, sidoName, wiwName, partyName, krName } = req.body;
+    if (String(sgId).length !== 8)
+      throw BadRequestError("Invalid `sgId`");
+    if (![1, 3, 4, 11].includes(sgTypecode))
+      throw BadRequestError("Invalid `sgTypecode`");
+    const { rowCount, rows } = await pool.query(createCandidate_default, [
+      sgId,
+      sgName,
+      sgTypecode,
+      sggName,
+      sidoName,
+      wiwName,
+      partyName,
+      krName
+    ]);
+    if (rowCount === 0)
+      throw BadRequestError("Failed to create a commitment");
+    return { id: rows[0].id };
+  });
+  const schema3 = {
+    body: import_typebox.Type.Object({
+      id: import_typebox.Type.Number(),
+      sgId: import_typebox.Type.Number(),
+      sgName: import_typebox.Type.String(),
+      sgTypecode: import_typebox.Type.Number(),
+      sggName: import_typebox.Type.String(),
+      sidoName: import_typebox.Type.String(),
+      wiwName: import_typebox.Type.Optional(import_typebox.Type.String()),
+      partyName: import_typebox.Type.Optional(import_typebox.Type.String()),
+      krName: import_typebox.Type.String()
+    })
+  };
+  fastify2.put("/candidate", { schema: schema3 }, async (req, reply) => {
+    const { id, sgId, sgName, sgTypecode, sggName, sidoName, wiwName, partyName, krName } = req.body;
+    if (String(sgId).length !== 8)
+      throw BadRequestError("Invalid `sgId`");
+    if (![1, 3, 4, 11].includes(sgTypecode))
+      throw BadRequestError("Invalid `sgTypecode`");
+    const { rowCount } = await pool.query(updateCandidate_default, [
+      id,
+      sgId,
+      sgName,
+      sgTypecode,
+      sggName,
+      sidoName,
+      wiwName,
+      partyName,
+      krName
+    ]);
+    if (rowCount === 0)
+      throw NotFoundError("No rows were affected");
+    return { updatedRowCount: rowCount };
+  });
+  const schema4 = {
+    querystring: import_typebox.Type.Object({
+      ids: import_typebox.Type.Array(import_typebox.Type.Number())
+    })
+  };
+  fastify2.delete("/candidate", { schema: schema4 }, async (req, reply) => {
+    const { ids } = req.query;
+    const { rowCount } = await pool.query(deleteCandidates_default, [ids]);
+    if (rowCount === 0)
+      throw NotFoundError("No rows were affected");
+    return { deletedRowCount: rowCount };
   });
 }
 
@@ -116393,7 +116478,6 @@ async function routes3(fastify2) {
   };
   fastify2.get("/commitment", { schema: schema2 }, async (req) => {
     const { dateFrom, dateTo, sido, sigungu, voteType, name, lastId, count } = req.query;
-    console.log("\u{1F440} ~ req.query:", req.query);
     const { rowCount, rows } = await pool.query(getCommitments_default, [
       lastId ?? Number.MAX_SAFE_INTEGER,
       dateFrom,
@@ -116848,7 +116932,7 @@ async function routes4(fastify2) {
 }
 
 // src/routes/index.ts
-var fastify = (0, import_fastify5.default)({
+var fastify = (0, import_fastify6.default)({
   // logger: NODE_ENV === 'development',
   http2: true,
   ...LOCALHOST_HTTPS_KEY && LOCALHOST_HTTPS_CERT && {

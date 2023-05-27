@@ -26,7 +26,6 @@ export default async function routes(fastify: TFastify) {
 
   fastify.get('/commitment', { schema }, async (req) => {
     const { dateFrom, dateTo, sido, sigungu, voteType, name, lastId, count } = req.query
-    console.log('👀 ~ req.query:', req.query)
 
     const { rowCount, rows } = await pool.query<IGetCommitmentsResult>(getCommitments, [
       lastId ?? Number.MAX_SAFE_INTEGER,

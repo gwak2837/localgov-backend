@@ -37,6 +37,21 @@ gcloud init
 gcloud auth application-default login
 ```
 
+#### Cloud SQL 설정
+
+PostgreSQL 서버에 접속해서 아래와 같이 사용자와 데이터베이스를 생성합니다. PostgreSQL 기본 관리자 이름은 `postgres` 입니다.
+
+```sql
+CREATE USER 사용자이름 WITH PASSWORD '사용자비밀번호';
+\c DB이름 DB관리자이름
+\du
+CREATE DATABASE DB이름 OWNER 사용자이름 TEMPLATE template0 LC_COLLATE "C" LC_CTYPE "ko_KR.UTF-8";
+\l
+ALTER SCHEMA public OWNER TO 사용자이름;
+\dn
+\c DB이름 DB관리자이름
+```
+
 Artifact Registry 저장소 생성
 
 ```bash
@@ -99,30 +114,3 @@ gcloud projects add-iam-policy-binding lofin-376407 \
     --role="roles/run.developer"
 
 ```
-
-VPC 생성
-
-독립된 클라우드 네트워크 단위
-
-- 퍼블릭 서브넷 2개
-- 프라이빗 서브넷 2개
-- 라우팅 테이블 3개
-- 네트워크 연결 2개
-
-EC2 생성
-
-- SSH 접속 키 생성
-- 아까 생성한 VPC의 퍼블릭 서브넷 할당
-- 퍼블릭 IP 할당
-- 인바운드: SSH (0.0.0.0/0:22)
-- 아웃바운드:
-  - PostgreSQL (RDS보안그룹:5432)
-  - HTTPS (0.0.0.0/0:443)
-  - HTTP (0.0.0.0/0:80)
-  - SSH (0.0.0.0/0:22)
-
-RDS
-
-- EC2랑 동일한 서브넷
-- 인바운드: EC2 (EC2보안그룹:5432)
-  1
