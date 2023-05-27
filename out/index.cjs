@@ -116196,6 +116196,7 @@ function decodeElectionTypeCode(electionTypeCode) {
     case 11:
       return "\uAD50\uC721\uAC10 \uC120\uAC70";
     default:
+      console.log("\u{1F440} ~ electionTypeCode:", electionTypeCode);
       throw InternalServerError("Invalid `sgTypecode`");
   }
 }
@@ -116222,14 +116223,14 @@ async function routes(fastify2) {
     return {
       candidates: rows.map((candidate) => ({
         id: candidate.id,
-        sgId: candidate.sgId,
-        sgTypecode: candidate.sgTypecode,
-        sgName: decodeElectionTypeCode(candidate.sgTypecode),
-        sggName: candidate.sggName,
-        sidoName: candidate.sidoName,
-        wiwName: candidate.wiwName,
-        partyName: candidate.partyName,
-        krName: candidate.krName
+        sgId: candidate.sgid,
+        sgTypecode: candidate.sgtypecode,
+        sgName: decodeElectionTypeCode(candidate.sgtypecode),
+        sggName: candidate.sggname,
+        sidoName: candidate.sidoname,
+        wiwName: candidate.wiwname,
+        partyName: candidate.partyname,
+        krName: candidate.krname
       }))
     };
   });
