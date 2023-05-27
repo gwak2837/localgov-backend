@@ -1,19 +1,11 @@
 /** Types generated for queries found in "src/routes/candidate/sql/createCandidate.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** 'CreateCandidate' parameters type */
-export type ICreateCandidateParams = void;
+/** Query 'CreateCandidate' is invalid, so its result is assigned type 'never' */
+export type ICreateCandidateResult = never;
 
-/** 'CreateCandidate' return type */
-export interface ICreateCandidateResult {
-  id: string;
-}
-
-/** 'CreateCandidate' query type */
-export interface ICreateCandidateQuery {
-  params: ICreateCandidateParams;
-  result: ICreateCandidateResult;
-}
+/** Query 'CreateCandidate' is invalid, so its parameters are assigned type 'never' */
+export type ICreateCandidateParams = never;
 
 const createCandidateIR: any = {"usedParamSet":{},"params":[],"statement":"INSERT INTO candidate(\n    sgId,\n    sgName,\n    sgTypecode,\n    sggName,\n    sidoName,\n    wiwName,\n    partyName,\n    krName\n  )\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8)\nRETURNING id"};
 

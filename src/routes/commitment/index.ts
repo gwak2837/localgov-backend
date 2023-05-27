@@ -1,5 +1,6 @@
 import { Type } from '@sinclair/typebox'
 
+import { decodeElectionTypeCode } from '../../common/election'
 import { BadRequestError, NotFoundError } from '../../common/fastify'
 import { pool } from '../../common/postgres'
 import { ICreateCommitmentResult } from './sql/createCommitment'
@@ -17,7 +18,7 @@ export default async function routes(fastify: TFastify) {
       dateTo: Type.String(),
       sido: Type.Optional(Type.String()),
       sigungu: Type.Optional(Type.String()),
-      voteType: Type.Optional(Type.Number()),
+      electionType: Type.Optional(Type.Number()),
       name: Type.Optional(Type.String()),
       lastId: Type.Optional(Type.Number()),
       count: Type.Optional(Type.Number()),
@@ -25,7 +26,7 @@ export default async function routes(fastify: TFastify) {
   }
 
   fastify.get('/commitment', { schema }, async (req) => {
-    const { dateFrom, dateTo, sido, sigungu, voteType, name, lastId, count } = req.query
+    const { dateFrom, dateTo, sido, sigungu, electionType, name, lastId, count } = req.query
 
     const { rowCount, rows } = await pool.query<IGetCommitmentsResult>(getCommitments, [
       lastId ?? Number.MAX_SAFE_INTEGER,
@@ -33,13 +34,31 @@ export default async function routes(fastify: TFastify) {
       dateTo,
       sido ? decodeURIComponent(sido) : null,
       sigungu ? decodeURIComponent(sigungu) : null,
-      voteType,
+      electionType,
       name ? decodeURIComponent(name) : null,
       count ?? 20,
     ])
     if (rowCount === 0) throw NotFoundError('No result')
 
-    return { commitments: rows }
+    return {
+      commitments: rows.map((row) => ({
+        id: row.id,
+        prmsRealmName: row.prmsrealmname,
+        prmsTitle: row.prmstitle,
+        prmmCont: row.prmmcont,
+        candidate: {
+          id: row.candidate__id,
+          sgId: row.candidate__sgid,
+          sgName: decodeElectionTypeCode(row.candidate__sgtypecode),
+          sgTypeCode: row.candidate__sgtypecode,
+          sigunguName: row.candidate__sggname,
+          sidoName: row.candidate__sidoname,
+          wiwName: row.candidate__wiwname,
+          partyName: row.candidate__partyname,
+          krName: row.candidate__krname,
+        },
+      })),
+    }
   })
 
   const schema2 = {

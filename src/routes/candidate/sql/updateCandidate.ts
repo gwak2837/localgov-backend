@@ -13,20 +13,19 @@ export interface IUpdateCandidateQuery {
   result: IUpdateCandidateResult;
 }
 
-const updateCandidateIR: any = {"usedParamSet":{},"params":[],"statement":"UPDATE candidate\nSET sgId = $2,\n  sgName = $3,\n  sgTypecode = $4,\n  sggName = $5,\n  sidoName = $6,\n  wiwName = $7,\n  partyName = $8,\n  krName = $9\nWHERE id = $1"};
+const updateCandidateIR: any = {"usedParamSet":{},"params":[],"statement":"UPDATE candidate\nSET sgId = $2,\n  sgTypecode = $3,\n  sggName = $4,\n  sidoName = $5,\n  wiwName = $6,\n  partyName = $7,\n  krName = $8\nWHERE id = $1"};
 
 /**
  * Query generated from SQL:
  * ```
  * UPDATE candidate
  * SET sgId = $2,
- *   sgName = $3,
- *   sgTypecode = $4,
- *   sggName = $5,
- *   sidoName = $6,
- *   wiwName = $7,
- *   partyName = $8,
- *   krName = $9
+ *   sgTypecode = $3,
+ *   sggName = $4,
+ *   sidoName = $5,
+ *   wiwName = $6,
+ *   partyName = $7,
+ *   krName = $8
  * WHERE id = $1
  * ```
  */

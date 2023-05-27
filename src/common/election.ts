@@ -25,7 +25,6 @@ export function decodeElectionTypeCode(electionTypeCode: number) {
     case 11:
       return '교육감 선거'
     default:
-      console.log('👀 ~ electionTypeCode:', electionTypeCode)
       throw InternalServerError('Invalid `sgTypecode`')
   }
 }

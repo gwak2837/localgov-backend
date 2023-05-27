@@ -11,7 +11,7 @@ export interface IGetCandidatesResult {
   partyname: string | null;
   sggname: string;
   sgid: number;
-  sgname: string;
+  sgtypecode: number;
   sidoname: string;
   wiwname: string | null;
 }
@@ -22,14 +22,14 @@ export interface IGetCandidatesQuery {
   result: IGetCandidatesResult;
 }
 
-const getCandidatesIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  sgId,\n  sgName,\n  sggName,\n  sidoName,\n  wiwName,\n  partyName,\n  krName\nFROM candidate"};
+const getCandidatesIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  sgId,\n  sgTypecode,\n  sggName,\n  sidoName,\n  wiwName,\n  partyName,\n  krName\nFROM candidate"};
 
 /**
  * Query generated from SQL:
  * ```
  * SELECT id,
  *   sgId,
- *   sgName,
+ *   sgTypecode,
  *   sggName,
  *   sidoName,
  *   wiwName,
