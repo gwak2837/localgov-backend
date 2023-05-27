@@ -65,6 +65,7 @@ CREATE TABLE smart_evaluation (
 /* 
  sgTypecode
  1: 대통령 선거
+ 2: 국회의원 선거
  3: 시 ∙ 도지사 선거
  4: 구 ∙ 시 ∙ 군의장 선거
  11: 교육감 선거 
@@ -72,7 +73,6 @@ CREATE TABLE smart_evaluation (
 CREATE TABLE candidate (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   sgId int NOT NULL,
-  sgName text NOT NULL,
   sgTypecode int NOT NULL,
   sggName text NOT NULL,
   sidoName text NOT NULL,

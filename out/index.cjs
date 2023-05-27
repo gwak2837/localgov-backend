@@ -116165,10 +116165,40 @@ var import_cors = __toESM(require_cors(), 1);
 var import_multipart = __toESM(require_multipart2(), 1);
 var import_rate_limit = __toESM(require_rate_limit(), 1);
 var import_typebox5 = __toESM(require_typebox(), 1);
-var import_fastify6 = __toESM(require_fastify(), 1);
+var import_fastify7 = __toESM(require_fastify(), 1);
 
 // src/routes/candidate/index.ts
 var import_typebox = __toESM(require_typebox(), 1);
+
+// src/common/election.ts
+function decodeElectionTypeCode(electionTypeCode) {
+  switch (electionTypeCode) {
+    case 1:
+      return "\uB300\uD1B5\uB839 \uC120\uAC70";
+    case 2:
+      return "\uAD6D\uD68C\uC758\uC6D0 \uC120\uAC70";
+    case 3:
+      return "\uC2DC\xB7\uB3C4\uC9C0\uC0AC \uC120\uAC70";
+    case 4:
+      return "\uAD6C\xB7\uC2DC\xB7\uAD70\uC758 \uC7A5 \uC120\uAC70";
+    case 5:
+      return "\uC2DC\xB7\uB3C4 \uC758\uD68C\uC758\uC6D0 \uC120\uAC70";
+    case 6:
+      return "\uAD6C\xB7\uC2DC\xB7\uAD70 \uC758\uD68C\uC758\uC6D0 \uC120\uAC70";
+    case 7:
+      return "\uBE44\uB840\uB300\uD45C \uAD6D\uD68C\uC758\uC6D0 \uC120\uAC70";
+    case 8:
+      return "\uAD11\uC5ED\uC758\uC6D0 \uBE44\uB840\uB300\uD45C \uC120\uAC70";
+    case 9:
+      return "\uAE30\uCD08\uC758\uC6D0 \uBE44\uB840\uB300\uD45C \uC120\uAC70";
+    case 10:
+      return "\uAD50\uC721\uC758\uC6D0 \uC120\uAC70";
+    case 11:
+      return "\uAD50\uC721\uAC10 \uC120\uAC70";
+    default:
+      throw InternalServerError("Invalid `sgTypecode`");
+  }
+}
 
 // src/routes/candidate/sql/createCandidate.sql
 var createCandidate_default = "/* @name createCandidate */\nINSERT INTO candidate(\n    sgId,\n    sgName,\n    sgTypecode,\n    sggName,\n    sidoName,\n    wiwName,\n    partyName,\n    krName\n  )\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8)\nRETURNING id;";
@@ -116177,10 +116207,10 @@ var createCandidate_default = "/* @name createCandidate */\nINSERT INTO candidat
 var deleteCandidates_default = "/* @name deleteCandidates */\nDELETE FROM candidate\nWHERE id = ANY($1);";
 
 // src/routes/candidate/sql/getCandidates.sql
-var getCandidates_default = "/* @name getCandidates */\nSELECT id,\n  sgId,\n  sgName,\n  sggName,\n  sidoName,\n  wiwName,\n  partyName,\n  krName\nFROM candidate;";
+var getCandidates_default = "/* @name getCandidates */\nSELECT id,\n  sgId,\n  sgTypecode,\n  sggName,\n  sidoName,\n  wiwName,\n  partyName,\n  krName\nFROM candidate;";
 
 // src/routes/candidate/sql/updateCandidate.sql
-var updateCandidate_default = "/* @name updateCandidate */\nUPDATE candidate\nSET sgId = $2,\n  sgName = $3,\n  sgTypecode = $4,\n  sggName = $5,\n  sidoName = $6,\n  wiwName = $7,\n  partyName = $8,\n  krName = $9\nWHERE id = $1;";
+var updateCandidate_default = "/* @name updateCandidate */\nUPDATE candidate\nSET sgId = $2,\n  sgTypecode = $3,\n  sggName = $4,\n  sidoName = $5,\n  wiwName = $6,\n  partyName = $7,\n  krName = $8\nWHERE id = $1;";
 
 // src/routes/candidate/index.ts
 async function routes(fastify2) {
@@ -116189,12 +116219,23 @@ async function routes(fastify2) {
   };
   fastify2.get("/candidate", { schema: schema2 }, async (req, reply) => {
     const { rows } = await pool.query(getCandidates_default);
-    return { candidates: rows };
+    return {
+      candidates: rows.map((candidate) => ({
+        id: candidate.id,
+        sgId: candidate.sgId,
+        sgTypecode: candidate.sgTypecode,
+        sgName: decodeElectionTypeCode(candidate.sgTypecode),
+        sggName: candidate.sggName,
+        sidoName: candidate.sidoName,
+        wiwName: candidate.wiwName,
+        partyName: candidate.partyName,
+        krName: candidate.krName
+      }))
+    };
   });
   const schema22 = {
     body: import_typebox.Type.Object({
       sgId: import_typebox.Type.Number(),
-      sgName: import_typebox.Type.String(),
       sgTypecode: import_typebox.Type.Number(),
       sggName: import_typebox.Type.String(),
       sidoName: import_typebox.Type.String(),
@@ -116204,14 +116245,13 @@ async function routes(fastify2) {
     })
   };
   fastify2.post("/candidate", { schema: schema22 }, async (req, reply) => {
-    const { sgId, sgName, sgTypecode, sggName, sidoName, wiwName, partyName, krName } = req.body;
+    const { sgId, sgTypecode, sggName, sidoName, wiwName, partyName, krName } = req.body;
     if (String(sgId).length !== 8)
       throw BadRequestError("Invalid `sgId`");
-    if (![1, 3, 4, 11].includes(sgTypecode))
+    if (![1, 2, 3, 4, 11].includes(sgTypecode))
       throw BadRequestError("Invalid `sgTypecode`");
     const { rowCount, rows } = await pool.query(createCandidate_default, [
       sgId,
-      sgName,
       sgTypecode,
       sggName,
       sidoName,
@@ -116227,7 +116267,6 @@ async function routes(fastify2) {
     body: import_typebox.Type.Object({
       id: import_typebox.Type.Number(),
       sgId: import_typebox.Type.Number(),
-      sgName: import_typebox.Type.String(),
       sgTypecode: import_typebox.Type.Number(),
       sggName: import_typebox.Type.String(),
       sidoName: import_typebox.Type.String(),
@@ -116237,7 +116276,7 @@ async function routes(fastify2) {
     })
   };
   fastify2.put("/candidate", { schema: schema3 }, async (req, reply) => {
-    const { id, sgId, sgName, sgTypecode, sggName, sidoName, wiwName, partyName, krName } = req.body;
+    const { id, sgId, sgTypecode, sggName, sidoName, wiwName, partyName, krName } = req.body;
     if (String(sgId).length !== 8)
       throw BadRequestError("Invalid `sgId`");
     if (![1, 3, 4, 11].includes(sgTypecode))
@@ -116245,7 +116284,6 @@ async function routes(fastify2) {
     const { rowCount } = await pool.query(updateCandidate_default, [
       id,
       sgId,
-      sgName,
       sgTypecode,
       sggName,
       sidoName,
@@ -116932,7 +116970,7 @@ async function routes4(fastify2) {
 }
 
 // src/routes/index.ts
-var fastify = (0, import_fastify6.default)({
+var fastify = (0, import_fastify7.default)({
   // logger: NODE_ENV === 'development',
   http2: true,
   ...LOCALHOST_HTTPS_KEY && LOCALHOST_HTTPS_CERT && {

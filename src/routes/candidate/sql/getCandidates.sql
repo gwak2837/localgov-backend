@@ -1,7 +1,7 @@
 /* @name getCandidates */
 SELECT id,
   sgId,
-  sgName,
+  sgTypecode,
   sggName,
   sidoName,
   wiwName,

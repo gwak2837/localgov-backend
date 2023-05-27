@@ -1,5 +1,6 @@
 import { Type } from '@sinclair/typebox'
 
+import { decodeElectionTypeCode } from '../../common/election'
 import { BadRequestError, NotFoundError } from '../../common/fastify'
 import { pool } from '../../common/postgres'
 import createCandidate from './sql/createCandidate.sql'
@@ -16,13 +17,24 @@ export default async function routes(fastify: TFastify) {
   fastify.get('/candidate', { schema }, async (req, reply) => {
     const { rows } = await pool.query(getCandidates)
 
-    return { candidates: rows }
+    return {
+      candidates: rows.map((candidate) => ({
+        id: candidate.id,
+        sgId: candidate.sgId,
+        sgTypecode: candidate.sgTypecode,
+        sgName: decodeElectionTypeCode(candidate.sgTypecode),
+        sggName: candidate.sggName,
+        sidoName: candidate.sidoName,
+        wiwName: candidate.wiwName,
+        partyName: candidate.partyName,
+        krName: candidate.krName,
+      })),
+    }
   })
 
   const schema2 = {
     body: Type.Object({
       sgId: Type.Number(),
-      sgName: Type.String(),
       sgTypecode: Type.Number(),
       sggName: Type.String(),
       sidoName: Type.String(),
@@ -33,14 +45,13 @@ export default async function routes(fastify: TFastify) {
   }
 
   fastify.post('/candidate', { schema: schema2 }, async (req, reply) => {
-    const { sgId, sgName, sgTypecode, sggName, sidoName, wiwName, partyName, krName } = req.body
+    const { sgId, sgTypecode, sggName, sidoName, wiwName, partyName, krName } = req.body
 
     if (String(sgId).length !== 8) throw BadRequestError('Invalid `sgId`')
-    if (![1, 3, 4, 11].includes(sgTypecode)) throw BadRequestError('Invalid `sgTypecode`')
+    if (![1, 2, 3, 4, 11].includes(sgTypecode)) throw BadRequestError('Invalid `sgTypecode`')
 
     const { rowCount, rows } = await pool.query(createCandidate, [
       sgId,
-      sgName,
       sgTypecode,
       sggName,
       sidoName,
@@ -57,7 +68,6 @@ export default async function routes(fastify: TFastify) {
     body: Type.Object({
       id: Type.Number(),
       sgId: Type.Number(),
-      sgName: Type.String(),
       sgTypecode: Type.Number(),
       sggName: Type.String(),
       sidoName: Type.String(),
@@ -68,7 +78,7 @@ export default async function routes(fastify: TFastify) {
   }
 
   fastify.put('/candidate', { schema: schema3 }, async (req, reply) => {
-    const { id, sgId, sgName, sgTypecode, sggName, sidoName, wiwName, partyName, krName } = req.body
+    const { id, sgId, sgTypecode, sggName, sidoName, wiwName, partyName, krName } = req.body
 
     if (String(sgId).length !== 8) throw BadRequestError('Invalid `sgId`')
     if (![1, 3, 4, 11].includes(sgTypecode)) throw BadRequestError('Invalid `sgTypecode`')
@@ -76,7 +86,6 @@ export default async function routes(fastify: TFastify) {
     const { rowCount } = await pool.query(updateCandidate, [
       id,
       sgId,
-      sgName,
       sgTypecode,
       sggName,
       sidoName,

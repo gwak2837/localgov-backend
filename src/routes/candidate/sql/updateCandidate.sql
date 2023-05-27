@@ -1,11 +1,10 @@
 /* @name updateCandidate */
 UPDATE candidate
 SET sgId = $2,
-  sgName = $3,
-  sgTypecode = $4,
-  sggName = $5,
-  sidoName = $6,
-  wiwName = $7,
-  partyName = $8,
-  krName = $9
+  sgTypecode = $3,
+  sggName = $4,
+  sidoName = $5,
+  wiwName = $6,
+  partyName = $7,
+  krName = $8
 WHERE id = $1;
