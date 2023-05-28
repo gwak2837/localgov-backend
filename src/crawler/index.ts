@@ -23,14 +23,14 @@ import deleteExpenditures from './deleteExpenditures.sql'
 main()
 
 async function main() {
-  // const date = new Date(LOCAL_EXPENDITURE_DATE)
-  // date.setDate(date.getDate() - +CLOUD_RUN_TASK_INDEX)
-  // for (; date.getFullYear() > 2021; date.setDate(date.getDate() - +CLOUD_RUN_TASK_COUNT)) {
-  //   await retry(() => getLocalGovExpenditures(date), {
-  //     retries: 10,
-  //     onRetry: (e, attemp) => console.warn(attemp, e.message),
-  //   })
-  // }
+  const date = new Date(LOCAL_EXPENDITURE_DATE)
+  date.setDate(date.getDate() - +CLOUD_RUN_TASK_INDEX)
+  for (; date.getFullYear() > 2021; date.setDate(date.getDate() - +CLOUD_RUN_TASK_COUNT)) {
+    await retry(() => getLocalGovExpenditures(date), {
+      retries: 10,
+      onRetry: (e, attemp) => console.warn(attemp, e.message),
+    })
+  }
 
   for (let year = 2023 - +CLOUD_RUN_TASK_INDEX; year > 2006; year -= +CLOUD_RUN_TASK_COUNT) {
     await retry(() => getCenterGovExpenditures(year), {
@@ -50,7 +50,7 @@ async function getLocalGovExpenditures(date: Date) {
 
     const size = 1000
     const totalExpenditureCount = head[0].list_total_count
-    console.log('👀 - totalExpenditureCount', totalExpenditureCount)
+    process.stdout.write(`👀 - totalExpenditureCount: ${totalExpenditureCount}, `)
 
     const { rows } = await pool.query<ICountExpendituresResult>(countExpenditures, [
       date,
@@ -58,7 +58,7 @@ async function getLocalGovExpenditures(date: Date) {
     ])
 
     const count = rows[0].count
-    console.log('👀 ~ count:', count)
+    console.log('count:', +(count ?? 0))
     if (count && +count === totalExpenditureCount) {
       continue
     } else {
