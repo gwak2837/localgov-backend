@@ -1,5 +1,6 @@
 import { Type } from '@sinclair/typebox'
 
+import { BadRequestError } from '../../common/fastify'
 import { pool } from '../../common/postgres'
 import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
 import getCefinByOffice from './sql/getCefinByOffice.sql'
@@ -50,15 +51,23 @@ export default async function routes(fastify: TFastify) {
       isRealm: Type.Boolean(),
       centerRealmOrSector: Type.Array(Type.String()),
       localRealmOrSector: Type.Number(),
+      year: Type.Number(),
     }),
   }
 
   fastify.get('/analysis/flow', { schema: schema2 }, async (req, reply) => {
-    const { isRealm, centerRealmOrSector, localRealmOrSector } = req.query
+    const { isRealm, centerRealmOrSector, localRealmOrSector, year } = req.query
+
+    if (year > 2023 || year < 2000) throw BadRequestError('Invalid `year`')
 
     const [{ rows }, { rows: rows2 }] = await Promise.all([
-      pool.query<IGetLofinByDistrictResult>(getLofinByDistrict, [isRealm, localRealmOrSector]),
-      pool.query<IGetCefinByOfficeResult>(getCefinByOffice, [isRealm, centerRealmOrSector]),
+      pool.query<IGetLofinByDistrictResult>(getLofinByDistrict, [
+        isRealm,
+        localRealmOrSector,
+        `${year}-01-01`,
+        `${year}-12-31`,
+      ]),
+      pool.query<IGetCefinByOfficeResult>(getCefinByOffice, [isRealm, centerRealmOrSector, year]),
     ])
 
     return { lofin: rows, cefin: rows2 }

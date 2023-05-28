@@ -19,7 +19,7 @@ export interface IGetCefinByOfficeQuery {
   result: IGetCefinByOfficeResult;
 }
 
-const getCefinByOfficeIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT OFFC_NM,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE CASE\n    WHEN $1 THEN FLD_NM = ANY ($2)\n    ELSE SECT_NM = ANY ($2)\n  END\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC"};
+const getCefinByOfficeIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT OFFC_NM,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE CASE\n    WHEN $1 THEN FLD_NM = ANY ($2)\n    ELSE SECT_NM = ANY ($2)\n  END\n  AND FSCL_YY = $3\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC"};
 
 /**
  * Query generated from SQL:
@@ -34,6 +34,7 @@ const getCefinByOfficeIR: any = {"usedParamSet":{},"params":[],"statement":"SELE
  *     WHEN $1 THEN FLD_NM = ANY ($2)
  *     ELSE SECT_NM = ANY ($2)
  *   END
+ *   AND FSCL_YY = $3
  * GROUP BY OFFC_NM
  * ORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC
  * ```

@@ -12,5 +12,6 @@ WHERE CASE
     WHEN $1 THEN realm_code = $2
     ELSE sect_code = $2
   END
+  AND excut_de BETWEEN $3 AND $4
 GROUP BY sfrnd_code
 ORDER BY budget_crntam DESC;

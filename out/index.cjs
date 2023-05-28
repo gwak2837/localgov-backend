@@ -116165,19 +116165,19 @@ var import_cors = __toESM(require_cors(), 1);
 var import_multipart = __toESM(require_multipart2(), 1);
 var import_rate_limit = __toESM(require_rate_limit(), 1);
 var import_typebox6 = __toESM(require_typebox(), 1);
-var import_fastify7 = __toESM(require_fastify(), 1);
+var import_fastify8 = __toESM(require_fastify(), 1);
 
 // src/routes/analysis/index.ts
 var import_typebox = __toESM(require_typebox(), 1);
 
 // src/routes/analysis/sql/getCefinByOffice.sql
-var getCefinByOffice_default = "/* @name getCefinByOffice */\nSELECT OFFC_NM,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE CASE\n    WHEN $1 THEN FLD_NM = ANY ($2)\n    ELSE SECT_NM = ANY ($2)\n  END\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
+var getCefinByOffice_default = "/* @name getCefinByOffice */\nSELECT OFFC_NM,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE CASE\n    WHEN $1 THEN FLD_NM = ANY ($2)\n    ELSE SECT_NM = ANY ($2)\n  END\n  AND FSCL_YY = $3\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
 
 // src/routes/analysis/sql/getCefinRatio.sql
 var getCefinRatio_default = "/* @name getCefinRatio */\nSELECT CASE\n    WHEN $2 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY = $1\nGROUP BY CASE\n    WHEN $2 THEN FLD_NM\n    ELSE SECT_NM\n  END\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
 
 // src/routes/analysis/sql/getLofinByDistrict.sql
-var getLofinByDistrict_default = "/* @name getLofinByDistrict */\nSELECT sfrnd_code,\n  sum(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE CASE\n    WHEN $1 THEN realm_code = $2\n    ELSE sect_code = $2\n  END\nGROUP BY sfrnd_code\nORDER BY budget_crntam DESC;";
+var getLofinByDistrict_default = "/* @name getLofinByDistrict */\nSELECT sfrnd_code,\n  sum(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE CASE\n    WHEN $1 THEN realm_code = $2\n    ELSE sect_code = $2\n  END\n  AND excut_de BETWEEN $3 AND $4\nGROUP BY sfrnd_code\nORDER BY budget_crntam DESC;";
 
 // src/routes/analysis/sql/getLofinRatio.sql
 var getLofinRatio_default = "/* @name getLofinRatio */\nSELECT CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END,\n  SUM(budget_crntam) AS budget_crntam,\n  SUM(nxndr) AS nxndr,\n  SUM(cty) AS cty,\n  SUM(signgunon) AS signgunon,\n  SUM(etc_crntam) AS etc_crntam,\n  SUM(expndtram) AS expndtram,\n  SUM(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE sfrnd_code = $1\n  AND excut_de BETWEEN $2 AND $3\nGROUP BY CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END\nORDER BY budget_crntam;";
@@ -116215,14 +116215,22 @@ async function routes(fastify2) {
     querystring: import_typebox.Type.Object({
       isRealm: import_typebox.Type.Boolean(),
       centerRealmOrSector: import_typebox.Type.Array(import_typebox.Type.String()),
-      localRealmOrSector: import_typebox.Type.Number()
+      localRealmOrSector: import_typebox.Type.Number(),
+      year: import_typebox.Type.Number()
     })
   };
   fastify2.get("/analysis/flow", { schema: schema22 }, async (req, reply) => {
-    const { isRealm, centerRealmOrSector, localRealmOrSector } = req.query;
+    const { isRealm, centerRealmOrSector, localRealmOrSector, year } = req.query;
+    if (year > 2023 || year < 2e3)
+      throw BadRequestError("Invalid `year`");
     const [{ rows }, { rows: rows2 }] = await Promise.all([
-      pool.query(getLofinByDistrict_default, [isRealm, localRealmOrSector]),
-      pool.query(getCefinByOffice_default, [isRealm, centerRealmOrSector])
+      pool.query(getLofinByDistrict_default, [
+        isRealm,
+        localRealmOrSector,
+        `${year}-01-01`,
+        `${year}-12-31`
+      ]),
+      pool.query(getCefinByOffice_default, [isRealm, centerRealmOrSector, year])
     ]);
     return { lofin: rows, cefin: rows2 };
   });
@@ -117049,7 +117057,7 @@ async function routes5(fastify2) {
 }
 
 // src/routes/index.ts
-var fastify = (0, import_fastify7.default)({
+var fastify = (0, import_fastify8.default)({
   // logger: NODE_ENV === 'development',
   http2: true,
   ...LOCALHOST_HTTPS_KEY && LOCALHOST_HTTPS_CERT && {

@@ -22,7 +22,7 @@ export interface IGetLofinByDistrictQuery {
   result: IGetLofinByDistrictResult;
 }
 
-const getLofinByDistrictIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT sfrnd_code,\n  sum(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE CASE\n    WHEN $1 THEN realm_code = $2\n    ELSE sect_code = $2\n  END\nGROUP BY sfrnd_code\nORDER BY budget_crntam DESC"};
+const getLofinByDistrictIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT sfrnd_code,\n  sum(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE CASE\n    WHEN $1 THEN realm_code = $2\n    ELSE sect_code = $2\n  END\n  AND excut_de BETWEEN $3 AND $4\nGROUP BY sfrnd_code\nORDER BY budget_crntam DESC"};
 
 /**
  * Query generated from SQL:
@@ -40,6 +40,7 @@ const getLofinByDistrictIR: any = {"usedParamSet":{},"params":[],"statement":"SE
  *     WHEN $1 THEN realm_code = $2
  *     ELSE sect_code = $2
  *   END
+ *   AND excut_de BETWEEN $3 AND $4
  * GROUP BY sfrnd_code
  * ORDER BY budget_crntam DESC
  * ```
