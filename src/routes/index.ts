@@ -13,6 +13,7 @@ import {
   PORT,
   PROJECT_ENV,
 } from '../common/constants'
+import analysis from './analysis'
 import candidate from './candidate'
 import centerExpenditure from './centerExpenditure'
 import commitment from './commitment'
@@ -79,6 +80,7 @@ fastify.get('/', schema, async (request, _) => {
   return { hello: 'world', foo, bar }
 })
 
+fastify.register(analysis)
 fastify.register(candidate)
 fastify.register(centerExpenditure)
 fastify.register(commitment)

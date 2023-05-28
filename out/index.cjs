@@ -33863,14 +33863,14 @@ var require_util = __commonJS({
       });
     }
     exports.useFunc = useFunc;
-    var Type6;
-    (function(Type7) {
-      Type7[Type7["Num"] = 0] = "Num";
-      Type7[Type7["Str"] = 1] = "Str";
-    })(Type6 = exports.Type || (exports.Type = {}));
+    var Type7;
+    (function(Type8) {
+      Type8[Type8["Num"] = 0] = "Num";
+      Type8[Type8["Str"] = 1] = "Str";
+    })(Type7 = exports.Type || (exports.Type = {}));
     function getErrorPath(dataProp, dataPropType, jsPropertySyntax) {
       if (dataProp instanceof codegen_1.Name) {
-        const isNumber = dataPropType === Type6.Num;
+        const isNumber = dataPropType === Type7.Num;
         return jsPropertySyntax ? isNumber ? (0, codegen_1._)`"[" + ${dataProp} + "]"` : (0, codegen_1._)`"['" + ${dataProp} + "']"` : isNumber ? (0, codegen_1._)`"/" + ${dataProp}` : (0, codegen_1._)`"/" + ${dataProp}.replace(/~/g, "~0").replace(/\\//g, "~1")`;
       }
       return jsPropertySyntax ? (0, codegen_1.getProperty)(dataProp).toString() : "/" + escapeJsonPointer(dataProp);
@@ -111817,9 +111817,9 @@ var require_find_my_way = __commonJS({
         }
       }
     };
-    Router.prototype._rebuild = function(routes5) {
+    Router.prototype._rebuild = function(routes6) {
       this.reset();
-      for (const route of routes5) {
+      for (const route of routes6) {
         const { method, path, opts, handler, store } = route;
         this._on(method, path, opts, handler, store);
         this.routes.push({ method, path, opts, handler, store });
@@ -116164,11 +116164,72 @@ pool.on("error", (err) => {
 var import_cors = __toESM(require_cors(), 1);
 var import_multipart = __toESM(require_multipart2(), 1);
 var import_rate_limit = __toESM(require_rate_limit(), 1);
-var import_typebox5 = __toESM(require_typebox(), 1);
+var import_typebox6 = __toESM(require_typebox(), 1);
 var import_fastify7 = __toESM(require_fastify(), 1);
 
-// src/routes/candidate/index.ts
+// src/routes/analysis/index.ts
 var import_typebox = __toESM(require_typebox(), 1);
+
+// src/routes/analysis/sql/getCefinByOffice.sql
+var getCefinByOffice_default = "/* @name getCefinByOffice */\nSELECT OFFC_NM,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE CASE\n    WHEN $1 THEN FLD_NM = ANY ($2)\n    ELSE SECT_NM = ANY ($2)\n  END\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
+
+// src/routes/analysis/sql/getCefinRatio.sql
+var getCefinRatio_default = "/* @name getCefinRatio */\nSELECT CASE\n    WHEN $2 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY = $1\nGROUP BY CASE\n    WHEN $2 THEN FLD_NM\n    ELSE SECT_NM\n  END\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
+
+// src/routes/analysis/sql/getLofinByDistrict.sql
+var getLofinByDistrict_default = "/* @name getLofinByDistrict */\nSELECT sfrnd_code,\n  sum(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE CASE\n    WHEN $1 THEN realm_code = $2\n    ELSE sect_code = $2\n  END\nGROUP BY sfrnd_code\nORDER BY budget_crntam DESC;";
+
+// src/routes/analysis/sql/getLofinRatio.sql
+var getLofinRatio_default = "/* @name getLofinRatio */\nSELECT CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END,\n  SUM(budget_crntam) AS budget_crntam,\n  SUM(nxndr) AS nxndr,\n  SUM(cty) AS cty,\n  SUM(signgunon) AS signgunon,\n  SUM(etc_crntam) AS etc_crntam,\n  SUM(expndtram) AS expndtram,\n  SUM(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE sfrnd_code = $1\n  AND excut_de BETWEEN $2 AND $3\nGROUP BY CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END\nORDER BY budget_crntam;";
+
+// src/routes/analysis/index.ts
+async function routes(fastify2) {
+  const schema2 = {
+    querystring: import_typebox.Type.Object({
+      localCode: import_typebox.Type.Number(),
+      localDateFrom: import_typebox.Type.String(),
+      localDateTo: import_typebox.Type.String(),
+      centerYear: import_typebox.Type.Number(),
+      isLocalRealm: import_typebox.Type.Boolean()
+    })
+  };
+  fastify2.get("/analysis/relation", { schema: schema2 }, async (req, reply) => {
+    const { localCode, localDateFrom, localDateTo, isLocalRealm, centerYear } = req.query;
+    const [{ rows }, { rows: rows2 }] = await Promise.all([
+      pool.query(getLofinRatio_default, [
+        localCode,
+        localDateFrom,
+        localDateTo,
+        isLocalRealm
+      ]),
+      pool.query(getCefinRatio_default, [centerYear, isLocalRealm])
+    ]);
+    return {
+      lofin: rows,
+      lofinTotalBudget: rows.map((row) => +(row.budget_crntam ?? 0)).reduce((a, b) => a + b, 0),
+      cefin: rows2,
+      cefinTotalBudget: rows2.map((row) => +(row.y_yy_dfn_medi_kcur_amt ?? 0)).reduce((a, b) => a + b, 0)
+    };
+  });
+  const schema22 = {
+    querystring: import_typebox.Type.Object({
+      isRealm: import_typebox.Type.Boolean(),
+      centerRealmOrSector: import_typebox.Type.Array(import_typebox.Type.String()),
+      localRealmOrSector: import_typebox.Type.Number()
+    })
+  };
+  fastify2.get("/analysis/flow", { schema: schema22 }, async (req, reply) => {
+    const { isRealm, centerRealmOrSector, localRealmOrSector } = req.query;
+    const [{ rows }, { rows: rows2 }] = await Promise.all([
+      pool.query(getLofinByDistrict_default, [isRealm, localRealmOrSector]),
+      pool.query(getCefinByOffice_default, [isRealm, centerRealmOrSector])
+    ]);
+    return { lofin: rows, cefin: rows2 };
+  });
+}
+
+// src/routes/candidate/index.ts
+var import_typebox2 = __toESM(require_typebox(), 1);
 
 // src/common/election.ts
 function decodeElectionTypeCode(electionTypeCode) {
@@ -116201,7 +116262,7 @@ function decodeElectionTypeCode(electionTypeCode) {
 }
 
 // src/routes/candidate/sql/createCandidate.sql
-var createCandidate_default = "/* @name createCandidate */\nINSERT INTO candidate(\n    sgId,\n    sgName,\n    sgTypecode,\n    sggName,\n    sidoName,\n    wiwName,\n    partyName,\n    krName\n  )\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8)\nRETURNING id;";
+var createCandidate_default = "/* @name createCandidate */\nINSERT INTO candidate(\n    sgId,\n    sgTypecode,\n    sggName,\n    sidoName,\n    wiwName,\n    partyName,\n    krName\n  )\nVALUES ($1, $2, $3, $4, $5, $6, $7)\nRETURNING id;";
 
 // src/routes/candidate/sql/deleteCandidates.sql
 var deleteCandidates_default = "/* @name deleteCandidates */\nDELETE FROM candidate\nWHERE id = ANY($1);";
@@ -116213,9 +116274,9 @@ var getCandidates_default = "/* @name getCandidates */\nSELECT id,\n  sgId,\n  s
 var updateCandidate_default = "/* @name updateCandidate */\nUPDATE candidate\nSET sgId = $2,\n  sgTypecode = $3,\n  sggName = $4,\n  sidoName = $5,\n  wiwName = $6,\n  partyName = $7,\n  krName = $8\nWHERE id = $1;";
 
 // src/routes/candidate/index.ts
-async function routes(fastify2) {
+async function routes2(fastify2) {
   const schema2 = {
-    querystring: import_typebox.Type.Object({})
+    querystring: import_typebox2.Type.Object({})
   };
   fastify2.get("/candidate", { schema: schema2 }, async (req, reply) => {
     const { rows } = await pool.query(getCandidates_default);
@@ -116234,14 +116295,14 @@ async function routes(fastify2) {
     };
   });
   const schema22 = {
-    body: import_typebox.Type.Object({
-      sgId: import_typebox.Type.Number(),
-      sgTypecode: import_typebox.Type.Number(),
-      sggName: import_typebox.Type.String(),
-      sidoName: import_typebox.Type.String(),
-      wiwName: import_typebox.Type.Optional(import_typebox.Type.String()),
-      partyName: import_typebox.Type.Optional(import_typebox.Type.String()),
-      krName: import_typebox.Type.String()
+    body: import_typebox2.Type.Object({
+      sgId: import_typebox2.Type.Number(),
+      sgTypecode: import_typebox2.Type.Number(),
+      sggName: import_typebox2.Type.String(),
+      sidoName: import_typebox2.Type.String(),
+      wiwName: import_typebox2.Type.Optional(import_typebox2.Type.String()),
+      partyName: import_typebox2.Type.Optional(import_typebox2.Type.String()),
+      krName: import_typebox2.Type.String()
     })
   };
   fastify2.post("/candidate", { schema: schema22 }, async (req, reply) => {
@@ -116264,15 +116325,15 @@ async function routes(fastify2) {
     return { id: rows[0].id };
   });
   const schema3 = {
-    body: import_typebox.Type.Object({
-      id: import_typebox.Type.Number(),
-      sgId: import_typebox.Type.Number(),
-      sgTypecode: import_typebox.Type.Number(),
-      sggName: import_typebox.Type.String(),
-      sidoName: import_typebox.Type.String(),
-      wiwName: import_typebox.Type.Optional(import_typebox.Type.String()),
-      partyName: import_typebox.Type.Optional(import_typebox.Type.String()),
-      krName: import_typebox.Type.String()
+    body: import_typebox2.Type.Object({
+      id: import_typebox2.Type.Number(),
+      sgId: import_typebox2.Type.Number(),
+      sgTypecode: import_typebox2.Type.Number(),
+      sggName: import_typebox2.Type.String(),
+      sidoName: import_typebox2.Type.String(),
+      wiwName: import_typebox2.Type.Optional(import_typebox2.Type.String()),
+      partyName: import_typebox2.Type.Optional(import_typebox2.Type.String()),
+      krName: import_typebox2.Type.String()
     })
   };
   fastify2.put("/candidate", { schema: schema3 }, async (req, reply) => {
@@ -116296,8 +116357,8 @@ async function routes(fastify2) {
     return { updatedRowCount: rowCount };
   });
   const schema4 = {
-    querystring: import_typebox.Type.Object({
-      ids: import_typebox.Type.Array(import_typebox.Type.Number())
+    querystring: import_typebox2.Type.Object({
+      ids: import_typebox2.Type.Array(import_typebox2.Type.Number())
     })
   };
   fastify2.delete("/candidate", { schema: schema4 }, async (req, reply) => {
@@ -116310,7 +116371,7 @@ async function routes(fastify2) {
 }
 
 // src/routes/centerExpenditure/index.ts
-var import_typebox2 = __toESM(require_typebox(), 1);
+var import_typebox3 = __toESM(require_typebox(), 1);
 
 // src/common/cefin.ts
 var officeNames = [
@@ -116423,12 +116484,12 @@ var getCenterExpenditureByOffice_default = "/* @name getCenterExpenditureByOffic
 var getCenterExpenditures_default = "/* @name getCenterExpenditures */\nSELECT OFFC_NM,\n  sum(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT_SUM,\n  sum(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT_SUM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT_SUM,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT_SUM\nFROM center_expenditure\nWHERE CASE\n    WHEN $2::int IS NULL THEN FSCL_YY = $1\n    ELSE FSCL_YY >= $1\n    AND FSCL_YY <= $2\n  END\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT_SUM DESC\nLIMIT $3;";
 
 // src/routes/centerExpenditure/index.ts
-async function routes2(fastify2) {
+async function routes3(fastify2) {
   const schema2 = {
-    querystring: import_typebox2.Type.Object({
-      dateFrom: import_typebox2.Type.String(),
-      dateTo: import_typebox2.Type.String(),
-      count: import_typebox2.Type.Optional(import_typebox2.Type.Number())
+    querystring: import_typebox3.Type.Object({
+      dateFrom: import_typebox3.Type.String(),
+      dateTo: import_typebox3.Type.String(),
+      count: import_typebox3.Type.Optional(import_typebox3.Type.Number())
     })
   };
   fastify2.get("/expenditure/center", { schema: schema2 }, async (req) => {
@@ -116452,11 +116513,11 @@ async function routes2(fastify2) {
     };
   });
   const schema22 = {
-    querystring: import_typebox2.Type.Object({
-      dateFrom: import_typebox2.Type.String(),
-      dateTo: import_typebox2.Type.String(),
-      officeName: import_typebox2.Type.String(),
-      count: import_typebox2.Type.Optional(import_typebox2.Type.Number())
+    querystring: import_typebox3.Type.Object({
+      dateFrom: import_typebox3.Type.String(),
+      dateTo: import_typebox3.Type.String(),
+      officeName: import_typebox3.Type.String(),
+      count: import_typebox3.Type.Optional(import_typebox3.Type.Number())
     })
   };
   fastify2.get("/expenditure/center/office", { schema: schema22 }, async (req) => {
@@ -116486,7 +116547,7 @@ async function routes2(fastify2) {
 }
 
 // src/routes/commitment/index.ts
-var import_typebox3 = __toESM(require_typebox(), 1);
+var import_typebox4 = __toESM(require_typebox(), 1);
 
 // src/routes/commitment/sql/createCommitment.sql
 var createCommitment_default = "/* @name createCommitment */\nINSERT INTO commitment (prmsRealmName, prmsTitle, prmmCont, candidate_id)\nVALUES($1, $2, $3, $4)\nRETURNING id;";
@@ -116501,17 +116562,17 @@ var getCommitments_default = "/* @name getCommitments */\nSELECT commitment.id,\
 var updateCommitments_default = "/* @name updateCommitments */\nUPDATE commitment\nSET prmsRealmName = new.prmsRealmName,\n  prmsTitle = new.prmsTitle,\n  prmmCont = new.prmmCont\nFROM (\n    SELECT unnest($1::int []) AS id,\n      unnest($2::text []) AS prmsRealmName,\n      unnest($3::text []) AS prmsTitle,\n      unnest($4::text []) AS prmmCont\n  ) AS new\nWHERE commitment.id = new.id;";
 
 // src/routes/commitment/index.ts
-async function routes3(fastify2) {
+async function routes4(fastify2) {
   const schema2 = {
-    querystring: import_typebox3.Type.Object({
-      dateFrom: import_typebox3.Type.String(),
-      dateTo: import_typebox3.Type.String(),
-      sido: import_typebox3.Type.Optional(import_typebox3.Type.String()),
-      sigungu: import_typebox3.Type.Optional(import_typebox3.Type.String()),
-      electionType: import_typebox3.Type.Optional(import_typebox3.Type.Number()),
-      name: import_typebox3.Type.Optional(import_typebox3.Type.String()),
-      lastId: import_typebox3.Type.Optional(import_typebox3.Type.Number()),
-      count: import_typebox3.Type.Optional(import_typebox3.Type.Number())
+    querystring: import_typebox4.Type.Object({
+      dateFrom: import_typebox4.Type.String(),
+      dateTo: import_typebox4.Type.String(),
+      sido: import_typebox4.Type.Optional(import_typebox4.Type.String()),
+      sigungu: import_typebox4.Type.Optional(import_typebox4.Type.String()),
+      electionType: import_typebox4.Type.Optional(import_typebox4.Type.Number()),
+      name: import_typebox4.Type.Optional(import_typebox4.Type.String()),
+      lastId: import_typebox4.Type.Optional(import_typebox4.Type.Number()),
+      count: import_typebox4.Type.Optional(import_typebox4.Type.Number())
     })
   };
   fastify2.get("/commitment", { schema: schema2 }, async (req) => {
@@ -116549,11 +116610,11 @@ async function routes3(fastify2) {
     };
   });
   const schema22 = {
-    body: import_typebox3.Type.Object({
-      realm: import_typebox3.Type.String(),
-      title: import_typebox3.Type.String(),
-      content: import_typebox3.Type.String(),
-      candidateId: import_typebox3.Type.Number()
+    body: import_typebox4.Type.Object({
+      realm: import_typebox4.Type.String(),
+      title: import_typebox4.Type.String(),
+      content: import_typebox4.Type.String(),
+      candidateId: import_typebox4.Type.Number()
     })
   };
   fastify2.post("/commitment", { schema: schema22 }, async (req, reply) => {
@@ -116569,23 +116630,23 @@ async function routes3(fastify2) {
     return { id: rows[0].id };
   });
   const schema3 = {
-    body: import_typebox3.Type.Object({
-      ids: import_typebox3.Type.Array(import_typebox3.Type.Number()),
-      realms: import_typebox3.Type.Array(import_typebox3.Type.String()),
-      titles: import_typebox3.Type.Array(import_typebox3.Type.String()),
-      contents: import_typebox3.Type.Array(import_typebox3.Type.String())
+    body: import_typebox4.Type.Object({
+      ids: import_typebox4.Type.Array(import_typebox4.Type.Number()),
+      realms: import_typebox4.Type.Array(import_typebox4.Type.String()),
+      titles: import_typebox4.Type.Array(import_typebox4.Type.String()),
+      contents: import_typebox4.Type.Array(import_typebox4.Type.String())
     })
   };
   fastify2.put("/commitment", { schema: schema3 }, async (req, reply) => {
-    const { ids, realms: realms2, titles, contents } = req.body;
-    const { rowCount } = await pool.query(updateCommitments_default, [ids, realms2, titles, contents]);
+    const { ids, realms, titles, contents } = req.body;
+    const { rowCount } = await pool.query(updateCommitments_default, [ids, realms, titles, contents]);
     if (rowCount === 0)
       throw NotFoundError("No rows were affected");
     return { updatedRowCount: rowCount };
   });
   const schema4 = {
-    querystring: import_typebox3.Type.Object({
-      ids: import_typebox3.Type.Array(import_typebox3.Type.Number())
+    querystring: import_typebox4.Type.Object({
+      ids: import_typebox4.Type.Array(import_typebox4.Type.Number())
     })
   };
   fastify2.delete("/commitment", { schema: schema4 }, async (req, reply) => {
@@ -116598,7 +116659,7 @@ async function routes3(fastify2) {
 }
 
 // src/routes/localExpenditure/index.ts
-var import_typebox4 = __toESM(require_typebox(), 1);
+var import_typebox5 = __toESM(require_typebox(), 1);
 
 // src/common/lofin.ts
 var provinces = {
@@ -116865,7 +116926,7 @@ var locals = {
   488e4: "\uACBD\uB0A8\uD569\uCC9C\uAD70",
   49e5: "\uC81C\uC8FC\uBCF8\uCCAD"
 };
-var realms = {
+var lofinRealms = {
   10: "\uC77C\uBC18\uACF5\uACF5\uD589\uC815",
   20: "\uACF5\uACF5\uC9C8\uC11C \uBC0F \uC548\uC804",
   50: "\uAD50\uC721",
@@ -116883,21 +116944,21 @@ var realms = {
 };
 
 // src/routes/localExpenditure/sql/getLocalExpenditures.sql
-var getLocalExpenditures_default = "/* @name getLocalExpenditures */\nSELECT realm_code,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE excut_de >= $1\n  AND excut_de <= $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $4 THEN sfrnd_code >= $3\n      AND sfrnd_code < $3 + 100000\n      ELSE sfrnd_code = $3\n    END\n  )\nGROUP BY realm_code\nORDER BY budget_crntam_sum DESC;";
+var getLocalExpenditures_default = "/* @name getLocalExpenditures */\nSELECT realm_code,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE (\n    $1::int IS NULL\n    OR CASE\n      WHEN $2 THEN sfrnd_code >= $1\n      AND sfrnd_code < $1 + 100000\n      ELSE sfrnd_code = $1\n    END\n  )\n  AND excut_de BETWEEN $3 AND $4\nGROUP BY realm_code\nORDER BY budget_crntam_sum DESC;";
 
 // src/routes/localExpenditure/sql/getLocalExpendituresByRealm.sql
-var getLocalExpendituresByRealm_default = "/* @name getLocalExpendituresByRealm */\nSELECT detail_bsns_nm,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE excut_de >= $1\n  AND excut_de < $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $4 THEN sfrnd_code >= $3\n      AND sfrnd_code < $3 + 100000\n      ELSE sfrnd_code = $3\n    END\n  )\n  AND realm_code = $5\nGROUP BY detail_bsns_nm\nORDER BY budget_crntam_sum DESC\nLIMIT $6;";
+var getLocalExpendituresByRealm_default = "/* @name getLocalExpendituresByRealm */\nSELECT detail_bsns_nm,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE (\n    $1::int IS NULL\n    OR CASE\n      WHEN $2 THEN sfrnd_code >= $1\n      AND sfrnd_code < $1 + 100000\n      ELSE sfrnd_code = $1\n    END\n  )\n  AND excut_de BETWEEN $3 AND $4\n  AND realm_code = $5\nGROUP BY detail_bsns_nm\nORDER BY budget_crntam_sum DESC\nLIMIT $6;";
 
 // src/routes/localExpenditure/index.ts
-async function routes4(fastify2) {
+async function routes5(fastify2) {
   const provinceCodes = Object.keys(provinces).map((codes) => +codes);
   const localCodes = Object.keys(locals).map((codes) => +codes);
   const schema2 = {
-    querystring: import_typebox4.Type.Object({
-      dateFrom: import_typebox4.Type.String(),
-      dateTo: import_typebox4.Type.String(),
+    querystring: import_typebox5.Type.Object({
+      dateFrom: import_typebox5.Type.String(),
+      dateTo: import_typebox5.Type.String(),
       // undefined: 전국
-      localCode: import_typebox4.Type.Optional(import_typebox4.Type.Number())
+      localCode: import_typebox5.Type.Optional(import_typebox5.Type.Number())
     })
   };
   fastify2.get("/expenditure/local", { schema: schema2 }, async (req) => {
@@ -116914,16 +116975,16 @@ async function routes4(fastify2) {
     if (localCode && !provinceCodes.includes(localCode) && !localCodes.includes(localCode))
       throw BadRequestError("Invalid `localCode`");
     const { rowCount, rows } = await pool.query(getLocalExpenditures_default, [
-      dateFrom,
-      dateTo,
       localCode ? isWholeProvince ? localCode * 1e5 : localCode : null,
-      isWholeProvince
+      isWholeProvince,
+      dateFrom,
+      dateTo
     ]);
     if (rowCount === 0)
       throw NotFoundError("No expenditure could be found that satisfies these conditions...");
     return {
       expenditures: rows.map((row) => ({
-        realm: realms[row.realm_code],
+        realm: lofinRealms[row.realm_code],
         budget_crntam_sum: row.budget_crntam_sum,
         nxndr_sum: row.nxndr_sum,
         cty_sum: row.cty_sum,
@@ -116935,13 +116996,13 @@ async function routes4(fastify2) {
     };
   });
   const schema3 = {
-    querystring: import_typebox4.Type.Object({
-      dateFrom: import_typebox4.Type.String(),
-      dateTo: import_typebox4.Type.String(),
+    querystring: import_typebox5.Type.Object({
+      dateFrom: import_typebox5.Type.String(),
+      dateTo: import_typebox5.Type.String(),
       // undefined: 전국
-      localCode: import_typebox4.Type.Optional(import_typebox4.Type.Number()),
-      projectCode: import_typebox4.Type.Number(),
-      count: import_typebox4.Type.Optional(import_typebox4.Type.Number())
+      localCode: import_typebox5.Type.Optional(import_typebox5.Type.Number()),
+      projectCode: import_typebox5.Type.Number(),
+      count: import_typebox5.Type.Optional(import_typebox5.Type.Number())
     })
   };
   fastify2.get("/expenditure/local/realm", { schema: schema3 }, async (req) => {
@@ -116962,10 +117023,10 @@ async function routes4(fastify2) {
     const { rowCount, rows } = await pool.query(
       getLocalExpendituresByRealm_default,
       [
-        dateFrom,
-        dateTo,
         localCode ? isWholeProvince ? localCode * 1e5 : localCode : null,
         isWholeProvince,
+        dateFrom,
+        dateTo,
         projectCode,
         count ?? 20
       ]
@@ -117026,15 +117087,15 @@ fastify.register(import_multipart.default, {
 });
 var schema = {
   schema: {
-    querystring: import_typebox5.Type.Object({
-      foo: import_typebox5.Type.Optional(import_typebox5.Type.Number()),
-      bar: import_typebox5.Type.Optional(import_typebox5.Type.String())
+    querystring: import_typebox6.Type.Object({
+      foo: import_typebox6.Type.Optional(import_typebox6.Type.Number()),
+      bar: import_typebox6.Type.Optional(import_typebox6.Type.String())
     }),
     response: {
-      200: import_typebox5.Type.Object({
-        hello: import_typebox5.Type.String(),
-        foo: import_typebox5.Type.Optional(import_typebox5.Type.Number()),
-        bar: import_typebox5.Type.Optional(import_typebox5.Type.String())
+      200: import_typebox6.Type.Object({
+        hello: import_typebox6.Type.String(),
+        foo: import_typebox6.Type.Optional(import_typebox6.Type.Number()),
+        bar: import_typebox6.Type.Optional(import_typebox6.Type.String())
       })
     }
   }
@@ -117047,6 +117108,7 @@ fastify.register(routes);
 fastify.register(routes2);
 fastify.register(routes3);
 fastify.register(routes4);
+fastify.register(routes5);
 async function startServer() {
   try {
     return await fastify.listen({

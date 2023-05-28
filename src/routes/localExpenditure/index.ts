@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 
 import { BadRequestError, NotFoundError } from '../../common/fastify'
-import { locals, provinces, realms } from '../../common/lofin'
+import { locals, lofinRealms, provinces } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { IGetLocalExpendituresResult } from './sql/getLocalExpenditures'
 import getLocalExpenditures from './sql/getLocalExpenditures.sql'
@@ -41,10 +41,10 @@ export default async function routes(fastify: TFastify) {
 
     // SQL
     const { rowCount, rows } = await pool.query<IGetLocalExpendituresResult>(getLocalExpenditures, [
-      dateFrom,
-      dateTo,
       localCode ? (isWholeProvince ? localCode * 100_000 : localCode) : null,
       isWholeProvince,
+      dateFrom,
+      dateTo,
     ])
 
     if (rowCount === 0)
@@ -52,7 +52,7 @@ export default async function routes(fastify: TFastify) {
 
     return {
       expenditures: rows.map((row) => ({
-        realm: realms[row.realm_code],
+        realm: lofinRealms[row.realm_code],
         budget_crntam_sum: row.budget_crntam_sum,
         nxndr_sum: row.nxndr_sum,
         cty_sum: row.cty_sum,
@@ -99,10 +99,10 @@ export default async function routes(fastify: TFastify) {
     const { rowCount, rows } = await pool.query<IGetLocalExpendituresByRealmResult>(
       getLocalExpendituresByRealm,
       [
-        dateFrom,
-        dateTo,
         localCode ? (isWholeProvince ? localCode * 100_000 : localCode) : null,
         isWholeProvince,
+        dateFrom,
+        dateTo,
         projectCode,
         count ?? 20,
       ]

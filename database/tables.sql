@@ -23,10 +23,36 @@ CREATE TABLE local_expenditure (
   sect_code int NOT NULL
 );
 
-CREATE INDEX excut_de__sfrnd_code__realm_code__detail_bsns_nm ON local_expenditure(excut_de, sfrnd_code, realm_code, detail_bsns_nm);
+-- getLofinRatio
+CREATE INDEX sfrnd_code__excut_de__sect_code ON local_expenditure(sfrnd_code, excut_de, sect_code);
+
+-- getLocalExpendituresByRealm
+-- getLocalExpenditures
+-- getLofinRatio
+CREATE INDEX sfrnd_code__excut_de__realm_code__detail_bsns_nm ON local_expenditure(sfrnd_code, excut_de, realm_code, detail_bsns_nm);
+
+-- getLofinByDistrict
+CREATE INDEX realm_code__sfrnd_code ON local_expenditure(realm_code, sfrnd_code);
+
+-- getLofinByDistrict
+CREATE INDEX sect_code__sfrnd_code ON local_expenditure(sect_code, sfrnd_code);
 
 CREATE INDEX excut_de__realm_code__detail_bsns_nm ON local_expenditure(excut_de, realm_code, detail_bsns_nm);
 
+/* 
+ FSCL_YY 회계연도	
+ OFFC_NM	소관명	
+ FLD_NM	분야명	
+ SECT_NM	부문명	
+ PGM_NM	프로그램명	
+ ACTV_NM	단위사업명	
+ SACTV_NM	세부사업명	
+ BZ_CLS_NM	경비구분	
+ Y_PREY_FIRST_KCUR_AMT 전년도국회확정금액	
+ Y_PREY_FNL_FRC_AMT 전년도최종금액	
+ Y_YY_MEDI_KCUR_AMT 정부안금액	
+ Y_YY_DFN_MEDI_KCUR_AMT 국회확정금액 
+ */
 CREATE TABLE center_expenditure (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   FSCL_YY int NOT NULL,

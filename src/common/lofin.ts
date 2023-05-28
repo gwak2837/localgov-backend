@@ -264,7 +264,7 @@ export const locals = {
   4900000: '제주본청',
 } as Record<number, string>
 
-export const realms = {
+export const lofinRealms = {
   10: '일반공공행정',
   20: '공공질서 및 안전',
   50: '교육',
@@ -281,7 +281,7 @@ export const realms = {
   900: '기타',
 } as Record<number, string>
 
-export const sectors = {
+export const lofinSectors = {
   11: '입법 및 선거관리',
   13: '지방행정ㆍ재정지원',
   14: '재정ㆍ금융',

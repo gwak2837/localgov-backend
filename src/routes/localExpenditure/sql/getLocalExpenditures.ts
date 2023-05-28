@@ -22,7 +22,7 @@ export interface IGetLocalExpendituresQuery {
   result: IGetLocalExpendituresResult;
 }
 
-const getLocalExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT realm_code,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE excut_de >= $1\n  AND excut_de <= $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $4 THEN sfrnd_code >= $3\n      AND sfrnd_code < $3 + 100000\n      ELSE sfrnd_code = $3\n    END\n  )\nGROUP BY realm_code\nORDER BY budget_crntam_sum DESC"};
+const getLocalExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT realm_code,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE (\n    $1::int IS NULL\n    OR CASE\n      WHEN $2 THEN sfrnd_code >= $1\n      AND sfrnd_code < $1 + 100000\n      ELSE sfrnd_code = $1\n    END\n  )\n  AND excut_de BETWEEN $3 AND $4\nGROUP BY realm_code\nORDER BY budget_crntam_sum DESC"};
 
 /**
  * Query generated from SQL:
@@ -36,16 +36,15 @@ const getLocalExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"
  *   sum(expndtram) AS expndtram_sum,
  *   sum(orgnztnam) AS orgnztnam_sum
  * FROM local_expenditure
- * WHERE excut_de >= $1
- *   AND excut_de <= $2
- *   AND (
- *     $3::int IS NULL
+ * WHERE (
+ *     $1::int IS NULL
  *     OR CASE
- *       WHEN $4 THEN sfrnd_code >= $3
- *       AND sfrnd_code < $3 + 100000
- *       ELSE sfrnd_code = $3
+ *       WHEN $2 THEN sfrnd_code >= $1
+ *       AND sfrnd_code < $1 + 100000
+ *       ELSE sfrnd_code = $1
  *     END
  *   )
+ *   AND excut_de BETWEEN $3 AND $4
  * GROUP BY realm_code
  * ORDER BY budget_crntam_sum DESC
  * ```
