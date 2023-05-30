@@ -1,6 +1,7 @@
 import { Type } from '@sinclair/typebox'
 
-import { BadRequestError } from '../../common/fastify'
+import { BadRequestError, NotFoundError } from '../../common/fastify'
+import { locals } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
 import getCefinByOffice from './sql/getCefinByOffice.sql'
@@ -48,6 +49,7 @@ export default async function routes(fastify: TFastify) {
 
   const schema2 = {
     querystring: Type.Object({
+      localCode: Type.Number(),
       isRealm: Type.Boolean(),
       centerRealmOrSector: Type.Array(Type.String()),
       localRealmOrSector: Type.Number(),
@@ -55,13 +57,17 @@ export default async function routes(fastify: TFastify) {
     }),
   }
 
+  const localCodes = Object.keys(locals).map((key) => +key)
+
   fastify.get('/analysis/flow', { schema: schema2 }, async (req, reply) => {
-    const { isRealm, centerRealmOrSector, localRealmOrSector, year } = req.query
+    const { localCode, isRealm, centerRealmOrSector, localRealmOrSector, year } = req.query
 
     if (year > 2023 || year < 2000) throw BadRequestError('Invalid `year`')
+    if (!localCodes.includes(localCode)) throw BadRequestError('Invalid `localCode`')
 
-    const [{ rows }, { rows: rows2 }] = await Promise.all([
+    const [{ rowCount, rows }, { rowCount: rowCount2, rows: rows2 }] = await Promise.all([
       pool.query<IGetLofinByDistrictResult>(getLofinByDistrict, [
+        localCode,
         isRealm,
         localRealmOrSector,
         `${year}-01-01`,
@@ -69,6 +75,8 @@ export default async function routes(fastify: TFastify) {
       ]),
       pool.query<IGetCefinByOfficeResult>(getCefinByOffice, [isRealm, centerRealmOrSector, year]),
     ])
+    if (rowCount === 0 || rowCount2 === 0)
+      throw NotFoundError('No analytics could be found that satisfies these conditions...')
 
     return { lofin: rows, cefin: rows2 }
   })

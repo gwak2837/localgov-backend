@@ -32,10 +32,10 @@ CREATE INDEX sfrnd_code__excut_de__sect_code ON local_expenditure(sfrnd_code, ex
 CREATE INDEX sfrnd_code__excut_de__realm_code__detail_bsns_nm ON local_expenditure(sfrnd_code, excut_de, realm_code, detail_bsns_nm);
 
 -- getLofinByDistrict
-CREATE INDEX realm_code__excut_de__sfrnd_code ON local_expenditure(realm_code, excut_de, sfrnd_code);
+CREATE INDEX sfrnd_code__realm_code__excut_de ON local_expenditure(sfrnd_code, realm_code, excut_de);
 
 -- getLofinByDistrict
-CREATE INDEX sect_code__excut_de__sfrnd_code ON local_expenditure(sect_code, excut_de, sfrnd_code);
+CREATE INDEX sfrnd_code__sect_code__excut_de ON local_expenditure(sfrnd_code, sect_code, excut_de);
 
 CREATE INDEX excut_de__realm_code__detail_bsns_nm ON local_expenditure(excut_de, realm_code, detail_bsns_nm);
 

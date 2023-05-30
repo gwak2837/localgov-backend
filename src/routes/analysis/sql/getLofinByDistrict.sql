@@ -8,10 +8,10 @@ SELECT sfrnd_code,
   sum(expndtram) AS expndtram,
   sum(orgnztnam) AS orgnztnam
 FROM local_expenditure
-WHERE CASE
-    WHEN $1 THEN realm_code = $2
-    ELSE sect_code = $2
+WHERE sfrnd_code = $1
+  AND CASE
+    WHEN $2 THEN realm_code = $3
+    ELSE sect_code = $3
   END
-  AND excut_de BETWEEN $3 AND $4
-GROUP BY sfrnd_code
+  AND excut_de BETWEEN $4 AND $5
 ORDER BY budget_crntam DESC;
