@@ -1,6 +1,5 @@
 /* @name getLofinByDistrict */
-SELECT sfrnd_code,
-  sum(budget_crntam) AS budget_crntam,
+SELECT sum(budget_crntam) AS budget_crntam,
   sum(nxndr) AS nxndr,
   sum(cty) AS cty,
   sum(signgunon) AS signgunon,
