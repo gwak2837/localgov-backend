@@ -116565,29 +116565,50 @@ var deleteCandidates_default = "/* @name deleteCandidates */\nDELETE FROM candid
 // src/routes/candidate/sql/getCandidates.sql
 var getCandidates_default = "/* @name getCandidates */\nSELECT id,\n  sgId,\n  sgTypecode,\n  sggName,\n  sidoName,\n  wiwName,\n  partyName,\n  krName\nFROM candidate;";
 
+// src/routes/candidate/sql/getElections.sql
+var getElections_default = "/* @name getElections */\nSELECT id,\n  sgId,\n  sgTypecode,\n  sggName,\n  sidoName,\n  wiwName\nFROM candidate;";
+
 // src/routes/candidate/sql/updateCandidate.sql
 var updateCandidate_default = "/* @name updateCandidate */\nUPDATE candidate\nSET sgId = $2,\n  sgTypecode = $3,\n  sggName = $4,\n  sidoName = $5,\n  wiwName = $6,\n  partyName = $7,\n  krName = $8\nWHERE id = $1;";
 
 // src/routes/candidate/index.ts
 async function routes2(fastify2) {
   const schema2 = {
-    querystring: import_typebox2.Type.Object({})
+    querystring: import_typebox2.Type.Object({
+      onlyElections: import_typebox2.Type.Optional(import_typebox2.Type.Boolean())
+    })
   };
   fastify2.get("/candidate", { schema: schema2 }, async (req, reply) => {
-    const { rows } = await pool.query(getCandidates_default);
-    return {
-      candidates: rows.map((candidate) => ({
-        id: candidate.id,
-        sgId: candidate.sgid,
-        sgTypecode: candidate.sgtypecode,
-        sgName: decodeElectionTypeCode(candidate.sgtypecode),
-        sidoName: candidate.sidoname,
-        sigunguName: candidate.sggname,
-        wiwName: candidate.wiwname,
-        partyName: candidate.partyname,
-        krName: candidate.krname
-      }))
-    };
+    const { onlyElections } = req.query;
+    if (onlyElections) {
+      const { rows } = await pool.query(getElections_default);
+      return {
+        elections: rows.map((candidate) => ({
+          id: candidate.id,
+          sgId: candidate.sgid,
+          sgTypecode: candidate.sgtypecode,
+          sgName: decodeElectionTypeCode(candidate.sgtypecode),
+          sidoName: candidate.sidoname,
+          sigunguName: candidate.sggname,
+          wiwName: candidate.wiwname
+        }))
+      };
+    } else {
+      const { rows } = await pool.query(getCandidates_default);
+      return {
+        candidates: rows.map((candidate) => ({
+          id: candidate.id,
+          sgId: candidate.sgid,
+          sgTypecode: candidate.sgtypecode,
+          sgName: decodeElectionTypeCode(candidate.sgtypecode),
+          sidoName: candidate.sidoname,
+          sigunguName: candidate.sggname,
+          wiwName: candidate.wiwname,
+          partyName: candidate.partyname,
+          krName: candidate.krname
+        }))
+      };
+    }
   });
   const schema22 = {
     body: import_typebox2.Type.Object({

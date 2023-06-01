@@ -5,30 +5,53 @@ import { BadRequestError, NotFoundError } from '../../common/fastify'
 import { pool } from '../../common/postgres'
 import createCandidate from './sql/createCandidate.sql'
 import deleteCandidates from './sql/deleteCandidates.sql'
+import { IGetCandidatesResult } from './sql/getCandidates'
 import getCandidates from './sql/getCandidates.sql'
+import { IGetElectionsResult } from './sql/getElections'
+import getElections from './sql/getElections.sql'
 import updateCandidate from './sql/updateCandidate.sql'
 import { TFastify } from '..'
 
 export default async function routes(fastify: TFastify) {
   const schema = {
-    querystring: Type.Object({}),
+    querystring: Type.Object({
+      onlyElections: Type.Optional(Type.Boolean()),
+    }),
   }
 
   fastify.get('/candidate', { schema }, async (req, reply) => {
-    const { rows } = await pool.query(getCandidates)
+    const { onlyElections } = req.query
 
-    return {
-      candidates: rows.map((candidate) => ({
-        id: candidate.id,
-        sgId: candidate.sgid,
-        sgTypecode: candidate.sgtypecode,
-        sgName: decodeElectionTypeCode(candidate.sgtypecode),
-        sidoName: candidate.sidoname,
-        sigunguName: candidate.sggname,
-        wiwName: candidate.wiwname,
-        partyName: candidate.partyname,
-        krName: candidate.krname,
-      })),
+    if (onlyElections) {
+      const { rows } = await pool.query<IGetElectionsResult>(getElections)
+
+      return {
+        elections: rows.map((candidate) => ({
+          id: candidate.id,
+          sgId: candidate.sgid,
+          sgTypecode: candidate.sgtypecode,
+          sgName: decodeElectionTypeCode(candidate.sgtypecode),
+          sidoName: candidate.sidoname,
+          sigunguName: candidate.sggname,
+          wiwName: candidate.wiwname,
+        })),
+      }
+    } else {
+      const { rows } = await pool.query<IGetCandidatesResult>(getCandidates)
+
+      return {
+        candidates: rows.map((candidate) => ({
+          id: candidate.id,
+          sgId: candidate.sgid,
+          sgTypecode: candidate.sgtypecode,
+          sgName: decodeElectionTypeCode(candidate.sgtypecode),
+          sidoName: candidate.sidoname,
+          sigunguName: candidate.sggname,
+          wiwName: candidate.wiwname,
+          partyName: candidate.partyname,
+          krName: candidate.krname,
+        })),
+      }
     }
   })
 
