@@ -116563,10 +116563,7 @@ var createCandidate_default = "/* @name createCandidate */\nINSERT INTO candidat
 var deleteCandidates_default = "/* @name deleteCandidates */\nDELETE FROM candidate\nWHERE id = ANY($1);";
 
 // src/routes/candidate/sql/getCandidates.sql
-var getCandidates_default = "/* @name getCandidates */\nSELECT id,\n  sgId,\n  sgTypecode,\n  sggName,\n  sidoName,\n  wiwName,\n  partyName,\n  krName\nFROM candidate;";
-
-// src/routes/candidate/sql/getElections.sql
-var getElections_default = "/* @name getElections */\nSELECT id,\n  sgId,\n  sgTypecode,\n  sggName,\n  sidoName,\n  wiwName\nFROM candidate;";
+var getCandidates_default = "/* @name getCandidates */\nSELECT id,\n  sgId,\n  sgTypecode,\n  sggName,\n  sidoName,\n  wiwName,\n  partyName,\n  krName\nFROM candidate\nORDER BY id DESC;";
 
 // src/routes/candidate/sql/updateCandidate.sql
 var updateCandidate_default = "/* @name updateCandidate */\nUPDATE candidate\nSET sgId = $2,\n  sgTypecode = $3,\n  sggName = $4,\n  sidoName = $5,\n  wiwName = $6,\n  partyName = $7,\n  krName = $8\nWHERE id = $1;";
@@ -116574,41 +116571,16 @@ var updateCandidate_default = "/* @name updateCandidate */\nUPDATE candidate\nSE
 // src/routes/candidate/index.ts
 async function routes2(fastify2) {
   const schema2 = {
-    querystring: import_typebox2.Type.Object({
-      onlyElections: import_typebox2.Type.Optional(import_typebox2.Type.Boolean())
-    })
+    querystring: import_typebox2.Type.Object({})
   };
   fastify2.get("/candidate", { schema: schema2 }, async (req, reply) => {
-    const { onlyElections } = req.query;
-    if (onlyElections) {
-      const { rows } = await pool.query(getElections_default);
-      return {
-        elections: rows.map((candidate) => ({
-          id: candidate.id,
-          sgId: candidate.sgid,
-          sgTypecode: candidate.sgtypecode,
-          sgName: decodeElectionTypeCode(candidate.sgtypecode),
-          sidoName: candidate.sidoname,
-          sigunguName: candidate.sggname,
-          wiwName: candidate.wiwname
-        }))
-      };
-    } else {
-      const { rows } = await pool.query(getCandidates_default);
-      return {
-        candidates: rows.map((candidate) => ({
-          id: candidate.id,
-          sgId: candidate.sgid,
-          sgTypecode: candidate.sgtypecode,
-          sgName: decodeElectionTypeCode(candidate.sgtypecode),
-          sidoName: candidate.sidoname,
-          sigunguName: candidate.sggname,
-          wiwName: candidate.wiwname,
-          partyName: candidate.partyname,
-          krName: candidate.krname
-        }))
-      };
-    }
+    const { rows } = await pool.query(getCandidates_default);
+    return {
+      candidates: rows.map((candidate) => ({
+        ...candidate,
+        sgName: decodeElectionTypeCode(candidate.sgtypecode)
+      }))
+    };
   });
   const schema22 = {
     body: import_typebox2.Type.Object({
@@ -116872,7 +116844,7 @@ var createCommitment_default = "/* @name createCommitment */\nINSERT INTO commit
 var deleteCommitments_default = "/* @name deleteCommitments */\nDELETE FROM commitment\nWHERE id = ANY($1);";
 
 // src/routes/commitment/sql/getCommitments.sql
-var getCommitments_default = "/* @name getCommitments */\nSELECT commitment.id,\n  prmsRealmName,\n  prmsTitle,\n  prmmCont,\n  candidate_id,\n  candidate.id AS candidate__id,\n  sgId AS candidate__sgId,\n  sgTypecode AS candidate__sgTypecode,\n  sggName AS candidate__sggName,\n  sidoName AS candidate__sidoName,\n  wiwName AS candidate__wiwName,\n  partyName AS candidate__partyName,\n  krName AS candidate__krName\nFROM commitment\n  JOIN candidate ON candidate.id = commitment.candidate_id\nWHERE commitment.id < $1\n  AND (\n    $2::int IS NULL\n    OR sgId BETWEEN $2 AND $3\n  )\n  AND (\n    $4::text IS NULL\n    OR sidoName = $4\n  )\n  AND (\n    $5::text IS NULL\n    OR sggName = $5\n  )\n  AND (\n    $6::int IS NULL\n    OR sgTypecode = $6\n  )\n  AND (\n    $7::text IS NULL\n    OR krName = $7\n  )\nORDER BY commitment.id DESC\nLIMIT $8;";
+var getCommitments_default = "/* @name getCommitments */\nSELECT commitment.id,\n  prmsRealmName,\n  prmsTitle,\n  prmmCont,\n  candidate_id,\n  candidate.id AS candidate__id,\n  sgId AS candidate__sgId,\n  sgTypecode AS candidate__sgTypecode,\n  sggName AS candidate__sggName,\n  sidoName AS candidate__sidoName,\n  wiwName AS candidate__wiwName,\n  partyName AS candidate__partyName,\n  krName AS candidate__krName\nFROM commitment\n  JOIN candidate ON candidate.id = commitment.candidate_id\n  AND candidate.id = ANY ($1)\nWHERE commitment.id < $2\nORDER BY commitment.id DESC\nLIMIT $3;";
 
 // src/routes/commitment/sql/updateCommitments.sql
 var updateCommitments_default = "/* @name updateCommitments */\nUPDATE commitment\nSET prmsRealmName = new.prmsRealmName,\n  prmsTitle = new.prmsTitle,\n  prmmCont = new.prmmCont\nFROM (\n    SELECT unnest($1::int []) AS id,\n      unnest($2::text []) AS prmsRealmName,\n      unnest($3::text []) AS prmsTitle,\n      unnest($4::text []) AS prmmCont\n  ) AS new\nWHERE commitment.id = new.id;";
@@ -116881,30 +116853,20 @@ var updateCommitments_default = "/* @name updateCommitments */\nUPDATE commitmen
 async function routes4(fastify2) {
   const schema2 = {
     querystring: import_typebox4.Type.Object({
-      dateFrom: import_typebox4.Type.String(),
-      dateTo: import_typebox4.Type.String(),
-      sido: import_typebox4.Type.Optional(import_typebox4.Type.String()),
-      sigungu: import_typebox4.Type.Optional(import_typebox4.Type.String()),
-      electionType: import_typebox4.Type.Optional(import_typebox4.Type.Number()),
-      name: import_typebox4.Type.Optional(import_typebox4.Type.String()),
+      candidateIds: import_typebox4.Type.Array(import_typebox4.Type.String()),
       lastId: import_typebox4.Type.Optional(import_typebox4.Type.Number()),
       count: import_typebox4.Type.Optional(import_typebox4.Type.Number())
     })
   };
   fastify2.get("/commitment", { schema: schema2 }, async (req) => {
-    const { dateFrom, dateTo, sido, sigungu, electionType, name, lastId, count } = req.query;
+    const { candidateIds, lastId, count } = req.query;
     const { rowCount, rows } = await pool.query(getCommitments_default, [
+      candidateIds,
       lastId ?? Number.MAX_SAFE_INTEGER,
-      dateFrom,
-      dateTo,
-      sido ? decodeURIComponent(sido) : null,
-      sigungu ? decodeURIComponent(sigungu) : null,
-      electionType,
-      name ? decodeURIComponent(name) : null,
       count ?? 20
     ]);
     if (rowCount === 0)
-      throw NotFoundError("No result");
+      throw NotFoundError("No commitment");
     return {
       commitments: rows.map((row) => ({
         id: row.id,

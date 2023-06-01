@@ -22,7 +22,7 @@ export interface IGetCandidatesQuery {
   result: IGetCandidatesResult;
 }
 
-const getCandidatesIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  sgId,\n  sgTypecode,\n  sggName,\n  sidoName,\n  wiwName,\n  partyName,\n  krName\nFROM candidate"};
+const getCandidatesIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  sgId,\n  sgTypecode,\n  sggName,\n  sidoName,\n  wiwName,\n  partyName,\n  krName\nFROM candidate\nORDER BY id DESC"};
 
 /**
  * Query generated from SQL:
@@ -36,6 +36,7 @@ const getCandidatesIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT 
  *   partyName,
  *   krName
  * FROM candidate
+ * ORDER BY id DESC
  * ```
  */
 export const getCandidates = new PreparedQuery<IGetCandidatesParams,IGetCandidatesResult>(getCandidatesIR);

@@ -7,4 +7,5 @@ SELECT id,
   wiwName,
   partyName,
   krName
-FROM candidate;
+FROM candidate
+ORDER BY id DESC;
