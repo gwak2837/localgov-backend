@@ -14,26 +14,7 @@ SELECT commitment.id,
   krName AS candidate__krName
 FROM commitment
   JOIN candidate ON candidate.id = commitment.candidate_id
-WHERE commitment.id < $1
-  AND (
-    $2::int IS NULL
-    OR sgId BETWEEN $2 AND $3
-  )
-  AND (
-    $4::text IS NULL
-    OR sidoName = $4
-  )
-  AND (
-    $5::text IS NULL
-    OR sggName = $5
-  )
-  AND (
-    $6::int IS NULL
-    OR sgTypecode = $6
-  )
-  AND (
-    $7::text IS NULL
-    OR krName = $7
-  )
+  AND candidate.id = ANY ($1)
+WHERE commitment.id < $2
 ORDER BY commitment.id DESC
-LIMIT $8;
+LIMIT $3;

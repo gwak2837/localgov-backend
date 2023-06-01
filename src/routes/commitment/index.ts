@@ -14,31 +14,21 @@ import { TFastify } from '..'
 export default async function routes(fastify: TFastify) {
   const schema = {
     querystring: Type.Object({
-      dateFrom: Type.String(),
-      dateTo: Type.String(),
-      sido: Type.Optional(Type.String()),
-      sigungu: Type.Optional(Type.String()),
-      electionType: Type.Optional(Type.Number()),
-      name: Type.Optional(Type.String()),
+      candidateIds: Type.Array(Type.String()),
       lastId: Type.Optional(Type.Number()),
       count: Type.Optional(Type.Number()),
     }),
   }
 
   fastify.get('/commitment', { schema }, async (req) => {
-    const { dateFrom, dateTo, sido, sigungu, electionType, name, lastId, count } = req.query
+    const { candidateIds, lastId, count } = req.query
 
     const { rowCount, rows } = await pool.query<IGetCommitmentsResult>(getCommitments, [
+      candidateIds,
       lastId ?? Number.MAX_SAFE_INTEGER,
-      dateFrom,
-      dateTo,
-      sido ? decodeURIComponent(sido) : null,
-      sigungu ? decodeURIComponent(sigungu) : null,
-      electionType,
-      name ? decodeURIComponent(name) : null,
       count ?? 20,
     ])
-    if (rowCount === 0) throw NotFoundError('No result')
+    if (rowCount === 0) throw NotFoundError('No commitment')
 
     return {
       commitments: rows.map((row) => ({
