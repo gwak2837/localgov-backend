@@ -16,25 +16,23 @@ import { TFastify } from '..'
 export default async function routes(fastify: TFastify) {
   const schema = {
     querystring: Type.Object({
+      year: Type.Number(),
       localCode: Type.Number(),
-      localDateFrom: Type.String(),
-      localDateTo: Type.String(),
-      centerYear: Type.Number(),
-      isLocalRealm: Type.Boolean(),
+      isRealm: Type.Boolean(),
     }),
   }
 
   fastify.get('/analysis/relation', { schema }, async (req, reply) => {
-    const { localCode, localDateFrom, localDateTo, isLocalRealm, centerYear } = req.query
+    const { year, localCode, isRealm } = req.query
 
     const [{ rows }, { rows: rows2 }] = await Promise.all([
       pool.query<IGetLofinRatioResult>(getLofinRatio, [
         localCode,
-        localDateFrom,
-        localDateTo,
-        isLocalRealm,
+        `${year}-01-01`,
+        `${year}-12-31`,
+        isRealm,
       ]),
-      pool.query<IGetCefinRatioResult>(getCefinRatio, [centerYear, isLocalRealm]),
+      pool.query<IGetCefinRatioResult>(getCefinRatio, [year, isRealm]),
     ])
 
     return {

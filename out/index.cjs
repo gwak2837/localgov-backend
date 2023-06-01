@@ -116468,23 +116468,21 @@ var getLofinRatio_default = "/* @name getLofinRatio */\nSELECT CASE\n    WHEN $4
 async function routes(fastify2) {
   const schema2 = {
     querystring: import_typebox.Type.Object({
+      year: import_typebox.Type.Number(),
       localCode: import_typebox.Type.Number(),
-      localDateFrom: import_typebox.Type.String(),
-      localDateTo: import_typebox.Type.String(),
-      centerYear: import_typebox.Type.Number(),
-      isLocalRealm: import_typebox.Type.Boolean()
+      isRealm: import_typebox.Type.Boolean()
     })
   };
   fastify2.get("/analysis/relation", { schema: schema2 }, async (req, reply) => {
-    const { localCode, localDateFrom, localDateTo, isLocalRealm, centerYear } = req.query;
+    const { year, localCode, isRealm } = req.query;
     const [{ rows }, { rows: rows2 }] = await Promise.all([
       pool.query(getLofinRatio_default, [
         localCode,
-        localDateFrom,
-        localDateTo,
-        isLocalRealm
+        `${year}-01-01`,
+        `${year}-12-31`,
+        isRealm
       ]),
-      pool.query(getCefinRatio_default, [centerYear, isLocalRealm])
+      pool.query(getCefinRatio_default, [year, isRealm])
     ]);
     return {
       lofin: rows,
