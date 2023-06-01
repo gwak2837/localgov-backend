@@ -116577,8 +116577,15 @@ async function routes2(fastify2) {
     const { rows } = await pool.query(getCandidates_default);
     return {
       candidates: rows.map((candidate) => ({
-        ...candidate,
-        sgName: decodeElectionTypeCode(candidate.sgtypecode)
+        id: candidate.id,
+        sgId: candidate.sgid,
+        sgTypecode: candidate.sgtypecode,
+        sgName: decodeElectionTypeCode(candidate.sgtypecode),
+        sidoName: candidate.sidoname,
+        sigunguName: candidate.sggname,
+        wiwName: candidate.wiwname,
+        partyName: candidate.partyname,
+        krName: candidate.krname
       }))
     };
   });

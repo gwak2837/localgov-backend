@@ -20,8 +20,15 @@ export default async function routes(fastify: TFastify) {
 
     return {
       candidates: rows.map((candidate) => ({
-        ...candidate,
+        id: candidate.id,
+        sgId: candidate.sgid,
+        sgTypecode: candidate.sgtypecode,
         sgName: decodeElectionTypeCode(candidate.sgtypecode),
+        sidoName: candidate.sidoname,
+        sigunguName: candidate.sggname,
+        wiwName: candidate.wiwname,
+        partyName: candidate.partyname,
+        krName: candidate.krname,
       })),
     }
   })
