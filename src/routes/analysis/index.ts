@@ -76,6 +76,17 @@ export default async function routes(fastify: TFastify) {
     if (rowCount === 0 || rowCount2 === 0)
       throw NotFoundError('No analytics could be found that satisfies these conditions...')
 
-    return { lofin: rows, cefin: rows2 }
+    return {
+      lofin: {
+        예산현액: rows[0].budget_crntam,
+        국비: rows[0].nxndr,
+        시도비: rows[0].cty,
+        시군구비: rows[0].signgunon,
+        기타: rows[0].etc_crntam,
+        지출액: rows[0].expndtram,
+        편성액: rows[0].orgnztnam,
+      },
+      cefin: rows2,
+    }
   })
 }

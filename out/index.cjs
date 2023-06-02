@@ -116519,7 +116519,18 @@ async function routes(fastify2) {
     ]);
     if (rowCount === 0 || rowCount2 === 0)
       throw NotFoundError("No analytics could be found that satisfies these conditions...");
-    return { lofin: rows, cefin: rows2 };
+    return {
+      lofin: {
+        \uC608\uC0B0\uD604\uC561: rows[0].budget_crntam,
+        \uAD6D\uBE44: rows[0].nxndr,
+        \uC2DC\uB3C4\uBE44: rows[0].cty,
+        \uC2DC\uAD70\uAD6C\uBE44: rows[0].signgunon,
+        \uAE30\uD0C0: rows[0].etc_crntam,
+        \uC9C0\uCD9C\uC561: rows[0].expndtram,
+        \uD3B8\uC131\uC561: rows[0].orgnztnam
+      },
+      cefin: rows2
+    };
   });
 }
 
