@@ -17,9 +17,7 @@ export default async function routes(fastify: TFastify) {
     querystring: Type.Object({
       dateFrom: Type.String(),
       dateTo: Type.String(),
-
-      // undefined: 전국
-      localCode: Type.Optional(Type.Number()),
+      localCode: Type.Number(),
     }),
   }
 
@@ -68,17 +66,14 @@ export default async function routes(fastify: TFastify) {
     querystring: Type.Object({
       dateFrom: Type.String(),
       dateTo: Type.String(),
-
-      // undefined: 전국
-      localCode: Type.Optional(Type.Number()),
-
-      projectCode: Type.Number(),
+      localCode: Type.Number(),
+      realmCode: Type.Number(),
       count: Type.Optional(Type.Number()),
     }),
   }
 
   fastify.get('/expenditure/local/realm', { schema: schema3 }, async (req) => {
-    const { dateFrom, dateTo, localCode, projectCode, count } = req.query
+    const { dateFrom, dateTo, localCode, realmCode, count } = req.query
     const isWholeProvince = localCode ? localCode > 0 && localCode < 100 : false
 
     // Request validation
@@ -103,7 +98,7 @@ export default async function routes(fastify: TFastify) {
         isWholeProvince,
         dateFrom,
         dateTo,
-        projectCode,
+        realmCode,
         count ?? 20,
       ]
     )

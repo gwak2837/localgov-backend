@@ -116960,8 +116960,7 @@ async function routes5(fastify2) {
     querystring: import_typebox5.Type.Object({
       dateFrom: import_typebox5.Type.String(),
       dateTo: import_typebox5.Type.String(),
-      // undefined: 전국
-      localCode: import_typebox5.Type.Optional(import_typebox5.Type.Number())
+      localCode: import_typebox5.Type.Number()
     })
   };
   fastify2.get("/expenditure/local", { schema: schema2 }, async (req) => {
@@ -117002,14 +117001,13 @@ async function routes5(fastify2) {
     querystring: import_typebox5.Type.Object({
       dateFrom: import_typebox5.Type.String(),
       dateTo: import_typebox5.Type.String(),
-      // undefined: 전국
-      localCode: import_typebox5.Type.Optional(import_typebox5.Type.Number()),
-      projectCode: import_typebox5.Type.Number(),
+      localCode: import_typebox5.Type.Number(),
+      realmCode: import_typebox5.Type.Number(),
       count: import_typebox5.Type.Optional(import_typebox5.Type.Number())
     })
   };
   fastify2.get("/expenditure/local/realm", { schema: schema3 }, async (req) => {
-    const { dateFrom, dateTo, localCode, projectCode, count } = req.query;
+    const { dateFrom, dateTo, localCode, realmCode, count } = req.query;
     const isWholeProvince = localCode ? localCode > 0 && localCode < 100 : false;
     if (count && count > 100)
       throw BadRequestError("Invalid `count`");
@@ -117030,7 +117028,7 @@ async function routes5(fastify2) {
         isWholeProvince,
         dateFrom,
         dateTo,
-        projectCode,
+        realmCode,
         count ?? 20
       ]
     );
