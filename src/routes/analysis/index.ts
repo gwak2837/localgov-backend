@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 
 import { BadRequestError, NotFoundError } from '../../common/fastify'
-import { sigunguCodes } from '../../common/lofin'
+import { lofinRealms, lofinSectors, sigunguCodes } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
 import getCefinByOffice from './sql/getCefinByOffice.sql'
@@ -49,11 +49,37 @@ export default async function routes(fastify: TFastify) {
         isRealm ?? false,
       ]),
     ])
+    console.log('👀 ~ rows:', rows)
 
-    return {
-      lofin: rows,
-      cefin: rows2,
+    const results = [{ type: '중앙정부' } as any]
+
+    for (const cefin of rows2) {
+      if (!cefin.sect_nm || !cefin.y_yy_dfn_medi_kcur_amt) continue
+      results[0][cefin.sect_nm] = +cefin.y_yy_dfn_medi_kcur_amt
     }
+
+    let currentCode
+
+    for (const lofin of rows) {
+      if (!lofin.realm_or_sect_code || !lofin.budget_crntam) continue
+
+      const realmOrSectorLabel = isRealm
+        ? lofinRealms[lofin.realm_or_sect_code]
+        : lofinSectors[lofin.realm_or_sect_code]
+
+      if (lofin.sfrnd_code === currentCode) {
+        results[results.length - 1][realmOrSectorLabel] = +lofin.budget_crntam
+      } else {
+        currentCode = lofin.sfrnd_code
+        results.push({
+          type: sigunguCodes[lofin.sfrnd_code ?? localCode ?? 0],
+          [realmOrSectorLabel]: +lofin.budget_crntam,
+        })
+      }
+    }
+
+    console.log('👀 ~ results:', results)
+    return results.reverse()
   })
 
   const schema2 = {

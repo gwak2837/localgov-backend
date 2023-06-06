@@ -116212,7 +116212,7 @@ var sigunguCodes = {
   1128e3: "\uC11C\uC6B8\uAE08\uCC9C\uAD6C",
   1129e3: "\uC11C\uC6B8\uC601\uB4F1\uD3EC\uAD6C",
   113e4: "\uC11C\uC6B8\uB3D9\uC791\uAD6C",
-  1131e3: "\uC11C\uC6B8\uB3D9\uC791\uAD6C",
+  1131e3: "\uC11C\uC6B8\uAD00\uC545\uAD6C",
   1132e3: "\uC11C\uC6B8\uC11C\uCD08\uAD6C",
   1133e3: "\uC11C\uC6B8\uAC15\uB0A8\uAD6C",
   1134e3: "\uC11C\uC6B8\uC1A1\uD30C\uAD6C",
@@ -116437,32 +116437,87 @@ var sigunguCodes = {
 };
 var lofinRealms = {
   10: "\uC77C\uBC18\uACF5\uACF5\uD589\uC815",
-  20: "\uACF5\uACF5\uC9C8\uC11C \uBC0F \uC548\uC804",
+  20: "\uACF5\uACF5\uC9C8\uC11C\uBC0F\uC548\uC804",
   50: "\uAD50\uC721",
-  60: "\uBB38\uD654 \uBC0F \uAD00\uAD11",
+  60: "\uBB38\uD654\uBC0F\uAD00\uAD11",
   70: "\uD658\uACBD",
   80: "\uC0AC\uD68C\uBCF5\uC9C0",
   90: "\uBCF4\uAC74",
   100: "\uB18D\uB9BC\uD574\uC591\uC218\uC0B0",
-  110: "\uC0B0\uC5C5\u318D\uC911\uC18C\uAE30\uC5C5 \uBC0F \uC5D0\uB108\uC9C0",
-  120: "\uAD50\uD1B5 \uBC0F \uBB3C\uB958",
-  140: "\uAD6D\uD1A0 \uBC0F \uC9C0\uC5ED\uAC1C\uBC1C",
+  110: "\uC0B0\uC5C5\xB7\uC911\uC18C\uAE30\uC5C5\uBC0F\uC5D0\uB108\uC9C0",
+  120: "\uAD50\uD1B5\uBC0F\uBB3C\uB958",
+  140: "\uAD6D\uD1A0\uBC0F\uC9C0\uC5ED\uAC1C\uBC1C",
   150: "\uACFC\uD559\uAE30\uC220",
   160: "\uC608\uBE44\uBE44",
   900: "\uAE30\uD0C0"
+};
+var lofinSectors = {
+  11: "\uC785\uBC95 \uBC0F \uC120\uAC70\uAD00\uB9AC",
+  13: "\uC9C0\uBC29\uD589\uC815\xB7\uC7AC\uC815\uC9C0\uC6D0",
+  14: "\uC7AC\uC815\xB7\uAE08\uC735",
+  16: "\uC77C\uBC18\uD589\uC815",
+  23: "\uACBD\uCC30",
+  25: "\uC7AC\uB09C\uBC29\uC7AC\xB7\uBBFC\uBC29\uC704",
+  26: "\uC18C\uBC29",
+  51: "\uC720\uC544 \uBC0F \uCD08\uC911\uB4F1\uAD50\uC721",
+  52: "\uACE0\uB4F1\uAD50\uC721",
+  53: "\uD3C9\uC0DD\xB7\uC9C1\uC5C5\uAD50\uC721",
+  61: "\uBB38\uD654\uC608\uC220",
+  62: "\uAD00\uAD11",
+  63: "\uCCB4\uC721",
+  64: "\uBB38\uD654\uC7AC",
+  65: "\uBB38\uD654\uBC0F\uAD00\uAD11\uC77C\uBC18",
+  71: "\uC0C1\uD558\uC218\uB3C4\xB7\uC218\uC9C8",
+  72: "\uD3D0\uAE30\uBB3C",
+  73: "\uB300\uAE30",
+  74: "\uC790\uC5F0",
+  75: "\uD574\uC591",
+  76: "\uD658\uACBD\uBCF4\uD638\uC77C\uBC18",
+  81: "\uAE30\uCD08\uC0DD\uD65C\uBCF4\uC7A5",
+  82: "\uCDE8\uC57D\uACC4\uCE35\uC9C0\uC6D0",
+  84: "\uBCF4\uC721\xB7\uAC00\uC871\uBC0F\uC5EC\uC131",
+  85: "\uB178\uC778\xB7\uCCAD\uC18C\uB144",
+  86: "\uB178\uB3D9",
+  87: "\uBCF4\uD6C8",
+  88: "\uC8FC\uD0DD",
+  89: "\uC0AC\uD68C\uBCF5\uC9C0\uC77C\uBC18",
+  91: "\uBCF4\uAC74\uC758\uB8CC",
+  93: "\uC2DD\uD488\uC758\uC57D\uC548\uC804",
+  101: "\uB18D\uC5C5\xB7\uB18D\uCD0C",
+  102: "\uC784\uC5C5\xB7\uC0B0\uCD0C",
+  103: "\uD574\uC591\uC218\uC0B0\xB7\uC5B4\uCD0C",
+  111: "\uC0B0\uC5C5\uAE08\uC735\uC9C0\uC6D0",
+  112: "\uC0B0\uC5C5\uAE30\uC220\uC9C0\uC6D0",
+  113: "\uBB34\uC5ED \uBC0F \uD22C\uC790\uC720\uCE58",
+  114: "\uC0B0\uC5C5\uC9C4\uD765\xB7\uACE0\uB3C4\uD654",
+  115: "\uC5D0\uB108\uC9C0\uBC0F\uC790\uC6D0\uAC1C\uBC1C",
+  116: "\uC0B0\uC5C5\xB7\uC911\uC18C\uAE30\uC5C5\uC77C\uBC18",
+  121: "\uB3C4\uB85C",
+  123: "\uB3C4\uC2DC\uCCA0\uB3C4",
+  124: "\uD574\uC6B4\xB7\uD56D\uB9CC",
+  125: "\uD56D\uACF5\xB7\uACF5\uD56D",
+  126: "\uB300\uC911\uAD50\uD1B5\xB7\uBB3C\uB958\uB4F1\uAE30\uD0C0",
+  141: "\uC218\uC790\uC6D0",
+  142: "\uC9C0\uC5ED\uBC0F\uB3C4\uC2DC",
+  143: "\uC0B0\uC5C5\uB2E8\uC9C0",
+  151: "\uAE30\uC220\uAC1C\uBC1C",
+  152: "\uACFC\uD559\uAE30\uC220\uC5F0\uAD6C\uC9C0\uC6D0",
+  153: "\uACFC\uD559\uAE30\uC220\uC77C\uBC18",
+  161: "\uC608\uBE44\uBE44",
+  901: "\uAE30\uD0C0"
 };
 
 // src/routes/analysis/sql/getCefinByOffice.sql
 var getCefinByOffice_default = "/* @name getCefinByOffice */\nSELECT OFFC_NM,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE CASE\n    WHEN $1 THEN FLD_NM = ANY ($2)\n    ELSE SECT_NM = ANY ($2)\n  END\n  AND FSCL_YY = $3\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
 
 // src/routes/analysis/sql/getCefinRatio.sql
-var getCefinRatio_default = "/* @name getCefinRatio */\nSELECT CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\nGROUP BY CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
+var getCefinRatio_default = "/* @name getCefinRatio */\nSELECT CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  -- SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  -- SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  -- SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\nGROUP BY CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
 
 // src/routes/analysis/sql/getLofinByDistrict.sql
 var getLofinByDistrict_default = "/* @name getLofinByDistrict */\nSELECT sum(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE sfrnd_code = $1\n  AND CASE\n    WHEN $2 THEN realm_code = $3\n    ELSE sect_code = $3\n  END\n  AND excut_de BETWEEN $4 AND $5\nORDER BY budget_crntam DESC;";
 
 // src/routes/analysis/sql/getLofinRatio.sql
-var getLofinRatio_default = "/* @name getLofinRatio */\nSELECT CASE\n    WHEN $3::int IS NULL\n    OR $3 < 100 THEN sfrnd_code\n  END,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END,\n  SUM(budget_crntam) AS budget_crntam,\n  SUM(nxndr) AS nxndr,\n  SUM(cty) AS cty,\n  SUM(signgunon) AS signgunon,\n  SUM(etc_crntam) AS etc_crntam,\n  SUM(expndtram) AS expndtram,\n  SUM(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $3 > 100 THEN sfrnd_code = $3\n      ELSE sfrnd_code >= $3 * 100000\n      AND sfrnd_code < ($3 + 1) * 100000\n    END\n  )\nGROUP BY sfrnd_code,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END\nORDER BY sfrnd_code,\n  budget_crntam DESC;";
+var getLofinRatio_default = "/* @name getLofinRatio */\nSELECT CASE\n    WHEN $3::int IS NULL\n    OR $3 < 100 THEN sfrnd_code\n  END AS sfrnd_code,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END AS realm_or_sect_code,\n  SUM(budget_crntam) AS budget_crntam -- SUM(nxndr) AS nxndr,\n  -- SUM(cty) AS cty,\n  -- SUM(signgunon) AS signgunon,\n  -- SUM(etc_crntam) AS etc_crntam,\n  -- SUM(expndtram) AS expndtram,\n  -- SUM(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $3 > 100 THEN sfrnd_code = $3\n      ELSE sfrnd_code >= $3 * 100000\n      AND sfrnd_code < ($3 + 1) * 100000\n    END\n  )\nGROUP BY sfrnd_code,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END\nORDER BY sfrnd_code,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END;";
 
 // src/routes/analysis/index.ts
 async function routes(fastify2) {
@@ -116499,10 +116554,30 @@ async function routes(fastify2) {
         isRealm ?? false
       ])
     ]);
-    return {
-      lofin: rows,
-      cefin: rows2
-    };
+    console.log("\u{1F440} ~ rows:", rows);
+    const results = [{ type: "\uC911\uC559\uC815\uBD80" }];
+    for (const cefin of rows2) {
+      if (!cefin.sect_nm || !cefin.y_yy_dfn_medi_kcur_amt)
+        continue;
+      results[0][cefin.sect_nm] = +cefin.y_yy_dfn_medi_kcur_amt;
+    }
+    let currentCode;
+    for (const lofin of rows) {
+      if (!lofin.realm_or_sect_code || !lofin.budget_crntam)
+        continue;
+      const realmOrSectorLabel = isRealm ? lofinRealms[lofin.realm_or_sect_code] : lofinSectors[lofin.realm_or_sect_code];
+      if (lofin.sfrnd_code === currentCode) {
+        results[results.length - 1][realmOrSectorLabel] = +lofin.budget_crntam;
+      } else {
+        currentCode = lofin.sfrnd_code;
+        results.push({
+          type: sigunguCodes[lofin.sfrnd_code ?? localCode ?? 0],
+          [realmOrSectorLabel]: +lofin.budget_crntam
+        });
+      }
+    }
+    console.log("\u{1F440} ~ results:", results);
+    return results.reverse();
   });
   const schema22 = {
     querystring: import_typebox.Type.Object({

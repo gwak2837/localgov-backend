@@ -2,18 +2,17 @@
 SELECT CASE
     WHEN $3::int IS NULL
     OR $3 < 100 THEN sfrnd_code
-  END,
+  END AS sfrnd_code,
   CASE
     WHEN $4 THEN realm_code
     ELSE sect_code
-  END,
-  SUM(budget_crntam) AS budget_crntam,
-  SUM(nxndr) AS nxndr,
-  SUM(cty) AS cty,
-  SUM(signgunon) AS signgunon,
-  SUM(etc_crntam) AS etc_crntam,
-  SUM(expndtram) AS expndtram,
-  SUM(orgnztnam) AS orgnztnam
+  END AS realm_or_sect_code,
+  SUM(budget_crntam) AS budget_crntam -- SUM(nxndr) AS nxndr,
+  -- SUM(cty) AS cty,
+  -- SUM(signgunon) AS signgunon,
+  -- SUM(etc_crntam) AS etc_crntam,
+  -- SUM(expndtram) AS expndtram,
+  -- SUM(orgnztnam) AS orgnztnam
 FROM local_expenditure
 WHERE excut_de BETWEEN $1 AND $2
   AND (
@@ -30,4 +29,7 @@ GROUP BY sfrnd_code,
     ELSE sect_code
   END
 ORDER BY sfrnd_code,
-  budget_crntam DESC;
+  CASE
+    WHEN $4 THEN realm_code
+    ELSE sect_code
+  END;
