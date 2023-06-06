@@ -116171,7 +116171,7 @@ var import_fastify8 = __toESM(require_fastify(), 1);
 var import_typebox = __toESM(require_typebox(), 1);
 
 // src/common/lofin.ts
-var provinces = {
+var sidoCodes = {
   11: "\uC11C\uC6B8",
   26: "\uBD80\uC0B0",
   27: "\uB300\uAD6C",
@@ -116190,7 +116190,7 @@ var provinces = {
   48: "\uACBD\uB0A8",
   49: "\uC81C\uC8FC"
 };
-var locals = {
+var sigunguCodes = {
   11e5: "\uC11C\uC6B8\uBCF8\uCCAD",
   1111e3: "\uC11C\uC6B8\uC885\uB85C\uAD6C",
   1112e3: "\uC11C\uC6B8\uC911\uAD6C",
@@ -116456,39 +116456,52 @@ var lofinRealms = {
 var getCefinByOffice_default = "/* @name getCefinByOffice */\nSELECT OFFC_NM,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE CASE\n    WHEN $1 THEN FLD_NM = ANY ($2)\n    ELSE SECT_NM = ANY ($2)\n  END\n  AND FSCL_YY = $3\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
 
 // src/routes/analysis/sql/getCefinRatio.sql
-var getCefinRatio_default = "/* @name getCefinRatio */\nSELECT CASE\n    WHEN $2 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY = $1\nGROUP BY CASE\n    WHEN $2 THEN FLD_NM\n    ELSE SECT_NM\n  END\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
+var getCefinRatio_default = "/* @name getCefinRatio */\nSELECT CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\nGROUP BY CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
 
 // src/routes/analysis/sql/getLofinByDistrict.sql
 var getLofinByDistrict_default = "/* @name getLofinByDistrict */\nSELECT sum(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE sfrnd_code = $1\n  AND CASE\n    WHEN $2 THEN realm_code = $3\n    ELSE sect_code = $3\n  END\n  AND excut_de BETWEEN $4 AND $5\nORDER BY budget_crntam DESC;";
 
 // src/routes/analysis/sql/getLofinRatio.sql
-var getLofinRatio_default = "/* @name getLofinRatio */\nSELECT CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END,\n  SUM(budget_crntam) AS budget_crntam,\n  SUM(nxndr) AS nxndr,\n  SUM(cty) AS cty,\n  SUM(signgunon) AS signgunon,\n  SUM(etc_crntam) AS etc_crntam,\n  SUM(expndtram) AS expndtram,\n  SUM(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE sfrnd_code = $1\n  AND excut_de BETWEEN $2 AND $3\nGROUP BY CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END\nORDER BY budget_crntam;";
+var getLofinRatio_default = "/* @name getLofinRatio */\nSELECT CASE\n    WHEN $3::int IS NULL\n    OR $3 < 100 THEN sfrnd_code\n  END,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END,\n  SUM(budget_crntam) AS budget_crntam,\n  SUM(nxndr) AS nxndr,\n  SUM(cty) AS cty,\n  SUM(signgunon) AS signgunon,\n  SUM(etc_crntam) AS etc_crntam,\n  SUM(expndtram) AS expndtram,\n  SUM(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $3 > 100 THEN sfrnd_code = $3\n      ELSE sfrnd_code >= $3 * 100000\n      AND sfrnd_code < ($3 + 1) * 100000\n    END\n  )\nGROUP BY sfrnd_code,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END\nORDER BY sfrnd_code,\n  budget_crntam DESC;";
 
 // src/routes/analysis/index.ts
 async function routes(fastify2) {
   const schema2 = {
     querystring: import_typebox.Type.Object({
-      year: import_typebox.Type.Number(),
-      localCode: import_typebox.Type.Number(),
-      isRealm: import_typebox.Type.Boolean()
+      dateFrom: import_typebox.Type.String(),
+      dateTo: import_typebox.Type.String(),
+      localCode: import_typebox.Type.Optional(import_typebox.Type.Number()),
+      // 기본값: 전국
+      isRealm: import_typebox.Type.Optional(import_typebox.Type.Boolean())
+      // 기본값: 부문
     })
   };
-  fastify2.get("/analysis/relation", { schema: schema2 }, async (req, reply) => {
-    const { year, localCode, isRealm } = req.query;
+  fastify2.get("/analysis/ratio", { schema: schema2 }, async (req, reply) => {
+    const { dateFrom, dateTo, localCode, isRealm } = req.query;
+    const dateFrom2 = Date.parse(dateFrom);
+    if (isNaN(dateFrom2))
+      throw BadRequestError("Invalid `dateFrom`");
+    const dateTo2 = Date.parse(dateTo);
+    if (isNaN(dateTo2))
+      throw BadRequestError("Invalid `dateTo`");
+    if (dateFrom2 > dateTo2)
+      throw BadRequestError("Invalid `dateFrom`");
     const [{ rows }, { rows: rows2 }] = await Promise.all([
       pool.query(getLofinRatio_default, [
+        dateFrom,
+        dateTo,
         localCode,
-        `${year}-01-01`,
-        `${year}-12-31`,
-        isRealm
+        isRealm ?? false
       ]),
-      pool.query(getCefinRatio_default, [year, isRealm])
+      pool.query(getCefinRatio_default, [
+        dateFrom.slice(0, 4),
+        dateTo.slice(0, 4),
+        isRealm ?? false
+      ])
     ]);
     return {
       lofin: rows,
-      lofinTotalBudget: rows.map((row) => +(row.budget_crntam ?? 0)).reduce((a, b) => a + b, 0),
-      cefin: rows2,
-      cefinTotalBudget: rows2.map((row) => +(row.y_yy_dfn_medi_kcur_amt ?? 0)).reduce((a, b) => a + b, 0)
+      cefin: rows2
     };
   });
   const schema22 = {
@@ -116500,7 +116513,7 @@ async function routes(fastify2) {
       year: import_typebox.Type.Number()
     })
   };
-  const localCodes = Object.keys(locals).map((key) => +key);
+  const localCodes = Object.keys(sigunguCodes).map((key) => +key);
   fastify2.get("/analysis/flow", { schema: schema22 }, async (req, reply) => {
     const { localCode, isRealm, centerRealmOrSector, localRealmOrSector, year } = req.query;
     if (year > 2023 || year < 2e3)
@@ -116784,10 +116797,10 @@ var officeNames = [
 ];
 
 // src/routes/centerExpenditure/sql/getCenterExpenditureByOffice.sql
-var getCenterExpenditureByOffice_default = "/* @name getCenterExpenditureByOffice */\nSELECT SACTV_NM,\n  sum(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT_SUM,\n  sum(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT_SUM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT_SUM,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT_SUM\nFROM center_expenditure\nWHERE CASE\n    WHEN $2::int IS NULL THEN FSCL_YY = $1\n    ELSE FSCL_YY >= $1\n    AND FSCL_YY <= $2\n  END\n  AND OFFC_NM = $3\nGROUP BY SACTV_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT_SUM DESC\nLIMIT $4;";
+var getCenterExpenditureByOffice_default = "/* @name getCenterExpenditureByOffice */\nSELECT SACTV_NM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT_SUM,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT_SUM\nFROM center_expenditure\nWHERE CASE\n    WHEN $2::int IS NULL THEN FSCL_YY = $1\n    ELSE FSCL_YY >= $1\n    AND FSCL_YY <= $2\n  END\n  AND OFFC_NM = $3\nGROUP BY SACTV_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT_SUM DESC\nLIMIT $4;";
 
 // src/routes/centerExpenditure/sql/getCenterExpenditures.sql
-var getCenterExpenditures_default = "/* @name getCenterExpenditures */\nSELECT OFFC_NM,\n  sum(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT_SUM,\n  sum(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT_SUM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT_SUM,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT_SUM\nFROM center_expenditure\nWHERE CASE\n    WHEN $2::int IS NULL THEN FSCL_YY = $1\n    ELSE FSCL_YY >= $1\n    AND FSCL_YY <= $2\n  END\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT_SUM DESC\nLIMIT $3;";
+var getCenterExpenditures_default = "/* @name getCenterExpenditures */\nSELECT OFFC_NM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT_SUM,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT_SUM\nFROM center_expenditure\nWHERE CASE\n    WHEN $2::int IS NULL THEN FSCL_YY = $1\n    ELSE FSCL_YY >= $1\n    AND FSCL_YY <= $2\n  END\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT_SUM DESC\nLIMIT $3;";
 
 // src/routes/centerExpenditure/index.ts
 async function routes3(fastify2) {
@@ -116958,15 +116971,15 @@ async function routes4(fastify2) {
 var import_typebox5 = __toESM(require_typebox(), 1);
 
 // src/routes/localExpenditure/sql/getLocalExpenditures.sql
-var getLocalExpenditures_default = "/* @name getLocalExpenditures */\nSELECT realm_code,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE (\n    $1::int IS NULL\n    OR CASE\n      WHEN $2 THEN sfrnd_code >= $1\n      AND sfrnd_code < $1 + 100000\n      ELSE sfrnd_code = $1\n    END\n  )\n  AND excut_de BETWEEN $3 AND $4\nGROUP BY realm_code\nORDER BY budget_crntam_sum DESC;";
+var getLocalExpenditures_default = "/* @name getLocalExpenditures */\nSELECT realm_code,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE sfrnd_code = $1\n  AND excut_de BETWEEN $2 AND $3\nGROUP BY realm_code\nORDER BY budget_crntam_sum DESC;";
 
 // src/routes/localExpenditure/sql/getLocalExpendituresByRealm.sql
 var getLocalExpendituresByRealm_default = "/* @name getLocalExpendituresByRealm */\nSELECT detail_bsns_nm,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE (\n    $1::int IS NULL\n    OR CASE\n      WHEN $2 THEN sfrnd_code >= $1\n      AND sfrnd_code < $1 + 100000\n      ELSE sfrnd_code = $1\n    END\n  )\n  AND excut_de BETWEEN $3 AND $4\n  AND realm_code = $5\nGROUP BY detail_bsns_nm\nORDER BY budget_crntam_sum DESC\nLIMIT $6;";
 
 // src/routes/localExpenditure/index.ts
 async function routes5(fastify2) {
-  const provinceCodes = Object.keys(provinces).map((codes) => +codes);
-  const localCodes = Object.keys(locals).map((codes) => +codes);
+  const provinceCodes = Object.keys(sidoCodes).map((codes) => +codes);
+  const localCodes = Object.keys(sigunguCodes).map((codes) => +codes);
   const schema2 = {
     querystring: import_typebox5.Type.Object({
       dateFrom: import_typebox5.Type.String(),
@@ -116976,7 +116989,6 @@ async function routes5(fastify2) {
   };
   fastify2.get("/expenditure/local", { schema: schema2 }, async (req) => {
     const { dateFrom, dateTo, localCode } = req.query;
-    const isWholeProvince = localCode ? localCode > 0 && localCode < 100 : false;
     const dateFrom2 = Date.parse(dateFrom);
     if (isNaN(dateFrom2))
       throw BadRequestError("Invalid `dateFrom`");
@@ -116988,8 +117000,7 @@ async function routes5(fastify2) {
     if (localCode && !provinceCodes.includes(localCode) && !localCodes.includes(localCode))
       throw BadRequestError("Invalid `localCode`");
     const { rowCount, rows } = await pool.query(getLocalExpenditures_default, [
-      localCode ? isWholeProvince ? localCode * 1e5 : localCode : null,
-      isWholeProvince,
+      localCode,
       dateFrom,
       dateTo
     ]);

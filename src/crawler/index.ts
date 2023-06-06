@@ -8,7 +8,7 @@ import {
   LOCAL_EXPENDITURE_DATE,
   LOFIN_KEY,
 } from '../common/constants'
-import { provinces } from '../common/lofin'
+import { sidoCodes, sigunguCodes } from '../common/lofin'
 import { pool } from '../common/postgres'
 import { toDate8, toISODate } from '../common/utils'
 import { CenterExpenditure, ErrorHead, Expenditure, Head } from '../types'
@@ -23,14 +23,28 @@ import deleteExpenditures from './deleteExpenditures.sql'
 main()
 
 async function main() {
+  // const date = new Date(LOCAL_EXPENDITURE_DATE)
+  // date.setDate(date.getDate() - +CLOUD_RUN_TASK_INDEX)
+  // for (; date.getFullYear() > 2021; date.setDate(date.getDate() - +CLOUD_RUN_TASK_COUNT)) {
+  //   await retry(() => getLocalGovExpenditures(date), {
+  //     retries: 10,
+  //     onRetry: (e, attemp) => console.warn(attemp, e.message),
+  //   })
+  // }
+
   const date = new Date(LOCAL_EXPENDITURE_DATE)
-  date.setDate(date.getDate() - +CLOUD_RUN_TASK_INDEX)
-  for (; date.getFullYear() > 2021; date.setDate(date.getDate() - +CLOUD_RUN_TASK_COUNT)) {
+  date.setFullYear(date.getFullYear() - +CLOUD_RUN_TASK_INDEX)
+  for (; date.getFullYear() > 2000; date.setFullYear(date.getFullYear() - +CLOUD_RUN_TASK_COUNT)) {
     await retry(() => getLocalGovExpenditures(date), {
       retries: 10,
       onRetry: (e, attemp) => console.warn(attemp, e.message),
     })
   }
+
+  await retry(() => getLocalGovExpenditures(date), {
+    retries: 10,
+    onRetry: (e, attemp) => console.warn(attemp, e.message),
+  })
 
   for (let year = 2023 - +CLOUD_RUN_TASK_INDEX; year > 2006; year -= +CLOUD_RUN_TASK_COUNT) {
     await retry(() => getCenterGovExpenditures(year), {
@@ -41,11 +55,11 @@ async function main() {
 }
 
 async function getLocalGovExpenditures(date: Date) {
-  for (const localGovCode_ of Object.keys(provinces)) {
-    const localGovCode = `${localGovCode_}00000`
+  for (const _sidoCode of Object.keys(sidoCodes)) {
+    const fullSidoCode = `${_sidoCode}00000`
+    console.log('👀 - date', date, 'sidoCode', _sidoCode, sidoCodes[+_sidoCode])
 
-    console.log('👀 - date', date, 'localGovCode', localGovCode, provinces[+localGovCode_])
-    const { data, head } = await fetchLocalFinance(1, 1, localGovCode, toDate8(date))
+    const { data, head } = await fetchLocalFinance(1, 1, fullSidoCode, toDate8(date))
     if (!data) continue
 
     const size = 1000
@@ -54,7 +68,7 @@ async function getLocalGovExpenditures(date: Date) {
 
     const { rows } = await pool.query<ICountExpendituresResult>(countExpenditures, [
       date,
-      localGovCode,
+      fullSidoCode,
     ])
 
     const count = rows[0].count
@@ -62,12 +76,12 @@ async function getLocalGovExpenditures(date: Date) {
     if (count && +count === totalExpenditureCount) {
       continue
     } else {
-      await pool.query(deleteExpenditures, [date, localGovCode])
+      await pool.query(deleteExpenditures, [date, fullSidoCode])
     }
 
     for (let i = 1; (i - 1) * size < totalExpenditureCount; i++) {
       process.stdout.write(`${i} `)
-      const { data: expenditures } = await fetchLocalFinance(i, size, localGovCode, toDate8(date))
+      const { data: expenditures } = await fetchLocalFinance(i, size, fullSidoCode, toDate8(date))
       if (!expenditures) continue
 
       // sort_ordr 열 제거, 형식 맞추기
@@ -91,11 +105,10 @@ async function getLocalGovExpenditures(date: Date) {
   }
 }
 
-async function fetchLocalFinance(index: number, size: number, local: string, date: string) {
+async function fetchLocalFinance(index: number, size: number, sidoCode: string, date: string) {
   const year = date.slice(0, 4)
-  const a = await fetch(
-    `https://lofin.mois.go.kr/HUB/QWGJK?key=${LOFIN_KEY}&Type=json&pIndex=${index}&pSize=${size}&accnut_year=${year}&wdr_sfrnd_code=${local}&excut_de=${date}`
-  )
+  const url = `https://lofin.mois.go.kr/HUB/QWGJK?key=${LOFIN_KEY}&type=json&pIndex=${index}&pSize=${size}&accnut_year=${year}&wdr_sfrnd_code=${sidoCode}&excut_de=${date}`
+  const a = await fetch(url)
   const result = (await a.json()) as any
   if (result.RESULT?.CODE) return { head: result.RESULT as ErrorHead, data: null }
 

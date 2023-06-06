@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 
 import { BadRequestError, NotFoundError } from '../../common/fastify'
-import { locals } from '../../common/lofin'
+import { sigunguCodes } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
 import getCefinByOffice from './sql/getCefinByOffice.sql'
@@ -16,32 +16,43 @@ import { TFastify } from '..'
 export default async function routes(fastify: TFastify) {
   const schema = {
     querystring: Type.Object({
-      year: Type.Number(),
-      localCode: Type.Number(),
-      isRealm: Type.Boolean(),
+      dateFrom: Type.String(),
+      dateTo: Type.String(),
+      localCode: Type.Optional(Type.Number()), // 기본값: 전국
+      isRealm: Type.Optional(Type.Boolean()), // 기본값: 부문
     }),
   }
 
-  fastify.get('/analysis/relation', { schema }, async (req, reply) => {
-    const { year, localCode, isRealm } = req.query
+  fastify.get('/analysis/ratio', { schema }, async (req, reply) => {
+    // Validate the querystring
+    const { dateFrom, dateTo, localCode, isRealm } = req.query
 
+    const dateFrom2 = Date.parse(dateFrom)
+    if (isNaN(dateFrom2)) throw BadRequestError('Invalid `dateFrom`')
+
+    const dateTo2 = Date.parse(dateTo)
+    if (isNaN(dateTo2)) throw BadRequestError('Invalid `dateTo`')
+
+    if (dateFrom2 > dateTo2) throw BadRequestError('Invalid `dateFrom`')
+
+    // Query SQL
     const [{ rows }, { rows: rows2 }] = await Promise.all([
       pool.query<IGetLofinRatioResult>(getLofinRatio, [
+        dateFrom,
+        dateTo,
         localCode,
-        `${year}-01-01`,
-        `${year}-12-31`,
-        isRealm,
+        isRealm ?? false,
       ]),
-      pool.query<IGetCefinRatioResult>(getCefinRatio, [year, isRealm]),
+      pool.query<IGetCefinRatioResult>(getCefinRatio, [
+        dateFrom.slice(0, 4),
+        dateTo.slice(0, 4),
+        isRealm ?? false,
+      ]),
     ])
 
     return {
       lofin: rows,
-      lofinTotalBudget: rows.map((row) => +(row.budget_crntam ?? 0)).reduce((a, b) => a + b, 0),
       cefin: rows2,
-      cefinTotalBudget: rows2
-        .map((row) => +(row.y_yy_dfn_medi_kcur_amt ?? 0))
-        .reduce((a, b) => a + b, 0),
     }
   })
 
@@ -55,7 +66,7 @@ export default async function routes(fastify: TFastify) {
     }),
   }
 
-  const localCodes = Object.keys(locals).map((key) => +key)
+  const localCodes = Object.keys(sigunguCodes).map((key) => +key)
 
   fastify.get('/analysis/flow', { schema: schema2 }, async (req, reply) => {
     const { localCode, isRealm, centerRealmOrSector, localRealmOrSector, year } = req.query

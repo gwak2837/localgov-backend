@@ -1,5 +1,9 @@
 /* @name getLofinRatio */
 SELECT CASE
+    WHEN $3::int IS NULL
+    OR $3 < 100 THEN sfrnd_code
+  END,
+  CASE
     WHEN $4 THEN realm_code
     ELSE sect_code
   END,
@@ -11,10 +15,19 @@ SELECT CASE
   SUM(expndtram) AS expndtram,
   SUM(orgnztnam) AS orgnztnam
 FROM local_expenditure
-WHERE sfrnd_code = $1
-  AND excut_de BETWEEN $2 AND $3
-GROUP BY CASE
+WHERE excut_de BETWEEN $1 AND $2
+  AND (
+    $3::int IS NULL
+    OR CASE
+      WHEN $3 > 100 THEN sfrnd_code = $3
+      ELSE sfrnd_code >= $3 * 100000
+      AND sfrnd_code < ($3 + 1) * 100000
+    END
+  )
+GROUP BY sfrnd_code,
+  CASE
     WHEN $4 THEN realm_code
     ELSE sect_code
   END
-ORDER BY budget_crntam;
+ORDER BY sfrnd_code,
+  budget_crntam DESC;

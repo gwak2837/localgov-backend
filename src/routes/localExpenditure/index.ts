@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 
 import { BadRequestError, NotFoundError } from '../../common/fastify'
-import { locals, lofinRealms, provinces } from '../../common/lofin'
+import { lofinRealms, sidoCodes, sigunguCodes } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { IGetLocalExpendituresResult } from './sql/getLocalExpenditures'
 import getLocalExpenditures from './sql/getLocalExpenditures.sql'
@@ -10,8 +10,8 @@ import getLocalExpendituresByRealm from './sql/getLocalExpendituresByRealm.sql'
 import { TFastify } from '..'
 
 export default async function routes(fastify: TFastify) {
-  const provinceCodes = Object.keys(provinces).map((codes) => +codes)
-  const localCodes = Object.keys(locals).map((codes) => +codes)
+  const provinceCodes = Object.keys(sidoCodes).map((codes) => +codes)
+  const localCodes = Object.keys(sigunguCodes).map((codes) => +codes)
 
   const schema2 = {
     querystring: Type.Object({
@@ -23,7 +23,6 @@ export default async function routes(fastify: TFastify) {
 
   fastify.get('/expenditure/local', { schema: schema2 }, async (req) => {
     const { dateFrom, dateTo, localCode } = req.query
-    const isWholeProvince = localCode ? localCode > 0 && localCode < 100 : false
 
     // Request validation
     const dateFrom2 = Date.parse(dateFrom)
@@ -39,8 +38,7 @@ export default async function routes(fastify: TFastify) {
 
     // SQL
     const { rowCount, rows } = await pool.query<IGetLocalExpendituresResult>(getLocalExpenditures, [
-      localCode ? (isWholeProvince ? localCode * 100_000 : localCode) : null,
-      isWholeProvince,
+      localCode,
       dateFrom,
       dateTo,
     ])

@@ -1,4 +1,4 @@
-export const provinces = {
+export const sidoCodes = {
   11: '서울',
   26: '부산',
   27: '대구',
@@ -18,7 +18,7 @@ export const provinces = {
   49: '제주',
 } as Record<number, string>
 
-export const locals = {
+export const sigunguCodes = {
   1100000: '서울본청',
   1111000: '서울종로구',
   1112000: '서울중구',
