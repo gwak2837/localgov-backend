@@ -16,7 +16,7 @@ export interface IGetCefinRatioQuery {
   result: IGetCefinRatioResult;
 }
 
-const getCefinRatioIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  -- SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  -- SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  -- SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\nGROUP BY CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC"};
+const getCefinRatioIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  -- SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  -- SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  -- SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\nGROUP BY CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END"};
 
 /**
  * Query generated from SQL:
@@ -35,7 +35,6 @@ const getCefinRatioIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT 
  *     WHEN $3 THEN FLD_NM
  *     ELSE SECT_NM
  *   END
- * ORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC
  * ```
  */
 export const getCefinRatio = new PreparedQuery<IGetCefinRatioParams,IGetCefinRatioResult>(getCefinRatioIR);

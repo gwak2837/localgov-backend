@@ -116511,7 +116511,7 @@ var lofinSectors = {
 var getCefinByOffice_default = "/* @name getCefinByOffice */\nSELECT OFFC_NM,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE CASE\n    WHEN $1 THEN FLD_NM = ANY ($2)\n    ELSE SECT_NM = ANY ($2)\n  END\n  AND FSCL_YY = $3\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
 
 // src/routes/analysis/sql/getCefinRatio.sql
-var getCefinRatio_default = "/* @name getCefinRatio */\nSELECT CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  -- SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  -- SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  -- SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\nGROUP BY CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
+var getCefinRatio_default = "/* @name getCefinRatio */\nSELECT CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  -- SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  -- SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  -- SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\nGROUP BY CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END;";
 
 // src/routes/analysis/sql/getLofinByDistrict.sql
 var getLofinByDistrict_default = "/* @name getLofinByDistrict */\nSELECT sum(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE sfrnd_code = $1\n  AND CASE\n    WHEN $2 THEN realm_code = $3\n    ELSE sect_code = $3\n  END\n  AND excut_de BETWEEN $4 AND $5\nORDER BY budget_crntam DESC;";
@@ -116554,7 +116554,6 @@ async function routes(fastify2) {
         isRealm ?? false
       ])
     ]);
-    console.log("\u{1F440} ~ rows:", rows);
     const results = [{ type: "\uC911\uC559\uC815\uBD80" }];
     for (const cefin of rows2) {
       if (!cefin.sect_nm || !cefin.y_yy_dfn_medi_kcur_amt)

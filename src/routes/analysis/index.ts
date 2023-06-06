@@ -49,7 +49,6 @@ export default async function routes(fastify: TFastify) {
         isRealm ?? false,
       ]),
     ])
-    console.log('👀 ~ rows:', rows)
 
     const results = [{ type: '중앙정부' } as any]
 
