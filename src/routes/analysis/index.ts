@@ -54,7 +54,7 @@ export default async function routes(fastify: TFastify) {
 
     for (const cefin of rows2) {
       if (!cefin.sect_nm || !cefin.y_yy_dfn_medi_kcur_amt) continue
-      results[0][cefin.sect_nm] = +cefin.y_yy_dfn_medi_kcur_amt
+      results[0][cefin.sect_nm] = Math.ceil(+cefin.y_yy_dfn_medi_kcur_amt / 1_000)
     }
 
     let currentCode
@@ -67,17 +67,18 @@ export default async function routes(fastify: TFastify) {
         : lofinSectors[lofin.realm_or_sect_code]
 
       if (lofin.sfrnd_code === currentCode) {
-        results[results.length - 1][realmOrSectorLabel] = +lofin.budget_crntam
+        results[results.length - 1][realmOrSectorLabel] = Math.ceil(
+          +lofin.budget_crntam / 1_000_000
+        )
       } else {
         currentCode = lofin.sfrnd_code
         results.push({
           type: sigunguCodes[lofin.sfrnd_code ?? localCode ?? 0],
-          [realmOrSectorLabel]: +lofin.budget_crntam,
+          [realmOrSectorLabel]: Math.ceil(+lofin.budget_crntam / 1_000_000),
         })
       }
     }
 
-    console.log('👀 ~ results:', results)
     return results.reverse()
   })
 

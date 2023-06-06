@@ -116558,7 +116558,7 @@ async function routes(fastify2) {
     for (const cefin of rows2) {
       if (!cefin.sect_nm || !cefin.y_yy_dfn_medi_kcur_amt)
         continue;
-      results[0][cefin.sect_nm] = +cefin.y_yy_dfn_medi_kcur_amt;
+      results[0][cefin.sect_nm] = Math.ceil(+cefin.y_yy_dfn_medi_kcur_amt / 1e3);
     }
     let currentCode;
     for (const lofin of rows) {
@@ -116566,16 +116566,17 @@ async function routes(fastify2) {
         continue;
       const realmOrSectorLabel = isRealm ? lofinRealms[lofin.realm_or_sect_code] : lofinSectors[lofin.realm_or_sect_code];
       if (lofin.sfrnd_code === currentCode) {
-        results[results.length - 1][realmOrSectorLabel] = +lofin.budget_crntam;
+        results[results.length - 1][realmOrSectorLabel] = Math.ceil(
+          +lofin.budget_crntam / 1e6
+        );
       } else {
         currentCode = lofin.sfrnd_code;
         results.push({
           type: sigunguCodes[lofin.sfrnd_code ?? localCode ?? 0],
-          [realmOrSectorLabel]: +lofin.budget_crntam
+          [realmOrSectorLabel]: Math.ceil(+lofin.budget_crntam / 1e6)
         });
       }
     }
-    console.log("\u{1F440} ~ results:", results);
     return results.reverse();
   });
   const schema22 = {
