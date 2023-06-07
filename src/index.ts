@@ -31,7 +31,7 @@ startServer()
   .then((url) => {
     console.log(`🚀 Server ready at: ${url}`)
     if (NODE_ENV !== 'production' && nets.en0)
-      console.log(`🚀 On Your Network: http://${nets.en0[1].address}:${PORT}`)
+      console.log(`🚀 On Your Network: https://${nets.en0[1].address}:${PORT}`)
   })
   .catch((error) => {
     throw new Error('Cannot start API server... \n' + error)

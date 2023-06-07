@@ -116508,16 +116508,16 @@ var lofinSectors = {
 };
 
 // src/routes/analysis/sql/getCefinByOffice.sql
-var getCefinByOffice_default = "/* @name getCefinByOffice */\nSELECT OFFC_NM,\n  SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE CASE\n    WHEN $1 THEN FLD_NM = ANY ($2)\n    ELSE SECT_NM = ANY ($2)\n  END\n  AND FSCL_YY = $3\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
+var getCefinByOffice_default = "/* @name getCefinByOffice */\nSELECT OFFC_NM,\n  -- SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  -- SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  -- SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\n  AND CASE\n    WHEN $3 THEN FLD_NM = ANY ($4)\n    ELSE SECT_NM = ANY ($4)\n  END\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
 
 // src/routes/analysis/sql/getCefinRatio.sql
-var getCefinRatio_default = "/* @name getCefinRatio */\nSELECT CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  -- SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  -- SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  -- SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\nGROUP BY CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END;";
+var getCefinRatio_default = "/* @name getCefinRatio */\nSELECT CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END AS field_or_sector,\n  -- SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  -- SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  -- SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\nGROUP BY field_or_sector;";
 
 // src/routes/analysis/sql/getLofinByDistrict.sql
-var getLofinByDistrict_default = "/* @name getLofinByDistrict */\nSELECT sum(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE sfrnd_code = $1\n  AND CASE\n    WHEN $2 THEN realm_code = $3\n    ELSE sect_code = $3\n  END\n  AND excut_de BETWEEN $4 AND $5\nORDER BY budget_crntam DESC;";
+var getLofinByDistrict_default = "/* @name getLofinByDistrict */\nSELECT sfrnd_code,\n  SUM(budget_crntam) AS budget_crntam -- sum(nxndr) AS nxndr,\n  -- sum(cty) AS cty,\n  -- sum(signgunon) AS signgunon,\n  -- sum(etc_crntam) AS etc_crntam,\n  -- sum(expndtram) AS expndtram,\n  -- sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND CASE\n    WHEN $3 THEN realm_code = ANY ($4)\n    ELSE sect_code = ANY ($4)\n  END\nGROUP BY sfrnd_code\nORDER BY sfrnd_code;";
 
 // src/routes/analysis/sql/getLofinRatio.sql
-var getLofinRatio_default = "/* @name getLofinRatio */\nSELECT CASE\n    WHEN $3::int IS NULL\n    OR $3 < 100 THEN sfrnd_code\n  END AS sfrnd_code,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END AS realm_or_sect_code,\n  SUM(budget_crntam) AS budget_crntam -- SUM(nxndr) AS nxndr,\n  -- SUM(cty) AS cty,\n  -- SUM(signgunon) AS signgunon,\n  -- SUM(etc_crntam) AS etc_crntam,\n  -- SUM(expndtram) AS expndtram,\n  -- SUM(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $3 > 100 THEN sfrnd_code = $3\n      ELSE sfrnd_code >= $3 * 100000\n      AND sfrnd_code < ($3 + 1) * 100000\n    END\n  )\nGROUP BY sfrnd_code,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END\nORDER BY sfrnd_code,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END;";
+var getLofinRatio_default = "/* @name getLofinRatio */\nSELECT CASE\n    WHEN $3::int IS NULL\n    OR $3 < 100 THEN sfrnd_code\n  END AS sfrnd_code,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END AS realm_or_sect_code,\n  SUM(budget_crntam) AS budget_crntam -- SUM(nxndr) AS nxndr,\n  -- SUM(cty) AS cty,\n  -- SUM(signgunon) AS signgunon,\n  -- SUM(etc_crntam) AS etc_crntam,\n  -- SUM(expndtram) AS expndtram,\n  -- SUM(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $3 > 100 THEN sfrnd_code = $3\n      ELSE sfrnd_code >= $3 * 100000\n      AND sfrnd_code < ($3 + 1) * 100000\n    END\n  )\nGROUP BY sfrnd_code,\n  realm_or_sect_code\nORDER BY sfrnd_code,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END;";
 
 // src/routes/analysis/index.ts
 async function routes(fastify2) {
@@ -116531,8 +116531,9 @@ async function routes(fastify2) {
       // 기본값: 부문
     })
   };
-  fastify2.get("/analysis/ratio", { schema: schema2 }, async (req, reply) => {
-    const { dateFrom, dateTo, localCode, isRealm } = req.query;
+  fastify2.get("/amchart/ratio", { schema: schema2 }, async (req, reply) => {
+    const { dateFrom, dateTo, localCode, isRealm: isRealm_ } = req.query;
+    const isRealm = isRealm_ ?? false;
     const dateFrom2 = Date.parse(dateFrom);
     if (isNaN(dateFrom2))
       throw BadRequestError("Invalid `dateFrom`");
@@ -116541,27 +116542,24 @@ async function routes(fastify2) {
       throw BadRequestError("Invalid `dateTo`");
     if (dateFrom2 > dateTo2)
       throw BadRequestError("Invalid `dateFrom`");
-    const [{ rows }, { rows: rows2 }] = await Promise.all([
-      pool.query(getLofinRatio_default, [
-        dateFrom,
-        dateTo,
-        localCode,
-        isRealm ?? false
-      ]),
+    const [{ rows, rowCount }, { rows: rows2, rowCount: rowCount2 }] = await Promise.all([
       pool.query(getCefinRatio_default, [
         dateFrom.slice(0, 4),
         dateTo.slice(0, 4),
-        isRealm ?? false
-      ])
+        isRealm
+      ]),
+      pool.query(getLofinRatio_default, [dateFrom, dateTo, localCode, isRealm])
     ]);
+    if (rowCount === 0 || rowCount2 === 0)
+      throw NotFoundError("No analytics could be found that satisfies these conditions...");
     const results = [{ type: "\uC911\uC559\uC815\uBD80" }];
-    for (const cefin of rows2) {
-      if (!cefin.sect_nm || !cefin.y_yy_dfn_medi_kcur_amt)
+    for (const cefin of rows) {
+      if (!cefin.field_or_sector || !cefin.y_yy_dfn_medi_kcur_amt)
         continue;
-      results[0][cefin.sect_nm] = Math.ceil(+cefin.y_yy_dfn_medi_kcur_amt / 1e3);
+      results[0][cefin.field_or_sector] = Math.ceil(+cefin.y_yy_dfn_medi_kcur_amt / 1e3);
     }
     let currentCode;
-    for (const lofin of rows) {
+    for (const lofin of rows2) {
       if (!lofin.realm_or_sect_code || !lofin.budget_crntam)
         continue;
       const realmOrSectorLabel = isRealm ? lofinRealms[lofin.realm_or_sect_code] : lofinSectors[lofin.realm_or_sect_code];
@@ -116581,44 +116579,67 @@ async function routes(fastify2) {
   });
   const schema22 = {
     querystring: import_typebox.Type.Object({
-      localCode: import_typebox.Type.Number(),
-      isRealm: import_typebox.Type.Boolean(),
+      dateFrom: import_typebox.Type.String(),
+      dateTo: import_typebox.Type.String(),
       centerRealmOrSector: import_typebox.Type.Array(import_typebox.Type.String()),
-      localRealmOrSector: import_typebox.Type.Number(),
-      year: import_typebox.Type.Number()
+      localRealmOrSector: import_typebox.Type.Array(import_typebox.Type.Number()),
+      isRealm: import_typebox.Type.Optional(import_typebox.Type.Boolean()),
+      // 기본값: 부문
+      criteria: import_typebox.Type.Optional(
+        import_typebox.Type.Union([import_typebox.Type.Literal("nation"), import_typebox.Type.Literal("sido"), import_typebox.Type.Literal("sigungu")])
+      )
     })
   };
-  const localCodes = Object.keys(sigunguCodes).map((key) => +key);
-  fastify2.get("/analysis/flow", { schema: schema22 }, async (req, reply) => {
-    const { localCode, isRealm, centerRealmOrSector, localRealmOrSector, year } = req.query;
-    if (year > 2023 || year < 2e3)
-      throw BadRequestError("Invalid `year`");
-    if (!localCodes.includes(localCode))
-      throw BadRequestError("Invalid `localCode`");
+  fastify2.get("/amchart/flow", { schema: schema22 }, async (req, reply) => {
+    const {
+      dateFrom,
+      dateTo,
+      centerRealmOrSector,
+      localRealmOrSector,
+      isRealm: isRealm_,
+      criteria: criteria_
+    } = req.query;
+    const criteria = criteria_ ?? "sigungu";
+    const isRealm = isRealm_ ?? false;
+    const dateFrom2 = Date.parse(dateFrom);
+    if (isNaN(dateFrom2))
+      throw BadRequestError("Invalid `dateFrom`");
+    const dateTo2 = Date.parse(dateTo);
+    if (isNaN(dateTo2))
+      throw BadRequestError("Invalid `dateTo`");
+    if (dateFrom2 > dateTo2)
+      throw BadRequestError("Invalid `dateFrom`");
     const [{ rowCount, rows }, { rowCount: rowCount2, rows: rows2 }] = await Promise.all([
-      pool.query(getLofinByDistrict_default, [
-        localCode,
+      pool.query(getCefinByOffice_default, [
+        dateFrom.slice(0, 4),
+        dateTo.slice(0, 4),
         isRealm,
-        localRealmOrSector,
-        `${year}-01-01`,
-        `${year}-12-31`
+        centerRealmOrSector
       ]),
-      pool.query(getCefinByOffice_default, [isRealm, centerRealmOrSector, year])
+      pool.query(getLofinByDistrict_default, [
+        dateFrom,
+        dateTo,
+        isRealm,
+        localRealmOrSector
+      ])
     ]);
     if (rowCount === 0 || rowCount2 === 0)
       throw NotFoundError("No analytics could be found that satisfies these conditions...");
-    return {
-      lofin: {
-        \uC608\uC0B0\uD604\uC561: rows[0].budget_crntam,
-        \uAD6D\uBE44: rows[0].nxndr,
-        \uC2DC\uB3C4\uBE44: rows[0].cty,
-        \uC2DC\uAD70\uAD6C\uBE44: rows[0].signgunon,
-        \uAE30\uD0C0: rows[0].etc_crntam,
-        \uC9C0\uCD9C\uC561: rows[0].expndtram,
-        \uD3B8\uC131\uC561: rows[0].orgnztnam
-      },
-      cefin: rows2
-    };
+    const results = [{ seriesName: "\uC911\uC559\uBD80\uCC98" }, { seriesName: "\uC9C0\uC790\uCCB4" }];
+    for (const cefin of rows) {
+      if (!cefin.offc_nm || !cefin.y_yy_dfn_medi_kcur_amt)
+        continue;
+      results[0][cefin.offc_nm] = Math.ceil(+cefin.y_yy_dfn_medi_kcur_amt / 1e3);
+    }
+    for (const lofin of rows2) {
+      if (!lofin.budget_crntam)
+        continue;
+      const key = criteria === "sigungu" ? sigunguCodes[lofin.sfrnd_code] : criteria === "sido" ? sidoCodes[Math.floor(lofin.sfrnd_code / 1e5)] : "\uC804\uAD6D";
+      if (!results[1][key])
+        results[1][key] = 0;
+      results[1][key] += Math.ceil(+lofin.budget_crntam / 1e6);
+    }
+    return results;
   });
 }
 
@@ -117231,7 +117252,7 @@ pool.query("SELECT CURRENT_TIMESTAMP").then(
 startServer().then((url) => {
   console.log(`\u{1F680} Server ready at: ${url}`);
   if (NODE_ENV !== "production" && nets.en0)
-    console.log(`\u{1F680} On Your Network: http://${nets.en0[1].address}:${PORT}`);
+    console.log(`\u{1F680} On Your Network: https://${nets.en0[1].address}:${PORT}`);
 }).catch((error) => {
   throw new Error("Cannot start API server... \n" + error);
 });

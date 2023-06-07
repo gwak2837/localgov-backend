@@ -1,16 +1,16 @@
 /* @name getLofinByDistrict */
-SELECT sum(budget_crntam) AS budget_crntam,
-  sum(nxndr) AS nxndr,
-  sum(cty) AS cty,
-  sum(signgunon) AS signgunon,
-  sum(etc_crntam) AS etc_crntam,
-  sum(expndtram) AS expndtram,
-  sum(orgnztnam) AS orgnztnam
+SELECT sfrnd_code,
+  SUM(budget_crntam) AS budget_crntam -- sum(nxndr) AS nxndr,
+  -- sum(cty) AS cty,
+  -- sum(signgunon) AS signgunon,
+  -- sum(etc_crntam) AS etc_crntam,
+  -- sum(expndtram) AS expndtram,
+  -- sum(orgnztnam) AS orgnztnam
 FROM local_expenditure
-WHERE sfrnd_code = $1
+WHERE excut_de BETWEEN $1 AND $2
   AND CASE
-    WHEN $2 THEN realm_code = $3
-    ELSE sect_code = $3
+    WHEN $3 THEN realm_code = ANY ($4)
+    ELSE sect_code = ANY ($4)
   END
-  AND excut_de BETWEEN $4 AND $5
-ORDER BY budget_crntam DESC;
+GROUP BY sfrnd_code
+ORDER BY sfrnd_code;

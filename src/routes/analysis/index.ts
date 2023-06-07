@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 
 import { BadRequestError, NotFoundError } from '../../common/fastify'
-import { lofinRealms, lofinSectors, sigunguCodes } from '../../common/lofin'
+import { lofinRealms, lofinSectors, sidoCodes, sigunguCodes } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
 import getCefinByOffice from './sql/getCefinByOffice.sql'
@@ -18,14 +18,16 @@ export default async function routes(fastify: TFastify) {
     querystring: Type.Object({
       dateFrom: Type.String(),
       dateTo: Type.String(),
+
       localCode: Type.Optional(Type.Number()), // 기본값: 전국
       isRealm: Type.Optional(Type.Boolean()), // 기본값: 부문
     }),
   }
 
-  fastify.get('/analysis/ratio', { schema }, async (req, reply) => {
+  fastify.get('/amchart/ratio', { schema }, async (req, reply) => {
     // Validate the querystring
-    const { dateFrom, dateTo, localCode, isRealm } = req.query
+    const { dateFrom, dateTo, localCode, isRealm: isRealm_ } = req.query
+    const isRealm = isRealm_ ?? false
 
     const dateFrom2 = Date.parse(dateFrom)
     if (isNaN(dateFrom2)) throw BadRequestError('Invalid `dateFrom`')
@@ -36,30 +38,28 @@ export default async function routes(fastify: TFastify) {
     if (dateFrom2 > dateTo2) throw BadRequestError('Invalid `dateFrom`')
 
     // Query SQL
-    const [{ rows }, { rows: rows2 }] = await Promise.all([
-      pool.query<IGetLofinRatioResult>(getLofinRatio, [
-        dateFrom,
-        dateTo,
-        localCode,
-        isRealm ?? false,
-      ]),
+    const [{ rows, rowCount }, { rows: rows2, rowCount: rowCount2 }] = await Promise.all([
       pool.query<IGetCefinRatioResult>(getCefinRatio, [
         dateFrom.slice(0, 4),
         dateTo.slice(0, 4),
-        isRealm ?? false,
+        isRealm,
       ]),
+      pool.query<IGetLofinRatioResult>(getLofinRatio, [dateFrom, dateTo, localCode, isRealm]),
     ])
+    if (rowCount === 0 || rowCount2 === 0)
+      throw NotFoundError('No analytics could be found that satisfies these conditions...')
 
+    // 예산 단위: 백만
     const results = [{ type: '중앙정부' } as any]
 
-    for (const cefin of rows2) {
-      if (!cefin.sect_nm || !cefin.y_yy_dfn_medi_kcur_amt) continue
-      results[0][cefin.sect_nm] = Math.ceil(+cefin.y_yy_dfn_medi_kcur_amt / 1_000)
+    for (const cefin of rows) {
+      if (!cefin.field_or_sector || !cefin.y_yy_dfn_medi_kcur_amt) continue
+      results[0][cefin.field_or_sector] = Math.ceil(+cefin.y_yy_dfn_medi_kcur_amt / 1_000)
     }
 
     let currentCode
 
-    for (const lofin of rows) {
+    for (const lofin of rows2) {
       if (!lofin.realm_or_sect_code || !lofin.budget_crntam) continue
 
       const realmOrSectorLabel = isRealm
@@ -84,46 +84,79 @@ export default async function routes(fastify: TFastify) {
 
   const schema2 = {
     querystring: Type.Object({
-      localCode: Type.Number(),
-      isRealm: Type.Boolean(),
+      dateFrom: Type.String(),
+      dateTo: Type.String(),
       centerRealmOrSector: Type.Array(Type.String()),
-      localRealmOrSector: Type.Number(),
-      year: Type.Number(),
+      localRealmOrSector: Type.Array(Type.Number()),
+
+      isRealm: Type.Optional(Type.Boolean()), // 기본값: 부문
+      criteria: Type.Optional(
+        Type.Union([Type.Literal('nation'), Type.Literal('sido'), Type.Literal('sigungu')])
+      ),
     }),
   }
 
-  const localCodes = Object.keys(sigunguCodes).map((key) => +key)
+  fastify.get('/amchart/flow', { schema: schema2 }, async (req, reply) => {
+    // Validate the querystring
+    const {
+      dateFrom,
+      dateTo,
+      centerRealmOrSector,
+      localRealmOrSector,
+      isRealm: isRealm_,
+      criteria: criteria_,
+    } = req.query
 
-  fastify.get('/analysis/flow', { schema: schema2 }, async (req, reply) => {
-    const { localCode, isRealm, centerRealmOrSector, localRealmOrSector, year } = req.query
+    const criteria = criteria_ ?? 'sigungu'
+    const isRealm = isRealm_ ?? false
 
-    if (year > 2023 || year < 2000) throw BadRequestError('Invalid `year`')
-    if (!localCodes.includes(localCode)) throw BadRequestError('Invalid `localCode`')
+    const dateFrom2 = Date.parse(dateFrom)
+    if (isNaN(dateFrom2)) throw BadRequestError('Invalid `dateFrom`')
 
+    const dateTo2 = Date.parse(dateTo)
+    if (isNaN(dateTo2)) throw BadRequestError('Invalid `dateTo`')
+
+    if (dateFrom2 > dateTo2) throw BadRequestError('Invalid `dateFrom`')
+
+    // Query SQL
     const [{ rowCount, rows }, { rowCount: rowCount2, rows: rows2 }] = await Promise.all([
+      pool.query<IGetCefinByOfficeResult>(getCefinByOffice, [
+        dateFrom.slice(0, 4),
+        dateTo.slice(0, 4),
+        isRealm,
+        centerRealmOrSector,
+      ]),
       pool.query<IGetLofinByDistrictResult>(getLofinByDistrict, [
-        localCode,
+        dateFrom,
+        dateTo,
         isRealm,
         localRealmOrSector,
-        `${year}-01-01`,
-        `${year}-12-31`,
       ]),
-      pool.query<IGetCefinByOfficeResult>(getCefinByOffice, [isRealm, centerRealmOrSector, year]),
     ])
     if (rowCount === 0 || rowCount2 === 0)
       throw NotFoundError('No analytics could be found that satisfies these conditions...')
 
-    return {
-      lofin: {
-        예산현액: rows[0].budget_crntam,
-        국비: rows[0].nxndr,
-        시도비: rows[0].cty,
-        시군구비: rows[0].signgunon,
-        기타: rows[0].etc_crntam,
-        지출액: rows[0].expndtram,
-        편성액: rows[0].orgnztnam,
-      },
-      cefin: rows2,
+    // 예산 단위: 백만
+    const results = [{ seriesName: '중앙부처' }, { seriesName: '지자체' }] as Record<string, any>[]
+
+    for (const cefin of rows) {
+      if (!cefin.offc_nm || !cefin.y_yy_dfn_medi_kcur_amt) continue
+      results[0][cefin.offc_nm] = Math.ceil(+cefin.y_yy_dfn_medi_kcur_amt / 1_000)
     }
+
+    for (const lofin of rows2) {
+      if (!lofin.budget_crntam) continue
+      const key =
+        criteria === 'sigungu'
+          ? sigunguCodes[lofin.sfrnd_code]
+          : criteria === 'sido'
+          ? sidoCodes[Math.floor(lofin.sfrnd_code / 100_000)]
+          : '전국'
+      if (!results[1][key]) results[1][key] = 0
+
+      results[1][key] += Math.ceil(+lofin.budget_crntam / 1_000_000)
+    }
+
+    return results
   })
 }

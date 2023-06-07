@@ -24,10 +24,7 @@ WHERE excut_de BETWEEN $1 AND $2
     END
   )
 GROUP BY sfrnd_code,
-  CASE
-    WHEN $4 THEN realm_code
-    ELSE sect_code
-  END
+  realm_or_sect_code
 ORDER BY sfrnd_code,
   CASE
     WHEN $4 THEN realm_code
