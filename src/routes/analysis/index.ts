@@ -19,8 +19,8 @@ export default async function routes(fastify: TFastify) {
       dateFrom: Type.String(),
       dateTo: Type.String(),
 
-      localCode: Type.Optional(Type.Number()), // 기본값: 전국
-      isRealm: Type.Optional(Type.Boolean()), // 기본값: 부문
+      localCode: Type.Optional(Type.Number()),
+      isRealm: Type.Optional(Type.Boolean()),
     }),
   }
 
@@ -89,7 +89,7 @@ export default async function routes(fastify: TFastify) {
       centerRealmOrSector: Type.Array(Type.String()),
       localRealmOrSector: Type.Array(Type.Number()),
 
-      isRealm: Type.Optional(Type.Boolean()), // 기본값: 부문
+      isRealm: Type.Optional(Type.Boolean()),
       criteria: Type.Optional(
         Type.Union([Type.Literal('nation'), Type.Literal('sido'), Type.Literal('sigungu')])
       ),
@@ -101,13 +101,14 @@ export default async function routes(fastify: TFastify) {
     const {
       dateFrom,
       dateTo,
-      centerRealmOrSector,
+      centerRealmOrSector: centerRealmOrSector_,
       localRealmOrSector,
       isRealm: isRealm_,
       criteria: criteria_,
     } = req.query
 
-    const criteria = criteria_ ?? 'sigungu'
+    const centerRealmOrSector = centerRealmOrSector_.map((c) => decodeURIComponent(c))
+    const criteria = criteria_ ?? 'sido'
     const isRealm = isRealm_ ?? false
 
     const dateFrom2 = Date.parse(dateFrom)
@@ -137,26 +138,28 @@ export default async function routes(fastify: TFastify) {
       throw NotFoundError('No analytics could be found that satisfies these conditions...')
 
     // 예산 단위: 백만
-    const results = [{ seriesName: '중앙부처' }, { seriesName: '지자체' }] as Record<string, any>[]
+    const cefin = { seriesName: '중앙부처' } as Record<string, number | string>
 
-    for (const cefin of rows) {
-      if (!cefin.offc_nm || !cefin.y_yy_dfn_medi_kcur_amt) continue
-      results[0][cefin.offc_nm] = Math.ceil(+cefin.y_yy_dfn_medi_kcur_amt / 1_000)
+    for (const cefinRow of rows) {
+      if (!cefinRow.offc_nm || !cefinRow.y_yy_dfn_medi_kcur_amt) continue
+      cefin[cefinRow.offc_nm] = Math.ceil(+cefinRow.y_yy_dfn_medi_kcur_amt / 1_000)
     }
 
-    for (const lofin of rows2) {
-      if (!lofin.budget_crntam) continue
+    const lofin = { seriesName: '지자체' } as Record<string, any>
+
+    for (const lofinRow of rows2) {
+      if (!lofinRow.budget_crntam) continue
       const key =
         criteria === 'sigungu'
-          ? sigunguCodes[lofin.sfrnd_code]
+          ? sigunguCodes[lofinRow.sfrnd_code]
           : criteria === 'sido'
-          ? sidoCodes[Math.floor(lofin.sfrnd_code / 100_000)]
+          ? sidoCodes[Math.floor(lofinRow.sfrnd_code / 100_000)]
           : '전국'
-      if (!results[1][key]) results[1][key] = 0
+      if (!lofin[key]) lofin[key] = 0
 
-      results[1][key] += Math.ceil(+lofin.budget_crntam / 1_000_000)
+      lofin[key] += Math.ceil(+lofinRow.budget_crntam / 1_000_000)
     }
 
-    return results
+    return [cefin, lofin]
   })
 }

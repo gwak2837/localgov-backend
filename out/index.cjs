@@ -116526,9 +116526,7 @@ async function routes(fastify2) {
       dateFrom: import_typebox.Type.String(),
       dateTo: import_typebox.Type.String(),
       localCode: import_typebox.Type.Optional(import_typebox.Type.Number()),
-      // 기본값: 전국
       isRealm: import_typebox.Type.Optional(import_typebox.Type.Boolean())
-      // 기본값: 부문
     })
   };
   fastify2.get("/amchart/ratio", { schema: schema2 }, async (req, reply) => {
@@ -116584,7 +116582,6 @@ async function routes(fastify2) {
       centerRealmOrSector: import_typebox.Type.Array(import_typebox.Type.String()),
       localRealmOrSector: import_typebox.Type.Array(import_typebox.Type.Number()),
       isRealm: import_typebox.Type.Optional(import_typebox.Type.Boolean()),
-      // 기본값: 부문
       criteria: import_typebox.Type.Optional(
         import_typebox.Type.Union([import_typebox.Type.Literal("nation"), import_typebox.Type.Literal("sido"), import_typebox.Type.Literal("sigungu")])
       )
@@ -116594,12 +116591,13 @@ async function routes(fastify2) {
     const {
       dateFrom,
       dateTo,
-      centerRealmOrSector,
+      centerRealmOrSector: centerRealmOrSector_,
       localRealmOrSector,
       isRealm: isRealm_,
       criteria: criteria_
     } = req.query;
-    const criteria = criteria_ ?? "sigungu";
+    const centerRealmOrSector = centerRealmOrSector_.map((c) => decodeURIComponent(c));
+    const criteria = criteria_ ?? "sido";
     const isRealm = isRealm_ ?? false;
     const dateFrom2 = Date.parse(dateFrom);
     if (isNaN(dateFrom2))
@@ -116625,21 +116623,22 @@ async function routes(fastify2) {
     ]);
     if (rowCount === 0 || rowCount2 === 0)
       throw NotFoundError("No analytics could be found that satisfies these conditions...");
-    const results = [{ seriesName: "\uC911\uC559\uBD80\uCC98" }, { seriesName: "\uC9C0\uC790\uCCB4" }];
-    for (const cefin of rows) {
-      if (!cefin.offc_nm || !cefin.y_yy_dfn_medi_kcur_amt)
+    const cefin = { seriesName: "\uC911\uC559\uBD80\uCC98" };
+    for (const cefinRow of rows) {
+      if (!cefinRow.offc_nm || !cefinRow.y_yy_dfn_medi_kcur_amt)
         continue;
-      results[0][cefin.offc_nm] = Math.ceil(+cefin.y_yy_dfn_medi_kcur_amt / 1e3);
+      cefin[cefinRow.offc_nm] = Math.ceil(+cefinRow.y_yy_dfn_medi_kcur_amt / 1e3);
     }
-    for (const lofin of rows2) {
-      if (!lofin.budget_crntam)
+    const lofin = { seriesName: "\uC9C0\uC790\uCCB4" };
+    for (const lofinRow of rows2) {
+      if (!lofinRow.budget_crntam)
         continue;
-      const key = criteria === "sigungu" ? sigunguCodes[lofin.sfrnd_code] : criteria === "sido" ? sidoCodes[Math.floor(lofin.sfrnd_code / 1e5)] : "\uC804\uAD6D";
-      if (!results[1][key])
-        results[1][key] = 0;
-      results[1][key] += Math.ceil(+lofin.budget_crntam / 1e6);
+      const key = criteria === "sigungu" ? sigunguCodes[lofinRow.sfrnd_code] : criteria === "sido" ? sidoCodes[Math.floor(lofinRow.sfrnd_code / 1e5)] : "\uC804\uAD6D";
+      if (!lofin[key])
+        lofin[key] = 0;
+      lofin[key] += Math.ceil(+lofinRow.budget_crntam / 1e6);
     }
-    return results;
+    return [cefin, lofin];
   });
 }
 
