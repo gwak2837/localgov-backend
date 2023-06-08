@@ -1,4 +1,4 @@
-export const sidoCodes = {
+export const sido = {
   11: '서울',
   26: '부산',
   27: '대구',
@@ -18,7 +18,9 @@ export const sidoCodes = {
   49: '제주',
 } as Record<number, string>
 
-export const sigunguCodes = {
+export const sidoCodes = Object.keys(sido).map((key) => +key)
+
+export const sigungu = {
   1100000: '서울본청',
   1111000: '서울종로구',
   1112000: '서울중구',
@@ -263,6 +265,8 @@ export const sigunguCodes = {
   4880000: '경남합천군',
   4900000: '제주본청',
 } as Record<number, string>
+
+export const sigunguCodes = Object.keys(sigungu).map((key) => +key)
 
 export const lofinRealms = {
   10: '일반공공행정',

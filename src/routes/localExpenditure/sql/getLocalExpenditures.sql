@@ -8,7 +8,14 @@ SELECT realm_code,
   sum(expndtram) AS expndtram_sum,
   sum(orgnztnam) AS orgnztnam_sum
 FROM local_expenditure
-WHERE sfrnd_code = $1
-  AND excut_de BETWEEN $2 AND $3
+WHERE excut_de BETWEEN $1 AND $2
+  AND (
+    $3::int IS NULL
+    OR CASE
+      WHEN $3 > 100 THEN sfrnd_code = $3
+      ELSE sfrnd_code >= $3 * 100000
+      AND sfrnd_code < ($3 + 1) * 100000
+    END
+  )
 GROUP BY realm_code
 ORDER BY budget_crntam_sum DESC;

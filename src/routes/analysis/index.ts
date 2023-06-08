@@ -1,7 +1,14 @@
 import { Type } from '@sinclair/typebox'
 
 import { BadRequestError, NotFoundError } from '../../common/fastify'
-import { lofinRealms, lofinSectors, sidoCodes, sigunguCodes } from '../../common/lofin'
+import {
+  lofinRealms,
+  lofinSectors,
+  sido,
+  sidoCodes,
+  sigungu,
+  sigunguCodes,
+} from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
 import getCefinByOffice from './sql/getCefinByOffice.sql'
@@ -36,6 +43,9 @@ export default async function routes(fastify: TFastify) {
     if (isNaN(dateTo2)) throw BadRequestError('Invalid `dateTo`')
 
     if (dateFrom2 > dateTo2) throw BadRequestError('Invalid `dateFrom`')
+
+    if (localCode && !sidoCodes.includes(localCode) && !sigunguCodes.includes(localCode))
+      throw BadRequestError('Invalid `localCode`')
 
     // Query SQL
     const [{ rows, rowCount }, { rows: rows2, rowCount: rowCount2 }] = await Promise.all([
@@ -73,7 +83,7 @@ export default async function routes(fastify: TFastify) {
       } else {
         currentCode = lofin.sfrnd_code
         results.push({
-          type: sigunguCodes[lofin.sfrnd_code ?? localCode ?? 0],
+          type: sigungu[lofin.sfrnd_code ?? localCode ?? 0],
           [realmOrSectorLabel]: Math.ceil(+lofin.budget_crntam / 1_000_000),
         })
       }
@@ -151,9 +161,9 @@ export default async function routes(fastify: TFastify) {
       if (!lofinRow.budget_crntam) continue
       const key =
         criteria === 'sigungu'
-          ? sigunguCodes[lofinRow.sfrnd_code]
+          ? sigungu[lofinRow.sfrnd_code]
           : criteria === 'sido'
-          ? sidoCodes[Math.floor(lofinRow.sfrnd_code / 100_000)]
+          ? sido[Math.floor(lofinRow.sfrnd_code / 100_000)]
           : '전국'
       if (!lofin[key]) lofin[key] = 0
 

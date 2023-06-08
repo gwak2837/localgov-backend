@@ -8,7 +8,7 @@ import {
   LOCAL_EXPENDITURE_DATE,
   LOFIN_KEY,
 } from '../common/constants'
-import { sidoCodes, sigunguCodes } from '../common/lofin'
+import { sido, sigungu } from '../common/lofin'
 import { pool } from '../common/postgres'
 import { toDate8, toISODate } from '../common/utils'
 import { CenterExpenditure, ErrorHead, Expenditure, Head } from '../types'
@@ -55,9 +55,9 @@ async function main() {
 }
 
 async function getLocalGovExpenditures(date: Date) {
-  for (const _sidoCode of Object.keys(sidoCodes)) {
+  for (const _sidoCode of Object.keys(sido)) {
     const fullSidoCode = `${_sidoCode}00000`
-    console.log('👀 - date', date, 'sidoCode', _sidoCode, sidoCodes[+_sidoCode])
+    console.log('👀 - date', date, 'sidoCode', _sidoCode, sido[+_sidoCode])
 
     const { data, head } = await fetchLocalFinance(1, 1, fullSidoCode, toDate8(date))
     if (!data) continue

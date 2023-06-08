@@ -8,16 +8,16 @@ SELECT detail_bsns_nm,
   sum(expndtram) AS expndtram_sum,
   sum(orgnztnam) AS orgnztnam_sum
 FROM local_expenditure
-WHERE (
-    $1::int IS NULL
+WHERE excut_de BETWEEN $1 AND $2
+  AND (
+    $3::int IS NULL
     OR CASE
-      WHEN $2 THEN sfrnd_code >= $1
-      AND sfrnd_code < $1 + 100000
-      ELSE sfrnd_code = $1
+      WHEN $3 > 100 THEN sfrnd_code = $3
+      ELSE sfrnd_code >= $3 * 100000
+      AND sfrnd_code < ($3 + 1) * 100000
     END
   )
-  AND excut_de BETWEEN $3 AND $4
-  AND realm_code = $5
+  AND realm_code = $4
 GROUP BY detail_bsns_nm
 ORDER BY budget_crntam_sum DESC
-LIMIT $6;
+LIMIT $5;

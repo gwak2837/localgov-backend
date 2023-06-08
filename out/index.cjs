@@ -116171,7 +116171,7 @@ var import_fastify8 = __toESM(require_fastify(), 1);
 var import_typebox = __toESM(require_typebox(), 1);
 
 // src/common/lofin.ts
-var sidoCodes = {
+var sido = {
   11: "\uC11C\uC6B8",
   26: "\uBD80\uC0B0",
   27: "\uB300\uAD6C",
@@ -116190,7 +116190,8 @@ var sidoCodes = {
   48: "\uACBD\uB0A8",
   49: "\uC81C\uC8FC"
 };
-var sigunguCodes = {
+var sidoCodes = Object.keys(sido).map((key) => +key);
+var sigungu = {
   11e5: "\uC11C\uC6B8\uBCF8\uCCAD",
   1111e3: "\uC11C\uC6B8\uC885\uB85C\uAD6C",
   1112e3: "\uC11C\uC6B8\uC911\uAD6C",
@@ -116435,6 +116436,7 @@ var sigunguCodes = {
   488e4: "\uACBD\uB0A8\uD569\uCC9C\uAD70",
   49e5: "\uC81C\uC8FC\uBCF8\uCCAD"
 };
+var sigunguCodes = Object.keys(sigungu).map((key) => +key);
 var lofinRealms = {
   10: "\uC77C\uBC18\uACF5\uACF5\uD589\uC815",
   20: "\uACF5\uACF5\uC9C8\uC11C\uBC0F\uC548\uC804",
@@ -116540,6 +116542,8 @@ async function routes(fastify2) {
       throw BadRequestError("Invalid `dateTo`");
     if (dateFrom2 > dateTo2)
       throw BadRequestError("Invalid `dateFrom`");
+    if (localCode && !sidoCodes.includes(localCode) && !sigunguCodes.includes(localCode))
+      throw BadRequestError("Invalid `localCode`");
     const [{ rows, rowCount }, { rows: rows2, rowCount: rowCount2 }] = await Promise.all([
       pool.query(getCefinRatio_default, [
         dateFrom.slice(0, 4),
@@ -116568,7 +116572,7 @@ async function routes(fastify2) {
       } else {
         currentCode = lofin.sfrnd_code;
         results.push({
-          type: sigunguCodes[lofin.sfrnd_code ?? localCode ?? 0],
+          type: sigungu[lofin.sfrnd_code ?? localCode ?? 0],
           [realmOrSectorLabel]: Math.ceil(+lofin.budget_crntam / 1e6)
         });
       }
@@ -116633,7 +116637,7 @@ async function routes(fastify2) {
     for (const lofinRow of rows2) {
       if (!lofinRow.budget_crntam)
         continue;
-      const key = criteria === "sigungu" ? sigunguCodes[lofinRow.sfrnd_code] : criteria === "sido" ? sidoCodes[Math.floor(lofinRow.sfrnd_code / 1e5)] : "\uC804\uAD6D";
+      const key = criteria === "sigungu" ? sigungu[lofinRow.sfrnd_code] : criteria === "sido" ? sido[Math.floor(lofinRow.sfrnd_code / 1e5)] : "\uC804\uAD6D";
       if (!lofin[key])
         lofin[key] = 0;
       lofin[key] += Math.ceil(+lofinRow.budget_crntam / 1e6);
@@ -117066,20 +117070,18 @@ async function routes4(fastify2) {
 var import_typebox5 = __toESM(require_typebox(), 1);
 
 // src/routes/localExpenditure/sql/getLocalExpenditures.sql
-var getLocalExpenditures_default = "/* @name getLocalExpenditures */\nSELECT realm_code,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE sfrnd_code = $1\n  AND excut_de BETWEEN $2 AND $3\nGROUP BY realm_code\nORDER BY budget_crntam_sum DESC;";
+var getLocalExpenditures_default = "/* @name getLocalExpenditures */\nSELECT realm_code,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $3 > 100 THEN sfrnd_code = $3\n      ELSE sfrnd_code >= $3 * 100000\n      AND sfrnd_code < ($3 + 1) * 100000\n    END\n  )\nGROUP BY realm_code\nORDER BY budget_crntam_sum DESC;";
 
 // src/routes/localExpenditure/sql/getLocalExpendituresByRealm.sql
-var getLocalExpendituresByRealm_default = "/* @name getLocalExpendituresByRealm */\nSELECT detail_bsns_nm,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE (\n    $1::int IS NULL\n    OR CASE\n      WHEN $2 THEN sfrnd_code >= $1\n      AND sfrnd_code < $1 + 100000\n      ELSE sfrnd_code = $1\n    END\n  )\n  AND excut_de BETWEEN $3 AND $4\n  AND realm_code = $5\nGROUP BY detail_bsns_nm\nORDER BY budget_crntam_sum DESC\nLIMIT $6;";
+var getLocalExpendituresByRealm_default = "/* @name getLocalExpendituresByRealm */\nSELECT detail_bsns_nm,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $3 > 100 THEN sfrnd_code = $3\n      ELSE sfrnd_code >= $3 * 100000\n      AND sfrnd_code < ($3 + 1) * 100000\n    END\n  )\n  AND realm_code = $4\nGROUP BY detail_bsns_nm\nORDER BY budget_crntam_sum DESC\nLIMIT $5;";
 
 // src/routes/localExpenditure/index.ts
 async function routes5(fastify2) {
-  const provinceCodes = Object.keys(sidoCodes).map((codes) => +codes);
-  const localCodes = Object.keys(sigunguCodes).map((codes) => +codes);
   const schema2 = {
     querystring: import_typebox5.Type.Object({
       dateFrom: import_typebox5.Type.String(),
       dateTo: import_typebox5.Type.String(),
-      localCode: import_typebox5.Type.Number()
+      localCode: import_typebox5.Type.Optional(import_typebox5.Type.Number())
     })
   };
   fastify2.get("/expenditure/local", { schema: schema2 }, async (req) => {
@@ -117092,12 +117094,12 @@ async function routes5(fastify2) {
       throw BadRequestError("Invalid `dateTo`");
     if (dateFrom2 > dateTo2)
       throw BadRequestError("Invalid `dateFrom`");
-    if (localCode && !provinceCodes.includes(localCode) && !localCodes.includes(localCode))
+    if (localCode && !sidoCodes.includes(localCode) && !sigunguCodes.includes(localCode))
       throw BadRequestError("Invalid `localCode`");
     const { rowCount, rows } = await pool.query(getLocalExpenditures_default, [
-      localCode,
       dateFrom,
-      dateTo
+      dateTo,
+      localCode
     ]);
     if (rowCount === 0)
       throw NotFoundError("No expenditure could be found that satisfies these conditions...");
@@ -117118,14 +117120,13 @@ async function routes5(fastify2) {
     querystring: import_typebox5.Type.Object({
       dateFrom: import_typebox5.Type.String(),
       dateTo: import_typebox5.Type.String(),
-      localCode: import_typebox5.Type.Number(),
       realmCode: import_typebox5.Type.Number(),
+      localCode: import_typebox5.Type.Optional(import_typebox5.Type.Number()),
       count: import_typebox5.Type.Optional(import_typebox5.Type.Number())
     })
   };
   fastify2.get("/expenditure/local/realm", { schema: schema3 }, async (req) => {
     const { dateFrom, dateTo, localCode, realmCode, count } = req.query;
-    const isWholeProvince = localCode ? localCode > 0 && localCode < 100 : false;
     if (count && count > 100)
       throw BadRequestError("Invalid `count`");
     const dateFrom2 = Date.parse(dateFrom);
@@ -117136,18 +117137,11 @@ async function routes5(fastify2) {
       throw BadRequestError("Invalid `dateTo`");
     if (dateFrom2 > dateTo2)
       throw BadRequestError("Invalid `dateFrom`");
-    if (localCode && !provinceCodes.includes(localCode) && !localCodes.includes(localCode))
+    if (localCode && !sidoCodes.includes(localCode) && !sigunguCodes.includes(localCode))
       throw BadRequestError("Invalid `localCode`");
     const { rowCount, rows } = await pool.query(
       getLocalExpendituresByRealm_default,
-      [
-        localCode ? isWholeProvince ? localCode * 1e5 : localCode : null,
-        isWholeProvince,
-        dateFrom,
-        dateTo,
-        realmCode,
-        count ?? 20
-      ]
+      [dateFrom, dateTo, localCode, realmCode, count ?? 20]
     );
     if (rowCount === 0)
       throw NotFoundError("No expenditure could be found that satisfies these conditions...");

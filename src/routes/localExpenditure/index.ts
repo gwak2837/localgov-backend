@@ -10,14 +10,12 @@ import getLocalExpendituresByRealm from './sql/getLocalExpendituresByRealm.sql'
 import { TFastify } from '..'
 
 export default async function routes(fastify: TFastify) {
-  const provinceCodes = Object.keys(sidoCodes).map((codes) => +codes)
-  const localCodes = Object.keys(sigunguCodes).map((codes) => +codes)
-
   const schema2 = {
     querystring: Type.Object({
       dateFrom: Type.String(),
       dateTo: Type.String(),
-      localCode: Type.Number(),
+
+      localCode: Type.Optional(Type.Number()),
     }),
   }
 
@@ -33,14 +31,14 @@ export default async function routes(fastify: TFastify) {
 
     if (dateFrom2 > dateTo2) throw BadRequestError('Invalid `dateFrom`')
 
-    if (localCode && !provinceCodes.includes(localCode) && !localCodes.includes(localCode))
+    if (localCode && !sidoCodes.includes(localCode) && !sigunguCodes.includes(localCode))
       throw BadRequestError('Invalid `localCode`')
 
     // SQL
     const { rowCount, rows } = await pool.query<IGetLocalExpendituresResult>(getLocalExpenditures, [
-      localCode,
       dateFrom,
       dateTo,
+      localCode,
     ])
 
     if (rowCount === 0)
@@ -64,15 +62,15 @@ export default async function routes(fastify: TFastify) {
     querystring: Type.Object({
       dateFrom: Type.String(),
       dateTo: Type.String(),
-      localCode: Type.Number(),
       realmCode: Type.Number(),
+
+      localCode: Type.Optional(Type.Number()),
       count: Type.Optional(Type.Number()),
     }),
   }
 
   fastify.get('/expenditure/local/realm', { schema: schema3 }, async (req) => {
     const { dateFrom, dateTo, localCode, realmCode, count } = req.query
-    const isWholeProvince = localCode ? localCode > 0 && localCode < 100 : false
 
     // Request validation
     if (count && count > 100) throw BadRequestError('Invalid `count`')
@@ -85,20 +83,13 @@ export default async function routes(fastify: TFastify) {
 
     if (dateFrom2 > dateTo2) throw BadRequestError('Invalid `dateFrom`')
 
-    if (localCode && !provinceCodes.includes(localCode) && !localCodes.includes(localCode))
+    if (localCode && !sidoCodes.includes(localCode) && !sigunguCodes.includes(localCode))
       throw BadRequestError('Invalid `localCode`')
 
     // SQL
     const { rowCount, rows } = await pool.query<IGetLocalExpendituresByRealmResult>(
       getLocalExpendituresByRealm,
-      [
-        localCode ? (isWholeProvince ? localCode * 100_000 : localCode) : null,
-        isWholeProvince,
-        dateFrom,
-        dateTo,
-        realmCode,
-        count ?? 20,
-      ]
+      [dateFrom, dateTo, localCode, realmCode, count ?? 20]
     )
 
     if (rowCount === 0)
