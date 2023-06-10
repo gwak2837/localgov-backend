@@ -31,7 +31,7 @@ export default async function routes(fastify: TFastify) {
     }),
   }
 
-  fastify.get('/amchart/ratio', { schema }, async (req, reply) => {
+  fastify.get('/analytics/ratio', { schema }, async (req, reply) => {
     // Validate the querystring
     const { dateFrom, dateTo, localCode, isRealm: isRealm_ } = req.query
     const isRealm = isRealm_ ?? false
@@ -106,7 +106,7 @@ export default async function routes(fastify: TFastify) {
     }),
   }
 
-  fastify.get('/amchart/flow', { schema: schema2 }, async (req, reply) => {
+  fastify.get('/analytics/flow', { schema: schema2 }, async (req, reply) => {
     // Validate the querystring
     const {
       dateFrom,
@@ -170,6 +170,16 @@ export default async function routes(fastify: TFastify) {
       lofin[key] += Math.ceil(+lofinRow.budget_crntam / 1_000_000)
     }
 
-    return [cefin, lofin]
+    return {
+      amchart: [cefin, lofin],
+      analytics: {
+        cefin: rows.map((cefinRow) => ({
+          offc_nm: cefinRow.offc_nm,
+          y_yy_dfn_medi_kcur_amt: +(cefinRow.y_yy_dfn_medi_kcur_amt ?? 0) * 1000,
+          y_yy_medi_kcur_amt: +(cefinRow.y_yy_medi_kcur_amt ?? 0) * 1000,
+        })),
+        lofin: rows2.map((lofinRow) => ({ ...lofinRow, sfrnd_name: sigungu[lofinRow.sfrnd_code] })),
+      },
+    }
   })
 }

@@ -116510,13 +116510,13 @@ var lofinSectors = {
 };
 
 // src/routes/analysis/sql/getCefinByOffice.sql
-var getCefinByOffice_default = "/* @name getCefinByOffice */\nSELECT OFFC_NM,\n  -- SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  -- SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  -- SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\n  AND CASE\n    WHEN $3 THEN FLD_NM = ANY ($4)\n    ELSE SECT_NM = ANY ($4)\n  END\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
+var getCefinByOffice_default = "/* @name getCefinByOffice */\nSELECT OFFC_NM,\n  SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\n  AND CASE\n    WHEN $3 THEN FLD_NM = ANY ($4)\n    ELSE SECT_NM = ANY ($4)\n  END\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC;";
 
 // src/routes/analysis/sql/getCefinRatio.sql
 var getCefinRatio_default = "/* @name getCefinRatio */\nSELECT CASE\n    WHEN $3 THEN FLD_NM\n    ELSE SECT_NM\n  END AS field_or_sector,\n  -- SUM(Y_PREY_FIRST_KCUR_AMT) AS Y_PREY_FIRST_KCUR_AMT,\n  -- SUM(Y_PREY_FNL_FRC_AMT) AS Y_PREY_FNL_FRC_AMT,\n  -- SUM(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  SUM(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\nGROUP BY field_or_sector;";
 
 // src/routes/analysis/sql/getLofinByDistrict.sql
-var getLofinByDistrict_default = "/* @name getLofinByDistrict */\nSELECT sfrnd_code,\n  SUM(budget_crntam) AS budget_crntam -- sum(nxndr) AS nxndr,\n  -- sum(cty) AS cty,\n  -- sum(signgunon) AS signgunon,\n  -- sum(etc_crntam) AS etc_crntam,\n  -- sum(expndtram) AS expndtram,\n  -- sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND CASE\n    WHEN $3 THEN realm_code = ANY ($4)\n    ELSE sect_code = ANY ($4)\n  END\nGROUP BY sfrnd_code\nORDER BY sfrnd_code;";
+var getLofinByDistrict_default = "/* @name getLofinByDistrict */\nSELECT sfrnd_code,\n  SUM(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND CASE\n    WHEN $3 THEN realm_code = ANY ($4)\n    ELSE sect_code = ANY ($4)\n  END\nGROUP BY sfrnd_code\nORDER BY budget_crntam DESC;";
 
 // src/routes/analysis/sql/getLofinRatio.sql
 var getLofinRatio_default = "/* @name getLofinRatio */\nSELECT CASE\n    WHEN $3::int IS NULL\n    OR $3 < 100 THEN sfrnd_code\n  END AS sfrnd_code,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END AS realm_or_sect_code,\n  SUM(budget_crntam) AS budget_crntam -- SUM(nxndr) AS nxndr,\n  -- SUM(cty) AS cty,\n  -- SUM(signgunon) AS signgunon,\n  -- SUM(etc_crntam) AS etc_crntam,\n  -- SUM(expndtram) AS expndtram,\n  -- SUM(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $3 > 100 THEN sfrnd_code = $3\n      ELSE sfrnd_code >= $3 * 100000\n      AND sfrnd_code < ($3 + 1) * 100000\n    END\n  )\nGROUP BY sfrnd_code,\n  realm_or_sect_code\nORDER BY sfrnd_code,\n  CASE\n    WHEN $4 THEN realm_code\n    ELSE sect_code\n  END;";
@@ -116531,7 +116531,7 @@ async function routes(fastify2) {
       isRealm: import_typebox.Type.Optional(import_typebox.Type.Boolean())
     })
   };
-  fastify2.get("/amchart/ratio", { schema: schema2 }, async (req, reply) => {
+  fastify2.get("/analytics/ratio", { schema: schema2 }, async (req, reply) => {
     const { dateFrom, dateTo, localCode, isRealm: isRealm_ } = req.query;
     const isRealm = isRealm_ ?? false;
     const dateFrom2 = Date.parse(dateFrom);
@@ -116591,7 +116591,7 @@ async function routes(fastify2) {
       )
     })
   };
-  fastify2.get("/amchart/flow", { schema: schema22 }, async (req, reply) => {
+  fastify2.get("/analytics/flow", { schema: schema22 }, async (req, reply) => {
     const {
       dateFrom,
       dateTo,
@@ -116642,7 +116642,17 @@ async function routes(fastify2) {
         lofin[key] = 0;
       lofin[key] += Math.ceil(+lofinRow.budget_crntam / 1e6);
     }
-    return [cefin, lofin];
+    return {
+      amchart: [cefin, lofin],
+      analytics: {
+        cefin: rows.map((cefinRow) => ({
+          offc_nm: cefinRow.offc_nm,
+          y_yy_dfn_medi_kcur_amt: +(cefinRow.y_yy_dfn_medi_kcur_amt ?? 0) * 1e3,
+          y_yy_medi_kcur_amt: +(cefinRow.y_yy_medi_kcur_amt ?? 0) * 1e3
+        })),
+        lofin: rows2.map((lofinRow) => ({ ...lofinRow, sfrnd_name: sigungu[lofinRow.sfrnd_code] }))
+      }
+    };
   });
 }
 
@@ -116939,7 +116949,8 @@ async function routes3(fastify2) {
     })
   };
   fastify2.get("/expenditure/center/office", { schema: schema22 }, async (req) => {
-    const { dateFrom, dateTo, officeName, count } = req.query;
+    const { dateFrom, dateTo, officeName: _officeName, count } = req.query;
+    const officeName = decodeURIComponent(_officeName);
     if (count && count > 100)
       throw BadRequestError("Invalid `count`");
     const dateFrom2 = Date.parse(dateFrom);

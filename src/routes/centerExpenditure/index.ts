@@ -54,7 +54,8 @@ export default async function routes(fastify: TFastify) {
   }
 
   fastify.get('/expenditure/center/office', { schema: schema2 }, async (req) => {
-    const { dateFrom, dateTo, officeName, count } = req.query
+    const { dateFrom, dateTo, officeName: _officeName, count } = req.query
+    const officeName = decodeURIComponent(_officeName)
 
     // Request validation
     if (count && count > 100) throw BadRequestError('Invalid `count`')
