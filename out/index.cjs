@@ -116802,7 +116802,7 @@ async function routes2(fastify2) {
 var import_typebox3 = __toESM(require_typebox(), 1);
 
 // src/common/cefin.ts
-var officeNames = [
+var cefinOfficeNames = [
   "\uAD6D\uAC00\uCCAD\uB834\uC704\uC6D0\uD68C",
   "\uAD6D\uC815\uD64D\uBCF4\uCC98",
   "\uB300\uD1B5\uB839\uBE44\uC11C\uC2E4",
@@ -116905,72 +116905,77 @@ var officeNames = [
   "\uD5CC\uBC95\uC7AC\uD310\uC18C"
 ];
 
-// src/routes/centerExpenditure/sql/getCenterExpenditureByOffice.sql
-var getCenterExpenditureByOffice_default = "/* @name getCenterExpenditureByOffice */\nSELECT SACTV_NM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT_SUM,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT_SUM\nFROM center_expenditure\nWHERE CASE\n    WHEN $2::int IS NULL THEN FSCL_YY = $1\n    ELSE FSCL_YY >= $1\n    AND FSCL_YY <= $2\n  END\n  AND OFFC_NM = $3\nGROUP BY SACTV_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT_SUM DESC\nLIMIT $4;";
+// src/routes/centerExpenditure/sql/getCefin.sql
+var getCefin_default = "/* @name getCefin */\nSELECT OFFC_NM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE FSCL_YY BETWEEN $1 AND $2\n  AND (\n    $3::boolean IS NULL\n    OR CASE\n      WHEN $3 THEN FLD_NM = ANY($4)\n      ELSE SECT_NM = ANY($4)\n    END\n  )\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC\nLIMIT $5;";
 
-// src/routes/centerExpenditure/sql/getCenterExpenditures.sql
-var getCenterExpenditures_default = "/* @name getCenterExpenditures */\nSELECT OFFC_NM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT_SUM,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT_SUM\nFROM center_expenditure\nWHERE CASE\n    WHEN $2::int IS NULL THEN FSCL_YY = $1\n    ELSE FSCL_YY >= $1\n    AND FSCL_YY <= $2\n  END\nGROUP BY OFFC_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT_SUM DESC\nLIMIT $3;";
+// src/routes/centerExpenditure/sql/getCefinByOffice.sql
+var getCefinByOffice_default2 = "/* @name getCefinByOffice */\nSELECT SACTV_NM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE OFFC_NM = ANY ($1)\n  AND FSCL_YY BETWEEN $2 AND $3\n  AND (\n    $4::boolean IS NULL\n    OR CASE\n      WHEN $4 THEN FLD_NM = ANY($5)\n      ELSE SECT_NM = ANY($5)\n    END\n  )\nGROUP BY SACTV_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC\nLIMIT $6;";
 
 // src/routes/centerExpenditure/index.ts
 async function routes3(fastify2) {
   const schema2 = {
     querystring: import_typebox3.Type.Object({
-      dateFrom: import_typebox3.Type.String(),
-      dateTo: import_typebox3.Type.String(),
-      count: import_typebox3.Type.Optional(import_typebox3.Type.Number())
+      yearFrom: import_typebox3.Type.Number(),
+      yearTo: import_typebox3.Type.Number(),
+      isField: import_typebox3.Type.Optional(import_typebox3.Type.Boolean()),
+      fieldsOrSectors: import_typebox3.Type.Optional(import_typebox3.Type.Array(import_typebox3.Type.String())),
+      count: import_typebox3.Type.Optional(import_typebox3.Type.Number()),
+      officeNames: import_typebox3.Type.Optional(import_typebox3.Type.Array(import_typebox3.Type.String()))
     })
   };
   fastify2.get("/expenditure/center", { schema: schema2 }, async (req) => {
-    const { dateFrom, dateTo, count } = req.query;
-    const dateFrom2 = Date.parse(dateFrom);
-    if (isNaN(dateFrom2))
-      throw BadRequestError("Invalid `dateFrom`");
-    const dateTo2 = Date.parse(dateTo);
-    if (isNaN(dateTo2))
-      throw BadRequestError("Invalid `dateTo`");
-    if (dateFrom2 > dateTo2)
-      throw BadRequestError("Invalid `dateFrom`");
-    const { rowCount, rows } = await pool.query(
-      getCenterExpenditures_default,
-      [dateFrom, dateTo, count ?? 30]
-    );
-    if (rowCount === 0)
-      throw NotFoundError("No expenditure could be found that satisfies these conditions...");
-    return {
-      expenditures: rows
-    };
-  });
-  const schema22 = {
-    querystring: import_typebox3.Type.Object({
-      dateFrom: import_typebox3.Type.String(),
-      dateTo: import_typebox3.Type.String(),
-      officeName: import_typebox3.Type.String(),
-      count: import_typebox3.Type.Optional(import_typebox3.Type.Number())
-    })
-  };
-  fastify2.get("/expenditure/center/office", { schema: schema22 }, async (req) => {
-    const { dateFrom, dateTo, officeName: _officeName, count } = req.query;
-    const officeName = decodeURIComponent(_officeName);
-    if (count && count > 100)
+    const {
+      yearFrom,
+      yearTo,
+      isField,
+      fieldsOrSectors: _fieldsOrSectors,
+      count: _count,
+      officeNames: _officeNames
+    } = req.query;
+    const fieldsOrSectors = _fieldsOrSectors?.map((c) => decodeURIComponent(c));
+    const count = _count ?? 30;
+    const officeNames = _officeNames?.map((c) => decodeURIComponent(c));
+    if (yearFrom < 2e3 || yearFrom > 2030)
+      throw BadRequestError("Invalid `yearFrom`");
+    if (yearTo < 2e3 || yearTo > 2030)
+      throw BadRequestError("Invalid `yearTo`");
+    if (yearFrom > yearTo)
+      throw BadRequestError("Invalid `yearFrom`");
+    if (isField === void 0 && fieldsOrSectors)
+      throw BadRequestError("Invalid `fieldsOrSectors`");
+    if (isField !== void 0 && !fieldsOrSectors)
+      throw BadRequestError("Invalid `fieldsOrSectors`");
+    if (count > 100)
       throw BadRequestError("Invalid `count`");
-    const dateFrom2 = Date.parse(dateFrom);
-    if (isNaN(dateFrom2))
-      throw BadRequestError("Invalid `dateFrom`");
-    const dateTo2 = Date.parse(dateTo);
-    if (isNaN(dateTo2))
-      throw BadRequestError("Invalid `dateTo`");
-    if (dateFrom2 > dateTo2)
-      throw BadRequestError("Invalid `dateFrom`");
-    if (!officeNames.includes(officeName))
-      throw BadRequestError("Invalid `officeName`");
-    const { rowCount, rows } = await pool.query(
-      getCenterExpenditureByOffice_default,
-      [dateFrom, dateTo, officeName, count ?? 20]
-    );
+    if (officeNames && !officeNames.every((officeName) => cefinOfficeNames.includes(officeName)))
+      throw BadRequestError("Invalid `officeNames`");
+    const { rowCount, rows } = officeNames ? await pool.query(getCefinByOffice_default2, [
+      officeNames,
+      yearFrom,
+      yearTo,
+      isField,
+      fieldsOrSectors,
+      count
+    ]) : await pool.query(getCefin_default, [
+      yearFrom,
+      yearTo,
+      isField,
+      fieldsOrSectors,
+      count
+    ]);
     if (rowCount === 0)
       throw NotFoundError("No expenditure could be found that satisfies these conditions...");
     return {
-      expenditures: rows
+      amchart: rows.map((row) => ({
+        [officeNames ? "sactv_nm" : "offc_nm"]: officeNames ? row.sactv_nm : row.offc_nm,
+        y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) / 1e3),
+        y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) / 1e3)
+      })),
+      cefin: rows.map((row) => ({
+        [officeNames ? "sactv_nm" : "offc_nm"]: officeNames ? row.sactv_nm : row.offc_nm,
+        y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) * 1e3),
+        y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) * 1e3)
+      }))
     };
   });
 }

@@ -1,4 +1,4 @@
-export const officeNames = [
+export const cefinOfficeNames = [
   '국가청렴위원회',
   '국정홍보처',
   '대통령비서실',
@@ -101,7 +101,7 @@ export const officeNames = [
   '헌법재판소',
 ]
 
-export const cefinRealms = [
+export const cefinFields = [
   '일반·지방행정',
   '일반공공행정',
   '교육',

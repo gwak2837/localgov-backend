@@ -1,0 +1,17 @@
+/* @name getCefinByOffice */
+SELECT SACTV_NM,
+  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,
+  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT
+FROM center_expenditure
+WHERE OFFC_NM = ANY ($1)
+  AND FSCL_YY BETWEEN $2 AND $3
+  AND (
+    $4::boolean IS NULL
+    OR CASE
+      WHEN $4 THEN FLD_NM = ANY($5)
+      ELSE SECT_NM = ANY($5)
+    END
+  )
+GROUP BY SACTV_NM
+ORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC
+LIMIT $6;

@@ -1,86 +1,87 @@
 import { Type } from '@sinclair/typebox'
 
-import { officeNames } from '../../common/cefin'
+import { cefinOfficeNames } from '../../common/cefin'
 import { BadRequestError, NotFoundError } from '../../common/fastify'
 import { pool } from '../../common/postgres'
-import { IGetCenterExpenditureByOfficeResult } from './sql/getCenterExpenditureByOffice'
-import getCenterExpenditureByOffice from './sql/getCenterExpenditureByOffice.sql'
-import { IGetCenterExpendituresResult } from './sql/getCenterExpenditures'
-import getCenterExpenditures from './sql/getCenterExpenditures.sql'
+import { IGetCefinResult } from './sql/getCefin'
+import getCefin from './sql/getCefin.sql'
+import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
+import getCefinByOffice from './sql/getCefinByOffice.sql'
 import { TFastify } from '..'
 
 export default async function routes(fastify: TFastify) {
   const schema = {
     querystring: Type.Object({
-      dateFrom: Type.String(),
-      dateTo: Type.String(),
+      yearFrom: Type.Number(),
+      yearTo: Type.Number(),
+
+      isField: Type.Optional(Type.Boolean()),
+      fieldsOrSectors: Type.Optional(Type.Array(Type.String())),
       count: Type.Optional(Type.Number()),
+      officeNames: Type.Optional(Type.Array(Type.String())),
     }),
   }
 
   fastify.get('/expenditure/center', { schema }, async (req) => {
-    const { dateFrom, dateTo, count } = req.query
+    // Querystring validation
+    const {
+      yearFrom,
+      yearTo,
+      isField,
+      fieldsOrSectors: _fieldsOrSectors,
+      count: _count,
+      officeNames: _officeNames,
+    } = req.query
 
-    // Request validation
-    const dateFrom2 = Date.parse(dateFrom)
-    if (isNaN(dateFrom2)) throw BadRequestError('Invalid `dateFrom`')
+    const fieldsOrSectors = _fieldsOrSectors?.map((c) => decodeURIComponent(c))
+    const count = _count ?? 30
+    const officeNames = _officeNames?.map((c) => decodeURIComponent(c))
 
-    const dateTo2 = Date.parse(dateTo)
-    if (isNaN(dateTo2)) throw BadRequestError('Invalid `dateTo`')
+    if (yearFrom < 2000 || yearFrom > 2030) throw BadRequestError('Invalid `yearFrom`')
+    if (yearTo < 2000 || yearTo > 2030) throw BadRequestError('Invalid `yearTo`')
+    if (yearFrom > yearTo) throw BadRequestError('Invalid `yearFrom`')
 
-    if (dateFrom2 > dateTo2) throw BadRequestError('Invalid `dateFrom`')
+    if (isField === undefined && fieldsOrSectors) throw BadRequestError('Invalid `fieldsOrSectors`')
+    if (isField !== undefined && !fieldsOrSectors)
+      throw BadRequestError('Invalid `fieldsOrSectors`')
 
-    // SQL
-    const { rowCount, rows } = await pool.query<IGetCenterExpendituresResult>(
-      getCenterExpenditures,
-      [dateFrom, dateTo, count ?? 30]
-    )
+    if (count > 100) throw BadRequestError('Invalid `count`')
 
-    if (rowCount === 0)
-      throw NotFoundError('No expenditure could be found that satisfies these conditions...')
+    if (officeNames && !officeNames.every((officeName) => cefinOfficeNames.includes(officeName)))
+      throw BadRequestError('Invalid `officeNames`')
 
-    return {
-      expenditures: rows,
-    }
-  })
-
-  const schema2 = {
-    querystring: Type.Object({
-      dateFrom: Type.String(),
-      dateTo: Type.String(),
-      officeName: Type.String(),
-      count: Type.Optional(Type.Number()),
-    }),
-  }
-
-  fastify.get('/expenditure/center/office', { schema: schema2 }, async (req) => {
-    const { dateFrom, dateTo, officeName: _officeName, count } = req.query
-    const officeName = decodeURIComponent(_officeName)
-
-    // Request validation
-    if (count && count > 100) throw BadRequestError('Invalid `count`')
-
-    const dateFrom2 = Date.parse(dateFrom)
-    if (isNaN(dateFrom2)) throw BadRequestError('Invalid `dateFrom`')
-
-    const dateTo2 = Date.parse(dateTo)
-    if (isNaN(dateTo2)) throw BadRequestError('Invalid `dateTo`')
-
-    if (dateFrom2 > dateTo2) throw BadRequestError('Invalid `dateFrom`')
-
-    if (!officeNames.includes(officeName)) throw BadRequestError('Invalid `officeName`')
-
-    // SQL
-    const { rowCount, rows } = await pool.query<IGetCenterExpenditureByOfficeResult>(
-      getCenterExpenditureByOffice,
-      [dateFrom, dateTo, officeName, count ?? 20]
-    )
+    // Query SQL
+    const { rowCount, rows } = officeNames
+      ? await pool.query<IGetCefinByOfficeResult>(getCefinByOffice, [
+          officeNames,
+          yearFrom,
+          yearTo,
+          isField,
+          fieldsOrSectors,
+          count,
+        ])
+      : await pool.query<IGetCefinResult>(getCefin, [
+          yearFrom,
+          yearTo,
+          isField,
+          fieldsOrSectors,
+          count,
+        ])
 
     if (rowCount === 0)
       throw NotFoundError('No expenditure could be found that satisfies these conditions...')
 
     return {
-      expenditures: rows,
+      amchart: rows.map((row: any) => ({
+        [officeNames ? 'sactv_nm' : 'offc_nm']: officeNames ? row.sactv_nm : row.offc_nm,
+        y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) / 1000),
+        y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) / 1000),
+      })),
+      cefin: rows.map((row: any) => ({
+        [officeNames ? 'sactv_nm' : 'offc_nm']: officeNames ? row.sactv_nm : row.offc_nm,
+        y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) * 1000),
+        y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) * 1000),
+      })),
     }
   })
 }
