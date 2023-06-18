@@ -98,14 +98,15 @@ export default async function routes(fastify: TFastify) {
 
     return {
       expenditures: rows.map((row) => ({
+        id: row.id,
         detailBusinessName: row.detail_bsns_nm,
-        budgetSum: row.budget_crntam_sum,
-        nxndrSum: row.nxndr_sum,
-        citySum: row.cty_sum,
-        sigunguSum: row.signgunon_sum,
-        etcSum: row.etc_crntam_sum,
-        expndtramSum: row.expndtram_sum,
-        organizationSum: row.orgnztnam_sum,
+        budgetSum: row.budget_crntam,
+        nxndrSum: row.nxndr,
+        citySum: row.cty,
+        sigunguSum: row.signgunon,
+        etcSum: row.etc_crntam,
+        expndtramSum: row.expndtram,
+        organizationSum: row.orgnztnam,
       })),
     }
   })

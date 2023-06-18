@@ -1,5 +1,8 @@
 import { Type } from '@sinclair/typebox'
+import fetch from 'node-fetch'
 
+import { bot } from '../../common/bard'
+import { NAVER_CLIENT_ID, NAVER_CLIENT_SECRET } from '../../common/constants'
 import { BadRequestError, NotFoundError } from '../../common/fastify'
 import {
   lofinFields,
@@ -10,10 +13,15 @@ import {
   sigunguCodes,
 } from '../../common/lofin'
 import { pool } from '../../common/postgres'
+import { nationalTasks120 } from '../../common/president'
+import { IGetCefinBusinessResult } from './sql/getCefinBusiness'
+import getCefinBusiness from './sql/getCefinBusiness.sql'
 import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
 import getCefinByOffice from './sql/getCefinByOffice.sql'
 import { IGetCefinRatioResult } from './sql/getCefinRatio'
 import getCefinRatio from './sql/getCefinRatio.sql'
+import { IGetLofinBusinessResult } from './sql/getLofinBusiness'
+import getLofinBusiness from './sql/getLofinBusiness.sql'
 import { IGetLofinByDistrictResult } from './sql/getLofinByDistrict'
 import getLofinByDistrict from './sql/getLofinByDistrict.sql'
 import { IGetLofinRatioResult } from './sql/getLofinRatio'
@@ -185,27 +193,70 @@ export default async function routes(fastify: TFastify) {
 
   const schema3 = {
     querystring: Type.Object({
-      dateFrom: Type.String(),
-      dateTo: Type.String(),
-      centerFieldOrSector: Type.Array(Type.String()),
-      localFieldOrSector: Type.Array(Type.Number()),
+      id: Type.String(),
+      nationalTaskId: Type.Number(),
 
-      isField: Type.Optional(Type.Boolean()),
-      criteria: Type.Optional(
-        Type.Union([Type.Literal('nation'), Type.Literal('sido'), Type.Literal('sigungu')])
-      ),
+      isCefin: Type.Optional(Type.Boolean()),
     }),
   }
 
-  fastify.post('/analytics/business', { schema: schema3 }, async (req, reply) => {
-    console.log(123)
+  fastify.get('/analytics/business', { schema: schema3 }, async (req, reply) => {
+    // Validate the querystring
+    const { id, nationalTaskId, isCefin } = req.query
+
+    const { rows } = isCefin
+      ? // await pool.query<IGetCefinBusinessResult>(getCefinBusiness, [id])
+        await pool.query<IGetLofinBusinessResult>(getLofinBusiness, [id])
+      : await pool.query<IGetLofinBusinessResult>(getLofinBusiness, [id])
+
+    const sidoCode = +`${rows[0].sfrnd_code}`.slice(0, 2)
+    const naverSearchQuery = `${sido[sidoCode]} ${rows[0].detail_bsns_nm}`
+
+    return {
+      bard: await getAnswerFromGoogleBard(nationalTaskId, rows[0]),
+      naver: await searchFromNaver(naverSearchQuery),
+    }
   })
 }
 
-const prompt = `대한민국 대통령 윤석열 120대 공약 중 하나와 대한민국 지방자치단체에서 실시한 사업 간의 연관성을 분석하려고 해. 앞서 말한 두 항목의 연관되어 있는 정도를 백분위로 알려줬으면 좋겠어. 아래의 대통령 공약과 지방자치단체 사업 간의 연관도를 백분위로 표시해줘:
+async function getAnswerFromGoogleBard(nationalTaskId: number, business: Record<string, any>) {
+  return bot.ask(getPrompt(nationalTaskId, business), String(Date.now()))
+}
 
-대통령 공약:
-${1}
+async function searchFromNaver(query: string) {
+  const response = await fetch(
+    `https://openapi.naver.com/v1/search/webkr.json?query=${encodeURIComponent(query)}`,
+    {
+      headers: {
+        'X-Naver-Client-Id': NAVER_CLIENT_ID,
+        'X-Naver-Client-Secret': NAVER_CLIENT_SECRET,
+      },
+    }
+  )
+  const result = (await response.json()) as any
+  return result.items
+}
 
-지방자치단체 사업 이름: 
-${2}`
+function getPrompt(nationalTaskId: number, business: Record<string, any>) {
+  const localGovName = sigungu[business.sfrnd_code]
+
+  return `대한민국 윤석열 대통령의 120대 국정과제 중 하나와 대한민국 지방자치단체인 ${localGovName}에서 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 국정과제와 지방자치단체 사업 간의 연관되어 있는 정도를 백분위로 알려주고, 그렇게 생각한 이유와 공통점과 차이점을 자세히 설명해줘:
+
+<대통령 국정과제>
+${nationalTasks120[nationalTaskId]}
+
+<지방자치단체 사업>
+- 대분류: ${lofinFields[business.realm_code]}
+- 소분류: ${lofinSectors[business.sect_code]}
+- 주관: ${localGovName}
+- 제목: ${business.detail_bsns_nm}
+`
+  // - ${(business.excut_de as Date).getFullYear()}년 예산
+  //   - 예산현액: ${business.budget_crntam}원
+  //     - 국비: ${business.nxndr}원
+  //     - 시도비: ${business.cty}원
+  //     - 시군구비: ${business.signgunon}원
+  //     - 기타: ${business.etc_crntam}원
+  //   - 집행액: ${business.expndtram}원
+  //   - 편성액: ${business.orgnztnam}원
+}

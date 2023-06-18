@@ -6,14 +6,15 @@ export type IGetLocalExpendituresByFieldParams = void;
 
 /** 'GetLocalExpendituresByField' return type */
 export interface IGetLocalExpendituresByFieldResult {
-  budget_crntam_sum: string | null;
-  cty_sum: string | null;
+  budget_crntam: string | null;
+  cty: string | null;
   detail_bsns_nm: string;
-  etc_crntam_sum: string | null;
-  expndtram_sum: string | null;
-  nxndr_sum: string | null;
-  orgnztnam_sum: string | null;
-  signgunon_sum: string | null;
+  etc_crntam: string | null;
+  expndtram: string | null;
+  id: string;
+  nxndr: string | null;
+  orgnztnam: string | null;
+  signgunon: string | null;
 }
 
 /** 'GetLocalExpendituresByField' query type */
@@ -22,19 +23,20 @@ export interface IGetLocalExpendituresByFieldQuery {
   result: IGetLocalExpendituresByFieldResult;
 }
 
-const getLocalExpendituresByFieldIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT detail_bsns_nm,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $3 > 100 THEN sfrnd_code = $3\n      ELSE sfrnd_code >= $3 * 100000\n      AND sfrnd_code < ($3 + 1) * 100000\n    END\n  )\n  AND realm_code = $4\nGROUP BY detail_bsns_nm\nORDER BY budget_crntam_sum DESC\nLIMIT $5"};
+const getLocalExpendituresByFieldIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  detail_bsns_nm,\n  sum(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $3 > 100 THEN sfrnd_code = $3\n      ELSE sfrnd_code >= $3 * 100000\n      AND sfrnd_code < ($3 + 1) * 100000\n    END\n  )\n  AND realm_code = $4\nGROUP BY id,\n  detail_bsns_nm\nORDER BY budget_crntam DESC\nLIMIT $5"};
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT detail_bsns_nm,
- *   sum(budget_crntam) AS budget_crntam_sum,
- *   sum(nxndr) AS nxndr_sum,
- *   sum(cty) AS cty_sum,
- *   sum(signgunon) AS signgunon_sum,
- *   sum(etc_crntam) AS etc_crntam_sum,
- *   sum(expndtram) AS expndtram_sum,
- *   sum(orgnztnam) AS orgnztnam_sum
+ * SELECT id,
+ *   detail_bsns_nm,
+ *   sum(budget_crntam) AS budget_crntam,
+ *   sum(nxndr) AS nxndr,
+ *   sum(cty) AS cty,
+ *   sum(signgunon) AS signgunon,
+ *   sum(etc_crntam) AS etc_crntam,
+ *   sum(expndtram) AS expndtram,
+ *   sum(orgnztnam) AS orgnztnam
  * FROM local_expenditure
  * WHERE excut_de BETWEEN $1 AND $2
  *   AND (
@@ -46,8 +48,9 @@ const getLocalExpendituresByFieldIR: any = {"usedParamSet":{},"params":[],"state
  *     END
  *   )
  *   AND realm_code = $4
- * GROUP BY detail_bsns_nm
- * ORDER BY budget_crntam_sum DESC
+ * GROUP BY id,
+ *   detail_bsns_nm
+ * ORDER BY budget_crntam DESC
  * LIMIT $5
  * ```
  */
