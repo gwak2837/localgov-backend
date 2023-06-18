@@ -215,7 +215,7 @@ export default async function routes(fastify: TFastify) {
     return {
       nationalTask: nationalTasks120[nationalTaskId],
       business: rows[0],
-      bard: await getAnswerFromGoogleBard(nationalTaskId, rows[0]),
+      bard: await getAnswerFromGoogleBard(nationalTaskId, rows[0]).catch((err) => err.message),
       naver: await searchFromNaver(naverSearchQuery),
     }
   })
@@ -242,23 +242,23 @@ async function searchFromNaver(query: string) {
 function getPrompt(nationalTaskId: number, business: Record<string, any>) {
   const localGovName = sigungu[business.sfrnd_code]
 
-  return `대한민국 윤석열 대통령의 120대 국정과제 중 하나와 대한민국 지방자치단체인 ${localGovName}에서 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 국정과제와 지방자치단체 사업 간의 연관되어 있는 정도를 백분위로 알려주고, 그렇게 생각한 이유와 공통점과 차이점을 자세히 설명해줘:
+  return `대한민국 윤석열 대통령의 120대 국정과제 중 하나와 대한민국 지방자치단체인 ${localGovName}에서 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 국정과제와 지방자치단체 사업 간의 연관되어 있는 정도를 백분위로 알려주고, 두 항목 간의 공통점과 차이점도 알려줘. 그리고 그렇게 생각한 이유도 자세히 설명해줘:
 
-<대통령 국정과제>
+대통령 국정과제:
 ${nationalTasks120[nationalTaskId]}
 
-<지방자치단체 사업>
+지방자치단체 사업:
 - 대분류: ${lofinFields[business.realm_code]}
 - 소분류: ${lofinSectors[business.sect_code]}
 - 주관: ${localGovName}
 - 제목: ${business.detail_bsns_nm}
+- ${(business.excut_de as Date).getFullYear()}년 예산
+  - 예산현액: ${business.budget_crntam}원
+    - 국비: ${business.nxndr}원
+    - 시도비: ${business.cty}원
+    - 시군구비: ${business.signgunon}원
+    - 기타: ${business.etc_crntam}원
+  - 집행액: ${business.expndtram}원
+  - 편성액: ${business.orgnztnam}원
 `
-  // - ${(business.excut_de as Date).getFullYear()}년 예산
-  //   - 예산현액: ${business.budget_crntam}원
-  //     - 국비: ${business.nxndr}원
-  //     - 시도비: ${business.cty}원
-  //     - 시군구비: ${business.signgunon}원
-  //     - 기타: ${business.etc_crntam}원
-  //   - 집행액: ${business.expndtram}원
-  //   - 편성액: ${business.orgnztnam}원
 }
