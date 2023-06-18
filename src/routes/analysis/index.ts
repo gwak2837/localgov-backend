@@ -213,6 +213,8 @@ export default async function routes(fastify: TFastify) {
     const naverSearchQuery = `${sido[sidoCode]} ${rows[0].detail_bsns_nm}`
 
     return {
+      nationalTask: nationalTasks120[nationalTaskId],
+      business: rows[0],
       bard: await getAnswerFromGoogleBard(nationalTaskId, rows[0]),
       naver: await searchFromNaver(naverSearchQuery),
     }
