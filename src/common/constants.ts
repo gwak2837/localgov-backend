@@ -11,6 +11,11 @@ export const PGURI = process.env.PGURI as string
 
 export const REDIS_CONNECTION_STRING = process.env.REDIS_CONNECTION_STRING as string
 
+export const GOOGLE_BARD_TOKEN = process.env.GOOGLE_BARD_TOKEN as string
+
+export const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID as string
+export const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET as string
+
 // 개별
 export const LOCALHOST_HTTPS_KEY = process.env.LOCALHOST_HTTPS_KEY as string
 export const LOCALHOST_HTTPS_CERT = process.env.LOCALHOST_HTTPS_CERT as string

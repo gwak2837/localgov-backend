@@ -33,7 +33,7 @@ export default async function routes(fastify: TFastify) {
     return {
       commitments: rows.map((row) => ({
         id: row.id,
-        prmsRealmName: row.prmsrealmname,
+        prmsFieldName: row.prmsrealmname,
         prmsTitle: row.prmstitle,
         prmmCont: row.prmmcont,
         candidate: {

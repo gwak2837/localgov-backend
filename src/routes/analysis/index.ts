@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox'
 
 import { BadRequestError, NotFoundError } from '../../common/fastify'
 import {
-  lofinRealms,
+  lofinFields,
   lofinSectors,
   sido,
   sidoCodes,
@@ -27,14 +27,14 @@ export default async function routes(fastify: TFastify) {
       dateTo: Type.String(),
 
       localCode: Type.Optional(Type.Number()),
-      isRealm: Type.Optional(Type.Boolean()),
+      isField: Type.Optional(Type.Boolean()),
     }),
   }
 
   fastify.get('/analytics/ratio', { schema }, async (req, reply) => {
     // Validate the querystring
-    const { dateFrom, dateTo, localCode, isRealm: isRealm_ } = req.query
-    const isRealm = isRealm_ ?? false
+    const { dateFrom, dateTo, localCode, isField: isField_ } = req.query
+    const isField = isField_ ?? false
 
     const dateFrom2 = Date.parse(dateFrom)
     if (isNaN(dateFrom2)) throw BadRequestError('Invalid `dateFrom`')
@@ -52,9 +52,9 @@ export default async function routes(fastify: TFastify) {
       pool.query<IGetCefinRatioResult>(getCefinRatio, [
         dateFrom.slice(0, 4),
         dateTo.slice(0, 4),
-        isRealm,
+        isField,
       ]),
-      pool.query<IGetLofinRatioResult>(getLofinRatio, [dateFrom, dateTo, localCode, isRealm]),
+      pool.query<IGetLofinRatioResult>(getLofinRatio, [dateFrom, dateTo, localCode, isField]),
     ])
     if (rowCount === 0 || rowCount2 === 0)
       throw NotFoundError('No analytics could be found that satisfies these conditions...')
@@ -72,8 +72,8 @@ export default async function routes(fastify: TFastify) {
     for (const lofin of rows2) {
       if (!lofin.realm_or_sect_code || !lofin.budget_crntam) continue
 
-      const realmOrSectorLabel = isRealm
-        ? lofinRealms[lofin.realm_or_sect_code]
+      const realmOrSectorLabel = isField
+        ? lofinFields[lofin.realm_or_sect_code]
         : lofinSectors[lofin.realm_or_sect_code]
 
       if (lofin.sfrnd_code === currentCode) {
@@ -96,10 +96,10 @@ export default async function routes(fastify: TFastify) {
     querystring: Type.Object({
       dateFrom: Type.String(),
       dateTo: Type.String(),
-      centerRealmOrSector: Type.Array(Type.String()),
-      localRealmOrSector: Type.Array(Type.Number()),
+      centerFieldOrSector: Type.Array(Type.String()),
+      localFieldOrSector: Type.Array(Type.Number()),
 
-      isRealm: Type.Optional(Type.Boolean()),
+      isField: Type.Optional(Type.Boolean()),
       criteria: Type.Optional(
         Type.Union([Type.Literal('nation'), Type.Literal('sido'), Type.Literal('sigungu')])
       ),
@@ -111,15 +111,15 @@ export default async function routes(fastify: TFastify) {
     const {
       dateFrom,
       dateTo,
-      centerRealmOrSector: centerRealmOrSector_,
-      localRealmOrSector,
-      isRealm: isRealm_,
+      centerFieldOrSector: centerFieldOrSector_,
+      localFieldOrSector,
+      isField: isField_,
       criteria: criteria_,
     } = req.query
 
-    const centerRealmOrSector = centerRealmOrSector_.map((c) => decodeURIComponent(c))
+    const centerFieldOrSector = centerFieldOrSector_.map((c) => decodeURIComponent(c))
     const criteria = criteria_ ?? 'sido'
-    const isRealm = isRealm_ ?? false
+    const isField = isField_ ?? false
 
     const dateFrom2 = Date.parse(dateFrom)
     if (isNaN(dateFrom2)) throw BadRequestError('Invalid `dateFrom`')
@@ -134,14 +134,14 @@ export default async function routes(fastify: TFastify) {
       pool.query<IGetCefinByOfficeResult>(getCefinByOffice, [
         dateFrom.slice(0, 4),
         dateTo.slice(0, 4),
-        isRealm,
-        centerRealmOrSector,
+        isField,
+        centerFieldOrSector,
       ]),
       pool.query<IGetLofinByDistrictResult>(getLofinByDistrict, [
         dateFrom,
         dateTo,
-        isRealm,
-        localRealmOrSector,
+        isField,
+        localFieldOrSector,
       ]),
     ])
     if (rowCount === 0 || rowCount2 === 0)
@@ -182,4 +182,30 @@ export default async function routes(fastify: TFastify) {
       },
     }
   })
+
+  const schema3 = {
+    querystring: Type.Object({
+      dateFrom: Type.String(),
+      dateTo: Type.String(),
+      centerFieldOrSector: Type.Array(Type.String()),
+      localFieldOrSector: Type.Array(Type.Number()),
+
+      isField: Type.Optional(Type.Boolean()),
+      criteria: Type.Optional(
+        Type.Union([Type.Literal('nation'), Type.Literal('sido'), Type.Literal('sigungu')])
+      ),
+    }),
+  }
+
+  fastify.post('/analytics/business', { schema: schema3 }, async (req, reply) => {
+    console.log(123)
+  })
 }
+
+const prompt = `대한민국 대통령 윤석열 120대 공약 중 하나와 대한민국 지방자치단체에서 실시한 사업 간의 연관성을 분석하려고 해. 앞서 말한 두 항목의 연관되어 있는 정도를 백분위로 알려줬으면 좋겠어. 아래의 대통령 공약과 지방자치단체 사업 간의 연관도를 백분위로 표시해줘:
+
+대통령 공약:
+${1}
+
+지방자치단체 사업 이름: 
+${2}`

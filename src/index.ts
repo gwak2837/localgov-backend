@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { networkInterfaces } from 'os'
 
+import { startBardBot } from './common/bard'
 import { NODE_ENV, PGURI, PORT, REDIS_CONNECTION_STRING } from './common/constants'
 import { pool } from './common/postgres'
 import { startRedisClient } from './common/redis'
@@ -35,4 +36,12 @@ startServer()
   })
   .catch((error) => {
     throw new Error('Cannot start API server... \n' + error)
+  })
+
+startBardBot()
+  .then((answer) =>
+    console.log(`✨ Connected to Google Bard at ${new Date().toLocaleString()}. ${answer}`)
+  )
+  .catch((error) => {
+    throw new Error('Cannot start Google Bard... \n' + error)
   })

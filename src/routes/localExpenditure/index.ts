@@ -1,12 +1,12 @@
 import { Type } from '@sinclair/typebox'
 
 import { BadRequestError, NotFoundError } from '../../common/fastify'
-import { lofinRealms, sidoCodes, sigunguCodes } from '../../common/lofin'
+import { lofinFields, sidoCodes, sigunguCodes } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { IGetLocalExpendituresResult } from './sql/getLocalExpenditures'
 import getLocalExpenditures from './sql/getLocalExpenditures.sql'
-import { IGetLocalExpendituresByRealmResult } from './sql/getLocalExpendituresByRealm'
-import getLocalExpendituresByRealm from './sql/getLocalExpendituresByRealm.sql'
+import { IGetLocalExpendituresByFieldResult } from './sql/getLocalExpendituresByField'
+import getLocalExpendituresByField from './sql/getLocalExpendituresByField.sql'
 import { TFastify } from '..'
 
 export default async function routes(fastify: TFastify) {
@@ -46,7 +46,8 @@ export default async function routes(fastify: TFastify) {
 
     return {
       expenditures: rows.map((row) => ({
-        realm: lofinRealms[row.realm_code],
+        realm: lofinFields[row.realm_code],
+        realm_code: row.realm_code,
         budget_crntam_sum: row.budget_crntam_sum,
         nxndr_sum: row.nxndr_sum,
         cty_sum: row.cty_sum,
@@ -87,8 +88,8 @@ export default async function routes(fastify: TFastify) {
       throw BadRequestError('Invalid `localCode`')
 
     // SQL
-    const { rowCount, rows } = await pool.query<IGetLocalExpendituresByRealmResult>(
-      getLocalExpendituresByRealm,
+    const { rowCount, rows } = await pool.query<IGetLocalExpendituresByFieldResult>(
+      getLocalExpendituresByField,
       [dateFrom, dateTo, localCode, realmCode, count ?? 20]
     )
 
