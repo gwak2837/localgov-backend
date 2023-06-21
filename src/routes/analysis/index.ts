@@ -3,8 +3,8 @@ import fetch from 'node-fetch'
 
 import { bot } from '../../common/bard'
 import {
-  GOOGLE_BARD_API_KEY,
-  GOOGLE_YOUTUBE_API_KEY,
+  GOOGLE_API_KEY,
+  GOOGLE_SEARCH_ENGINE_ID,
   NAVER_CLIENT_ID,
   NAVER_CLIENT_SECRET,
 } from '../../common/constants'
@@ -215,10 +215,11 @@ export default async function routes(fastify: TFastify) {
     const sidoCode = +`${rows[0].sfrnd_code}`.slice(0, 2)
     const searchQuery = `${sido[sidoCode]} ${rows[0].detail_bsns_nm}`
 
-    const [bard, naver, youtube] = await Promise.all([
+    const [bard, naver, youtube, google] = await Promise.all([
       getAnswerFromGoogleBard(nationalTaskId, rows[0]).catch((err) => err.message),
       searchFromNaver(searchQuery),
       searchFromYouTube(searchQuery),
+      searchFromGoogle(searchQuery),
     ])
 
     return {
@@ -227,6 +228,7 @@ export default async function routes(fastify: TFastify) {
       bard,
       naver,
       youtube,
+      google,
     }
   })
 }
@@ -254,7 +256,15 @@ async function searchFromNaver(query: string) {
 
 async function searchFromYouTube(query: string) {
   const response = await fetch(
-    `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&key=${GOOGLE_YOUTUBE_API_KEY}&regionCode=KR&q=${query}`
+    `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&key=${GOOGLE_API_KEY}&regionCode=KR&q=${query}`
+  )
+  const result = (await response.json()) as any
+  return result.items
+}
+
+async function searchFromGoogle(query: string) {
+  const response = await fetch(
+    `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&q=${query}&cx=${GOOGLE_SEARCH_ENGINE_ID}`
   )
   const result = (await response.json()) as any
   return result.items

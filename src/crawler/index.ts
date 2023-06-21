@@ -8,7 +8,7 @@ import {
   LOCAL_EXPENDITURE_DATE,
   LOFIN_KEY,
 } from '../common/constants'
-import { sido, sigungu } from '../common/lofin'
+import { sido } from '../common/lofin'
 import { pool } from '../common/postgres'
 import { toDate8, toISODate } from '../common/utils'
 import { CenterExpenditure, ErrorHead, Expenditure, Head } from '../types'

@@ -13,7 +13,8 @@ export const REDIS_CONNECTION_STRING = process.env.REDIS_CONNECTION_STRING as st
 
 export const GOOGLE_BARD_TOKEN = process.env.GOOGLE_BARD_TOKEN as string
 export const GOOGLE_BARD_API_KEY = process.env.GOOGLE_BARD_API_KEY as string
-export const GOOGLE_YOUTUBE_API_KEY = process.env.GOOGLE_YOUTUBE_API_KEY as string
+export const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY as string
+export const GOOGLE_SEARCH_ENGINE_ID = process.env.GOOGLE_SEARCH_ENGINE_ID as string // https://programmablesearchengine.google.com/controlpanel/all
 
 export const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID as string
 export const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET as string
