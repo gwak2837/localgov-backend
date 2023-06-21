@@ -2,7 +2,12 @@ import { Type } from '@sinclair/typebox'
 import fetch from 'node-fetch'
 
 import { bot } from '../../common/bard'
-import { NAVER_CLIENT_ID, NAVER_CLIENT_SECRET } from '../../common/constants'
+import {
+  GOOGLE_BARD_API_KEY,
+  GOOGLE_YOUTUBE_API_KEY,
+  NAVER_CLIENT_ID,
+  NAVER_CLIENT_SECRET,
+} from '../../common/constants'
 import { BadRequestError, NotFoundError } from '../../common/fastify'
 import {
   lofinFields,
@@ -14,8 +19,6 @@ import {
 } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { nationalTasks120 } from '../../common/president'
-import { IGetCefinBusinessResult } from './sql/getCefinBusiness'
-import getCefinBusiness from './sql/getCefinBusiness.sql'
 import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
 import getCefinByOffice from './sql/getCefinByOffice.sql'
 import { IGetCefinRatioResult } from './sql/getCefinRatio'
@@ -210,19 +213,29 @@ export default async function routes(fastify: TFastify) {
       : await pool.query<IGetLofinBusinessResult>(getLofinBusiness, [id])
 
     const sidoCode = +`${rows[0].sfrnd_code}`.slice(0, 2)
-    const naverSearchQuery = `${sido[sidoCode]} ${rows[0].detail_bsns_nm}`
+    const searchQuery = `${sido[sidoCode]} ${rows[0].detail_bsns_nm}`
+
+    const [bard, naver, youtube] = await Promise.all([
+      getAnswerFromGoogleBard(nationalTaskId, rows[0]).catch((err) => err.message),
+      searchFromNaver(searchQuery),
+      searchFromYouTube(searchQuery),
+    ])
 
     return {
       nationalTask: nationalTasks120[nationalTaskId],
       business: rows[0],
-      bard: await getAnswerFromGoogleBard(nationalTaskId, rows[0]).catch((err) => err.message),
-      naver: await searchFromNaver(naverSearchQuery),
+      bard,
+      naver,
+      youtube,
     }
   })
 }
 
 async function getAnswerFromGoogleBard(nationalTaskId: number, business: Record<string, any>) {
-  return bot.ask(getPrompt(nationalTaskId, business), String(Date.now()))
+  return Promise.all([
+    bot.ask(getPrompt(nationalTaskId, business, true), String(Date.now())),
+    bot.ask(getPrompt(nationalTaskId, business, false), String(Date.now())),
+  ])
 }
 
 async function searchFromNaver(query: string) {
@@ -239,26 +252,39 @@ async function searchFromNaver(query: string) {
   return result.items
 }
 
-function getPrompt(nationalTaskId: number, business: Record<string, any>) {
+async function searchFromYouTube(query: string) {
+  const response = await fetch(
+    `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&key=${GOOGLE_YOUTUBE_API_KEY}&regionCode=KR&q=${query}`
+  )
+  const result = (await response.json()) as any
+  return result.items
+}
+
+function getPrompt(nationalTaskId: number, business: Record<string, any>, isPositive: boolean) {
   const localGovName = sigungu[business.sfrnd_code]
 
-  return `대한민국 윤석열 대통령의 120대 국정과제 중 하나와 대한민국 지방자치단체인 ${localGovName}에서 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 국정과제와 지방자치단체 사업 간의 연관되어 있는 정도를 백분위로 알려주고, 두 항목 간의 공통점과 차이점도 알려줘. 그리고 그렇게 생각한 이유도 자세히 설명해줘:
+  const prefix = isPositive
+    ? `대한민국 윤석열 대통령의 120대 국정과제 중 하나와 대한민국 지방자치단체인 ${localGovName}에서 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 국정과제와 지방자치단체 사업은 서로 밀접하게 연관되어 있는데, 그 근거를 자세히 설명해줘:`
+    : `대한민국 윤석열 대통령의 120대 국정과제 중 하나와 대한민국 지방자치단체인 ${localGovName}에서 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 국정과제와 지방자치단체 사업은 서로 하나도 연관되어 있지 않는데, 그 근거를 자세히 설명해줘:`
+
+  return `${prefix}
 
 대통령 국정과제:
 ${nationalTasks120[nationalTaskId]}
 
 지방자치단체 사업:
-- 대분류: ${lofinFields[business.realm_code]}
-- 소분류: ${lofinSectors[business.sect_code]}
+- 분야: ${lofinFields[business.realm_code]}
+- 부문: ${lofinSectors[business.sect_code]}
 - 주관: ${localGovName}
 - 제목: ${business.detail_bsns_nm}
-- ${(business.excut_de as Date).getFullYear()}년 예산
-  - 예산현액: ${business.budget_crntam}원
-    - 국비: ${business.nxndr}원
-    - 시도비: ${business.cty}원
-    - 시군구비: ${business.signgunon}원
-    - 기타: ${business.etc_crntam}원
-  - 집행액: ${business.expndtram}원
-  - 편성액: ${business.orgnztnam}원
 `
+
+  // - ${(business.excut_de as Date).getFullYear()}년 예산
+  //   - 예산현액: ${business.budget_crntam}원
+  //     - 국비: ${business.nxndr}원
+  //     - 시도비: ${business.cty}원
+  //     - 시군구비: ${business.signgunon}원
+  //     - 기타: ${business.etc_crntam}원
+  //   - 집행액: ${business.expndtram}원
+  //   - 편성액: ${business.orgnztnam}원
 }
