@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 
 import { BadRequestError, NotFoundError } from '../../common/fastify'
-import { lofinFields, sidoCodes, sigunguCodes } from '../../common/lofin'
+import { lofinFields, sidoCodes, sigungu, sigunguCodes } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { IGetLocalExpendituresResult } from './sql/getLocalExpenditures'
 import getLocalExpenditures from './sql/getLocalExpenditures.sql'
@@ -50,9 +50,9 @@ export default async function routes(fastify: TFastify) {
       return {
         expenditures: rows.map((row) => ({
           id: row.id,
-          sfrnd_code: row.sfrnd_code,
+          sfrnd_nm: sigungu[row.sfrnd_code],
           excut_de: row.excut_de,
-          realm_code: row.realm_code,
+          field: lofinFields[row.realm_code],
           detailBusinessName: row.detail_bsns_nm,
           budgetSum: row.budget_crntam,
           nxndrSum: row.nxndr,
