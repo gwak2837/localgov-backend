@@ -1,5 +1,8 @@
 /* @name getLocalExpendituresByField */
 SELECT id,
+  sfrnd_code,
+  excut_de,
+  realm_code,
   detail_bsns_nm,
   sum(budget_crntam) AS budget_crntam,
   sum(nxndr) AS nxndr,
@@ -11,15 +14,14 @@ SELECT id,
 FROM local_expenditure
 WHERE excut_de BETWEEN $1 AND $2
   AND (
-    $3::int IS NULL
-    OR CASE
-      WHEN $3 > 100 THEN sfrnd_code = $3
-      ELSE sfrnd_code >= $3 * 100000
-      AND sfrnd_code < ($3 + 1) * 100000
-    END
+    $3::int [] IS NULL
+    OR sfrnd_code = ANY($3)
   )
-  AND realm_code = $4
+  AND realm_code = ANY($4)
 GROUP BY id,
+  sfrnd_code,
+  excut_de,
+  realm_code,
   detail_bsns_nm
 ORDER BY budget_crntam DESC
 LIMIT $5;

@@ -51,37 +51,58 @@ export default async function routes(fastify: TFastify) {
       throw BadRequestError('Invalid `officeNames`')
 
     // Query SQL
-    const { rowCount, rows } = officeNames
-      ? await pool.query<IGetCefinByOfficeResult>(getCefinByOffice, [
-          officeNames,
-          yearFrom,
-          yearTo,
-          isField,
-          fieldsOrSectors,
-          count,
-        ])
-      : await pool.query<IGetCefinResult>(getCefin, [
-          yearFrom,
-          yearTo,
-          isField,
-          fieldsOrSectors,
-          count,
-        ])
+    if (officeNames) {
+      const { rowCount, rows } = await pool.query<IGetCefinByOfficeResult>(getCefinByOffice, [
+        officeNames,
+        yearFrom,
+        yearTo,
+        isField,
+        fieldsOrSectors,
+        count,
+      ])
 
-    if (rowCount === 0)
-      throw NotFoundError('No expenditure could be found that satisfies these conditions...')
+      if (rowCount === 0)
+        throw NotFoundError('No expenditure could be found that satisfies these conditions...')
 
-    return {
-      amchart: rows.map((row: any) => ({
-        [officeNames ? 'sactv_nm' : 'offc_nm']: officeNames ? row.sactv_nm : row.offc_nm,
-        y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) / 1000),
-        y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) / 1000),
-      })),
-      cefin: rows.map((row: any) => ({
-        [officeNames ? 'sactv_nm' : 'offc_nm']: officeNames ? row.sactv_nm : row.offc_nm,
-        y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) * 1000),
-        y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) * 1000),
-      })),
+      return {
+        amchart: rows.map((row) => ({
+          offc_nm: row.offc_nm,
+          fscl_yyyy: row.fscl_yy,
+          [isField ? 'fld_nm' : 'sect_nm']: isField ? (row as any).fld_nm : row.sect_nm,
+          sactv_nm: row.sactv_nm,
+          y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) / 1000),
+          y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) / 1000),
+        })),
+        cefin: rows.map((row) => ({
+          sactv_nm: row.sactv_nm,
+          y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) * 1000),
+          y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) * 1000),
+        })),
+      }
+    } else {
+      const { rowCount, rows } = await pool.query<IGetCefinResult>(getCefin, [
+        yearFrom,
+        yearTo,
+        isField,
+        fieldsOrSectors,
+        count,
+      ])
+
+      if (rowCount === 0)
+        throw NotFoundError('No expenditure could be found that satisfies these conditions...')
+
+      return {
+        amchart: rows.map((row) => ({
+          offc_nm: row.offc_nm,
+          y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) / 1000),
+          y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) / 1000),
+        })),
+        cefin: rows.map((row) => ({
+          offc_nm: row.offc_nm,
+          y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) * 1000),
+          y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) * 1000),
+        })),
+      }
     }
   })
 }

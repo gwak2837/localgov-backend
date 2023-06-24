@@ -10,10 +10,13 @@ export interface IGetLocalExpendituresByFieldResult {
   cty: string | null;
   detail_bsns_nm: string;
   etc_crntam: string | null;
+  excut_de: Date | null;
   expndtram: string | null;
   id: string;
   nxndr: string | null;
   orgnztnam: string | null;
+  realm_code: number;
+  sfrnd_code: number;
   signgunon: string | null;
 }
 
@@ -23,12 +26,15 @@ export interface IGetLocalExpendituresByFieldQuery {
   result: IGetLocalExpendituresByFieldResult;
 }
 
-const getLocalExpendituresByFieldIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  detail_bsns_nm,\n  sum(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $3 > 100 THEN sfrnd_code = $3\n      ELSE sfrnd_code >= $3 * 100000\n      AND sfrnd_code < ($3 + 1) * 100000\n    END\n  )\n  AND realm_code = $4\nGROUP BY id,\n  detail_bsns_nm\nORDER BY budget_crntam DESC\nLIMIT $5"};
+const getLocalExpendituresByFieldIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  sfrnd_code,\n  excut_de,\n  realm_code,\n  detail_bsns_nm,\n  sum(budget_crntam) AS budget_crntam,\n  sum(nxndr) AS nxndr,\n  sum(cty) AS cty,\n  sum(signgunon) AS signgunon,\n  sum(etc_crntam) AS etc_crntam,\n  sum(expndtram) AS expndtram,\n  sum(orgnztnam) AS orgnztnam\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int [] IS NULL\n    OR sfrnd_code = ANY($3)\n  )\n  AND realm_code = ANY($4)\nGROUP BY id,\n  sfrnd_code,\n  excut_de,\n  realm_code,\n  detail_bsns_nm\nORDER BY budget_crntam DESC\nLIMIT $5"};
 
 /**
  * Query generated from SQL:
  * ```
  * SELECT id,
+ *   sfrnd_code,
+ *   excut_de,
+ *   realm_code,
  *   detail_bsns_nm,
  *   sum(budget_crntam) AS budget_crntam,
  *   sum(nxndr) AS nxndr,
@@ -40,15 +46,14 @@ const getLocalExpendituresByFieldIR: any = {"usedParamSet":{},"params":[],"state
  * FROM local_expenditure
  * WHERE excut_de BETWEEN $1 AND $2
  *   AND (
- *     $3::int IS NULL
- *     OR CASE
- *       WHEN $3 > 100 THEN sfrnd_code = $3
- *       ELSE sfrnd_code >= $3 * 100000
- *       AND sfrnd_code < ($3 + 1) * 100000
- *     END
+ *     $3::int [] IS NULL
+ *     OR sfrnd_code = ANY($3)
  *   )
- *   AND realm_code = $4
+ *   AND realm_code = ANY($4)
  * GROUP BY id,
+ *   sfrnd_code,
+ *   excut_de,
+ *   realm_code,
  *   detail_bsns_nm
  * ORDER BY budget_crntam DESC
  * LIMIT $5

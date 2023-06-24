@@ -10,12 +10,8 @@ SELECT realm_code,
 FROM local_expenditure
 WHERE excut_de BETWEEN $1 AND $2
   AND (
-    $3::int IS NULL
-    OR CASE
-      WHEN $3 > 100 THEN sfrnd_code = $3
-      ELSE sfrnd_code >= $3 * 100000
-      AND sfrnd_code < ($3 + 1) * 100000
-    END
+    $3::int [] IS NULL
+    OR sfrnd_code = ANY($3)
   )
 GROUP BY realm_code
 ORDER BY budget_crntam_sum DESC;

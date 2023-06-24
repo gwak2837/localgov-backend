@@ -22,7 +22,7 @@ export interface IGetLocalExpendituresQuery {
   result: IGetLocalExpendituresResult;
 }
 
-const getLocalExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT realm_code,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int IS NULL\n    OR CASE\n      WHEN $3 > 100 THEN sfrnd_code = $3\n      ELSE sfrnd_code >= $3 * 100000\n      AND sfrnd_code < ($3 + 1) * 100000\n    END\n  )\nGROUP BY realm_code\nORDER BY budget_crntam_sum DESC"};
+const getLocalExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT realm_code,\n  sum(budget_crntam) AS budget_crntam_sum,\n  sum(nxndr) AS nxndr_sum,\n  sum(cty) AS cty_sum,\n  sum(signgunon) AS signgunon_sum,\n  sum(etc_crntam) AS etc_crntam_sum,\n  sum(expndtram) AS expndtram_sum,\n  sum(orgnztnam) AS orgnztnam_sum\nFROM local_expenditure\nWHERE excut_de BETWEEN $1 AND $2\n  AND (\n    $3::int [] IS NULL\n    OR sfrnd_code = ANY($3)\n  )\nGROUP BY realm_code\nORDER BY budget_crntam_sum DESC"};
 
 /**
  * Query generated from SQL:
@@ -38,12 +38,8 @@ const getLocalExpendituresIR: any = {"usedParamSet":{},"params":[],"statement":"
  * FROM local_expenditure
  * WHERE excut_de BETWEEN $1 AND $2
  *   AND (
- *     $3::int IS NULL
- *     OR CASE
- *       WHEN $3 > 100 THEN sfrnd_code = $3
- *       ELSE sfrnd_code >= $3 * 100000
- *       AND sfrnd_code < ($3 + 1) * 100000
- *     END
+ *     $3::int [] IS NULL
+ *     OR sfrnd_code = ANY($3)
  *   )
  * GROUP BY realm_code
  * ORDER BY budget_crntam_sum DESC

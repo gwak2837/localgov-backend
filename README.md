@@ -4,6 +4,51 @@
 
 ## 프로젝트 메모
 
+### 데이터
+
+#### 지방재정365 정책사업비중
+
+https://lofin.mois.go.kr/portal/service/openInfPage.do?infId=MVE9BS27CJXFYK90K1T8208860#
+
+#### 지방재정365 의회비비중
+
+https://lofin.mois.go.kr/portal/service/openInfPage.do?infId=F2TRV35L5CMKRBOJE4UE173378
+
+#### 지방재정365 행사축제원가회계정보
+
+- 이런 행사를 해야 돈을 벌 수 있다
+- 이런 행사로 돈을 낭비 중이다
+
+https://lofin.mois.go.kr/portal/service/openInfPage.do?infId=DY0VO3AMKXCLGZYEM3X9933183&srvCd=
+
+#### 지방재정365 업무추진비비율
+
+- (업무추진비 내용을 알 수 있다면) 이렇게 돈을 낭비 중이다
+
+https://lofin.mois.go.kr/portal/service/openInfPage.do?infId=84474KEKQQDWO3LE7DGZ411505
+
+#### 지방재정365 지방교부세감액현황
+
+- 법령 위반 행위를 알 수 있다.
+
+https://lofin.mois.go.kr/portal/service/openInfPage.do?infId=K2OGI461OM2B4GOUGRNA1127555&srvCd=
+
+#### 지방재정365 세부사업별 세출현황
+
+https://lofin.mois.go.kr/portal/service/openInfPage.do?infId=0GAR4HBB8LWEBSL4NIHZ817053#
+
+#### 오픈API 중앙선거관리위원회 투·개표정보
+
+https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15000900
+
+#### 국민권익위원회 공개제안조회서비스
+
+https://www.data.go.kr/data/15059423/openapi.do#tab_layer_detail_function
+
+#### 국민권익위원회 민원빅데이터 분석정보 API 2022
+
+https://www.data.go.kr/data/15101903/openapi.do#/
+
 ## 💻 개발 환경
 
 - macOS 12.6
