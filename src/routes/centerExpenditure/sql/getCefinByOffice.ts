@@ -7,6 +7,7 @@ export type IGetCefinByOfficeParams = void;
 /** 'GetCefinByOffice' return type */
 export interface IGetCefinByOfficeResult {
   fscl_yy: number;
+  id: string;
   offc_nm: string | null;
   sactv_nm: string;
   sect_nm: string | null;
@@ -20,12 +21,13 @@ export interface IGetCefinByOfficeQuery {
   result: IGetCefinByOfficeResult;
 }
 
-const getCefinByOfficeIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT OFFC_NM,\n  FSCL_YY,\n  CASE\n    WHEN $4 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  SACTV_NM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE OFFC_NM = ANY ($1)\n  AND FSCL_YY BETWEEN $2 AND $3\n  AND (\n    $4::boolean IS NULL\n    OR CASE\n      WHEN $4 THEN FLD_NM = ANY($5)\n      ELSE SECT_NM = ANY($5)\n    END\n  )\nGROUP BY OFFC_NM,\n  FSCL_YY,\n  CASE\n    WHEN $4 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  SACTV_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC\nLIMIT $6"};
+const getCefinByOfficeIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  OFFC_NM,\n  FSCL_YY,\n  CASE\n    WHEN $4 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  SACTV_NM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE OFFC_NM = ANY ($1)\n  AND FSCL_YY BETWEEN $2 AND $3\n  AND (\n    $4::boolean IS NULL\n    OR CASE\n      WHEN $4 THEN FLD_NM = ANY($5)\n      ELSE SECT_NM = ANY($5)\n    END\n  )\nGROUP BY id,\n  OFFC_NM,\n  FSCL_YY,\n  CASE\n    WHEN $4 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  SACTV_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC\nLIMIT $6"};
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT OFFC_NM,
+ * SELECT id,
+ *   OFFC_NM,
  *   FSCL_YY,
  *   CASE
  *     WHEN $4 THEN FLD_NM
@@ -44,7 +46,8 @@ const getCefinByOfficeIR: any = {"usedParamSet":{},"params":[],"statement":"SELE
  *       ELSE SECT_NM = ANY($5)
  *     END
  *   )
- * GROUP BY OFFC_NM,
+ * GROUP BY id,
+ *   OFFC_NM,
  *   FSCL_YY,
  *   CASE
  *     WHEN $4 THEN FLD_NM

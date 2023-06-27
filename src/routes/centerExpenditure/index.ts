@@ -74,6 +74,7 @@ export default async function routes(fastify: TFastify) {
           y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) / 1000),
         })),
         cefin: rows.map((row) => ({
+          id: row.id,
           sactv_nm: row.sactv_nm,
           y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) * 1000),
           y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) * 1000),

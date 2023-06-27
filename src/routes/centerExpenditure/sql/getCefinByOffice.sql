@@ -1,5 +1,6 @@
 /* @name getCefinByOffice */
-SELECT OFFC_NM,
+SELECT id,
+  OFFC_NM,
   FSCL_YY,
   CASE
     WHEN $4 THEN FLD_NM
@@ -18,7 +19,8 @@ WHERE OFFC_NM = ANY ($1)
       ELSE SECT_NM = ANY($5)
     END
   )
-GROUP BY OFFC_NM,
+GROUP BY id,
+  OFFC_NM,
   FSCL_YY,
   CASE
     WHEN $4 THEN FLD_NM
