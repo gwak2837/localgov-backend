@@ -1,19 +1,11 @@
 /** Types generated for queries found in "src/routes/commitment/sql/createCommitment.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** 'CreateCommitment' parameters type */
-export type ICreateCommitmentParams = void;
+/** Query 'CreateCommitment' is invalid, so its result is assigned type 'never' */
+export type ICreateCommitmentResult = never;
 
-/** 'CreateCommitment' return type */
-export interface ICreateCommitmentResult {
-  id: string;
-}
-
-/** 'CreateCommitment' query type */
-export interface ICreateCommitmentQuery {
-  params: ICreateCommitmentParams;
-  result: ICreateCommitmentResult;
-}
+/** Query 'CreateCommitment' is invalid, so its parameters are assigned type 'never' */
+export type ICreateCommitmentParams = never;
 
 const createCommitmentIR: any = {"usedParamSet":{},"params":[],"statement":"INSERT INTO commitment (prmsRealmName, prmsTitle, prmmCont, candidate_id)\nVALUES($1, $2, $3, $4)\nRETURNING id"};
 

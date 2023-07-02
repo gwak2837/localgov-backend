@@ -107,10 +107,39 @@ CREATE TABLE candidate (
   krName text NOT NULL
 );
 
-CREATE TABLE commitment (
+CREATE TABLE commitment2 (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   prmsRealmName text,
   prmsTitle text NOT NULL,
   prmmCont text,
   candidate_id bigint REFERENCES candidate ON DELETE CASCADE
+);
+
+CREATE TABLE commitment (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  title text NOT NULL,
+  content text NOT NULL,
+  sfrnd_code int NOT NULL,
+  field_code int NOT NULL,
+  sector_code int,
+  priority int,
+  progress int NOT NULL,
+  primary_dept text NOT NULL,
+  support_dept text [],
+  main_body text [] NOT NULL,
+  center_gov_aid int [],
+  start_period int NOT NULL,
+  end_period int NOT NULL
+);
+
+CREATE TABLE finance (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  category int NOT NULL,
+  basis_date timestamptz,
+  fiscal_year int,
+  gov bigint,
+  sido bigint,
+  sigungu bigint,
+  etc bigint,
+  commitment_id bigint REFERENCES commitment ON DELETE CASCADE
 );

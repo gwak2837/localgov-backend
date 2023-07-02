@@ -20,7 +20,7 @@ export default async function routes(fastify: TFastify) {
     }),
   }
 
-  fastify.get('/commitment', { schema }, async (req) => {
+  fastify.get('/commitment2', { schema }, async (req) => {
     const { candidateIds, lastId, count } = req.query
 
     const { rowCount, rows } = await pool.query<IGetCommitmentsResult>(getCommitments, [
@@ -30,25 +30,25 @@ export default async function routes(fastify: TFastify) {
     ])
     if (rowCount === 0) throw NotFoundError('No commitment')
 
-    return {
-      commitments: rows.map((row) => ({
-        id: row.id,
-        prmsFieldName: row.prmsrealmname,
-        prmsTitle: row.prmstitle,
-        prmmCont: row.prmmcont,
-        candidate: {
-          id: row.candidate__id,
-          sgId: row.candidate__sgid,
-          sgName: decodeElectionTypeCode(row.candidate__sgtypecode),
-          sgTypeCode: row.candidate__sgtypecode,
-          sigunguName: row.candidate__sggname,
-          sidoName: row.candidate__sidoname,
-          wiwName: row.candidate__wiwname,
-          partyName: row.candidate__partyname,
-          krName: row.candidate__krname,
-        },
-      })),
-    }
+    // return {
+    //   commitments: rows.map((row) => ({
+    //     id: row.id,
+    //     prmsFieldName: row.prmsrealmname,
+    //     prmsTitle: row.prmstitle,
+    //     prmmCont: row.prmmcont,
+    //     candidate: {
+    //       id: row.candidate__id,
+    //       sgId: row.candidate__sgid,
+    //       sgName: decodeElectionTypeCode(row.candidate__sgtypecode),
+    //       sgTypeCode: row.candidate__sgtypecode,
+    //       sigunguName: row.candidate__sggname,
+    //       sidoName: row.candidate__sidoname,
+    //       wiwName: row.candidate__wiwname,
+    //       partyName: row.candidate__partyname,
+    //       krName: row.candidate__krname,
+    //     },
+    //   })),
+    // }
   })
 
   const schema2 = {
@@ -60,7 +60,7 @@ export default async function routes(fastify: TFastify) {
     }),
   }
 
-  fastify.post('/commitment', { schema: schema2 }, async (req, reply) => {
+  fastify.post('/commitment2', { schema: schema2 }, async (req, reply) => {
     const { realm, title, content, candidateId } = req.body
 
     const { rowCount, rows } = await pool.query<ICreateCommitmentResult>(createCommitment, [
@@ -71,7 +71,7 @@ export default async function routes(fastify: TFastify) {
     ])
     if (rowCount === 0) throw BadRequestError('Failed to create a commitment')
 
-    return { id: rows[0].id }
+    // return { id: rows[0].id }
   })
 
   const schema3 = {
@@ -83,7 +83,7 @@ export default async function routes(fastify: TFastify) {
     }),
   }
 
-  fastify.put('/commitment', { schema: schema3 }, async (req, reply) => {
+  fastify.put('/commitment2', { schema: schema3 }, async (req, reply) => {
     const { ids, realms, titles, contents } = req.body
 
     const { rowCount } = await pool.query(updateCommitments, [ids, realms, titles, contents])
@@ -98,7 +98,7 @@ export default async function routes(fastify: TFastify) {
     }),
   }
 
-  fastify.delete('/commitment', { schema: schema4 }, async (req, reply) => {
+  fastify.delete('/commitment2', { schema: schema4 }, async (req, reply) => {
     const { ids } = req.query
 
     const { rowCount } = await pool.query(deleteCommitments, [ids])

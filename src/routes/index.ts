@@ -17,6 +17,7 @@ import amchart from './analysis'
 import candidate from './candidate'
 import centerExpenditure from './centerExpenditure'
 import commitment from './commitment'
+import localCommitment from './localCommitment'
 import localExpenditure from './localExpenditure'
 
 const fastify = Fastify({
@@ -84,6 +85,7 @@ fastify.register(amchart)
 fastify.register(candidate)
 fastify.register(centerExpenditure)
 fastify.register(commitment)
+fastify.register(localCommitment)
 fastify.register(localExpenditure)
 
 export default async function startServer() {

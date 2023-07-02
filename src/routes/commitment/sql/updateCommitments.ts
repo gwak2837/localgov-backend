@@ -1,17 +1,11 @@
 /** Types generated for queries found in "src/routes/commitment/sql/updateCommitments.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** 'UpdateCommitments' parameters type */
-export type IUpdateCommitmentsParams = void;
+/** Query 'UpdateCommitments' is invalid, so its result is assigned type 'never' */
+export type IUpdateCommitmentsResult = never;
 
-/** 'UpdateCommitments' return type */
-export type IUpdateCommitmentsResult = void;
-
-/** 'UpdateCommitments' query type */
-export interface IUpdateCommitmentsQuery {
-  params: IUpdateCommitmentsParams;
-  result: IUpdateCommitmentsResult;
-}
+/** Query 'UpdateCommitments' is invalid, so its parameters are assigned type 'never' */
+export type IUpdateCommitmentsParams = never;
 
 const updateCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"UPDATE commitment\nSET prmsRealmName = new.prmsRealmName,\n  prmsTitle = new.prmsTitle,\n  prmmCont = new.prmmCont\nFROM (\n    SELECT unnest($1::int []) AS id,\n      unnest($2::text []) AS prmsRealmName,\n      unnest($3::text []) AS prmsTitle,\n      unnest($4::text []) AS prmmCont\n  ) AS new\nWHERE commitment.id = new.id"};
 
