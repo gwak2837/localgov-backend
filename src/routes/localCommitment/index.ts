@@ -1,6 +1,7 @@
 import { Type } from '@sinclair/typebox'
 
 import { NotFoundError } from '../../common/fastify'
+import { lofinFields, lofinSectors } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import getBasisDates from './sql/getBasisDates.sql'
 import getCommitments from './sql/getCommitments.sql'
@@ -65,6 +66,8 @@ export default async function routes(fastify: TFastify) {
       return {
         id,
         title: commitmentsById[0].title,
+        field: lofinFields[commitmentsById[0].field_code],
+        sector: lofinSectors[commitmentsById[0].sector_code],
         priority: commitmentsById[0].priority ?? undefined,
         basisDate: expenditure?.basis_date,
         prevTotalExpenditure: getFixedNumber(prevExpenditure?.total, 0),
