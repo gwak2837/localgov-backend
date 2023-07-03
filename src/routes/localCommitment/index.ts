@@ -2,6 +2,7 @@ import { Type } from '@sinclair/typebox'
 
 import { NotFoundError } from '../../common/fastify'
 import { pool } from '../../common/postgres'
+import getBasisDate from './sql/getBasisDate.sql'
 import getCommitments from './sql/getCommitments.sql'
 import getCompletionRatio from './sql/getCompletionRatio.sql'
 import { TFastify } from '..'
@@ -87,6 +88,16 @@ export default async function routes(fastify: TFastify) {
         }),
       }
     })
+  })
+
+  const schema2 = {
+    querystring: Type.Object({}),
+  }
+
+  fastify.get('/commitment/basis-date', { schema: schema2 }, async (req, reply) => {
+    const { rows } = await pool.query(getBasisDate)
+
+    return rows.map((row) => row.basis_date)
   })
 }
 
