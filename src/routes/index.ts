@@ -39,10 +39,10 @@ export type TFastify = typeof fastify
 fastify.register(cors, {
   origin: [
     'http://localhost:3000',
-    'https://lofin.app',
-    'https://lofin.vercel.app',
-    'https://lofin-git-dev-gwak2837.vercel.app',
-    /^https:\/\/lofin-[a-z0-9]{1,20}-gwak2837\.vercel\.app/,
+    'https://jikida.app',
+    'https://jikida.vercel.app',
+    'https://jikida-git-dev-gwak2837.vercel.app',
+    /^https:\/\/jikida-[a-z0-9]{1,20}-gwak2837\.vercel\.app/,
   ],
 })
 
