@@ -13,10 +13,10 @@ FROM commitment
     )
     ELSE $1
   END
-  AND CASE
-    WHEN $2::int [] IS NULL THEN finance.fiscal_year <= (date_part('year', CURRENT_TIMESTAMP))
-    ELSE finance.fiscal_year = ANY($2)
-  END
+  AND (
+    $2::int [] IS NULL
+    OR finance.fiscal_year = ANY($2)
+  )
   AND (
     $3::int [] IS NULL
     OR commitment.sfrnd_code = ANY($3)

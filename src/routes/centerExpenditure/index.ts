@@ -64,22 +64,16 @@ export default async function routes(fastify: TFastify) {
       if (rowCount === 0)
         throw NotFoundError('No expenditure could be found that satisfies these conditions...')
 
-      return {
-        amchart: rows.map((row) => ({
-          offc_nm: row.offc_nm,
-          fscl_yyyy: row.fscl_yy,
-          [isField ? 'fld_nm' : 'sect_nm']: isField ? (row as any).fld_nm : row.sect_nm,
-          sactv_nm: row.sactv_nm,
-          y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) / 1000),
-          y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) / 1000),
-        })),
-        cefin: rows.map((row) => ({
-          id: row.id,
-          sactv_nm: row.sactv_nm,
-          y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) * 1000),
-          y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) * 1000),
-        })),
-      }
+      return rows.map((row) => ({
+        id: row.id,
+        offc_nm: row.offc_nm,
+        fscl_yyyy: row.fscl_yy,
+        fld_nm: row.fld_nm,
+        sect_nm: row.sect_nm,
+        sactv_nm: row.sactv_nm,
+        y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) * 1000),
+        y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) * 1000),
+      }))
     } else {
       const { rowCount, rows } = await pool.query<IGetCefinResult>(getCefin, [
         yearFrom,
@@ -92,18 +86,11 @@ export default async function routes(fastify: TFastify) {
       if (rowCount === 0)
         throw NotFoundError('No expenditure could be found that satisfies these conditions...')
 
-      return {
-        amchart: rows.map((row) => ({
-          offc_nm: row.offc_nm,
-          y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) / 1000),
-          y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) / 1000),
-        })),
-        cefin: rows.map((row) => ({
-          offc_nm: row.offc_nm,
-          y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) * 1000),
-          y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) * 1000),
-        })),
-      }
+      return rows.map((row) => ({
+        offc_nm: row.offc_nm,
+        y_yy_dfn_medi_kcur_amt: Math.floor(+(row.y_yy_dfn_medi_kcur_amt ?? 0) * 1000),
+        y_yy_medi_kcur_amt: Math.floor(+(row.y_yy_medi_kcur_amt ?? 0) * 1000),
+      }))
     }
   })
 }

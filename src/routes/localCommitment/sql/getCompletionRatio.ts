@@ -17,7 +17,7 @@ export interface IGetCompletionRatioQuery {
   result: IGetCompletionRatioResult;
 }
 
-const getCompletionRatioIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT commitment.id,\n  finance.category,\n  sum(gov_expenditure) + sum(sido_expenditure) + sum(sigungu_expenditure) + sum(etc_expenditure) AS total\nFROM commitment\n  JOIN finance ON finance.commitment_id = commitment.id\n  AND finance.basis_date = CASE\n    WHEN $1::timestamptz IS NULL THEN (\n      SELECT basis_date\n      FROM finance\n      ORDER BY basis_date DESC\n      LIMIT 1\n    )\n    ELSE $1\n  END\n  AND CASE\n    WHEN $2::int [] IS NULL THEN finance.fiscal_year <= (date_part('year', CURRENT_TIMESTAMP))\n    ELSE finance.fiscal_year = ANY($2)\n  END\n  AND (\n    $3::int [] IS NULL\n    OR commitment.sfrnd_code = ANY($3)\n  )\nGROUP BY commitment.id,\n  finance.category\nORDER BY commitment.id"};
+const getCompletionRatioIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT commitment.id,\n  finance.category,\n  sum(gov_expenditure) + sum(sido_expenditure) + sum(sigungu_expenditure) + sum(etc_expenditure) AS total\nFROM commitment\n  JOIN finance ON finance.commitment_id = commitment.id\n  AND finance.basis_date = CASE\n    WHEN $1::timestamptz IS NULL THEN (\n      SELECT basis_date\n      FROM finance\n      ORDER BY basis_date DESC\n      LIMIT 1\n    )\n    ELSE $1\n  END\n  AND (\n    $2::int [] IS NULL\n    OR finance.fiscal_year = ANY($2)\n  )\n  AND (\n    $3::int [] IS NULL\n    OR commitment.sfrnd_code = ANY($3)\n  )\nGROUP BY commitment.id,\n  finance.category\nORDER BY commitment.id"};
 
 /**
  * Query generated from SQL:
@@ -36,10 +36,10 @@ const getCompletionRatioIR: any = {"usedParamSet":{},"params":[],"statement":"SE
  *     )
  *     ELSE $1
  *   END
- *   AND CASE
- *     WHEN $2::int [] IS NULL THEN finance.fiscal_year <= (date_part('year', CURRENT_TIMESTAMP))
- *     ELSE finance.fiscal_year = ANY($2)
- *   END
+ *   AND (
+ *     $2::int [] IS NULL
+ *     OR finance.fiscal_year = ANY($2)
+ *   )
  *   AND (
  *     $3::int [] IS NULL
  *     OR commitment.sfrnd_code = ANY($3)

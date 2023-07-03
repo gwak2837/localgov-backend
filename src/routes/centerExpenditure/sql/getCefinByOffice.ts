@@ -6,6 +6,7 @@ export type IGetCefinByOfficeParams = void;
 
 /** 'GetCefinByOffice' return type */
 export interface IGetCefinByOfficeResult {
+  fld_nm: string | null;
   fscl_yy: number;
   id: string;
   offc_nm: string | null;
@@ -21,7 +22,7 @@ export interface IGetCefinByOfficeQuery {
   result: IGetCefinByOfficeResult;
 }
 
-const getCefinByOfficeIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  OFFC_NM,\n  FSCL_YY,\n  CASE\n    WHEN $4 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  SACTV_NM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE OFFC_NM = ANY ($1)\n  AND FSCL_YY BETWEEN $2 AND $3\n  AND (\n    $4::boolean IS NULL\n    OR CASE\n      WHEN $4 THEN FLD_NM = ANY($5)\n      ELSE SECT_NM = ANY($5)\n    END\n  )\nGROUP BY id,\n  OFFC_NM,\n  FSCL_YY,\n  CASE\n    WHEN $4 THEN FLD_NM\n    ELSE SECT_NM\n  END,\n  SACTV_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC\nLIMIT $6"};
+const getCefinByOfficeIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  OFFC_NM,\n  FSCL_YY,\n  CASE\n    WHEN $4::boolean IS NULL\n    OR $4 THEN FLD_NM\n  END AS FLD_NM,\n  CASE\n    WHEN $4::boolean IS NULL\n    OR $4 = false THEN SECT_NM\n  END AS SECT_NM,\n  SACTV_NM,\n  sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,\n  sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT\nFROM center_expenditure\nWHERE OFFC_NM = ANY ($1)\n  AND FSCL_YY BETWEEN $2 AND $3\n  AND (\n    $4::boolean IS NULL\n    OR CASE\n      WHEN $4 THEN FLD_NM = ANY($5)\n      ELSE SECT_NM = ANY($5)\n    END\n  )\nGROUP BY id,\n  SACTV_NM\nORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC\nLIMIT $6"};
 
 /**
  * Query generated from SQL:
@@ -30,9 +31,13 @@ const getCefinByOfficeIR: any = {"usedParamSet":{},"params":[],"statement":"SELE
  *   OFFC_NM,
  *   FSCL_YY,
  *   CASE
- *     WHEN $4 THEN FLD_NM
- *     ELSE SECT_NM
- *   END,
+ *     WHEN $4::boolean IS NULL
+ *     OR $4 THEN FLD_NM
+ *   END AS FLD_NM,
+ *   CASE
+ *     WHEN $4::boolean IS NULL
+ *     OR $4 = false THEN SECT_NM
+ *   END AS SECT_NM,
  *   SACTV_NM,
  *   sum(Y_YY_MEDI_KCUR_AMT) AS Y_YY_MEDI_KCUR_AMT,
  *   sum(Y_YY_DFN_MEDI_KCUR_AMT) AS Y_YY_DFN_MEDI_KCUR_AMT
@@ -47,12 +52,6 @@ const getCefinByOfficeIR: any = {"usedParamSet":{},"params":[],"statement":"SELE
  *     END
  *   )
  * GROUP BY id,
- *   OFFC_NM,
- *   FSCL_YY,
- *   CASE
- *     WHEN $4 THEN FLD_NM
- *     ELSE SECT_NM
- *   END,
  *   SACTV_NM
  * ORDER BY Y_YY_DFN_MEDI_KCUR_AMT DESC
  * LIMIT $6
