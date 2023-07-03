@@ -2,9 +2,11 @@ import { Type } from '@sinclair/typebox'
 
 import { NotFoundError } from '../../common/fastify'
 import { pool } from '../../common/postgres'
-import getBasisDate from './sql/getBasisDate.sql'
+import getBasisDates from './sql/getBasisDates.sql'
 import getCommitments from './sql/getCommitments.sql'
 import getCompletionRatio from './sql/getCompletionRatio.sql'
+import getFiscalYears from './sql/getFiscalYears.sql'
+import getLocalGovCodes from './sql/getLocalGovCodes.sql'
 import { TFastify } from '..'
 
 export default async function routes(fastify: TFastify) {
@@ -63,7 +65,8 @@ export default async function routes(fastify: TFastify) {
       return {
         id,
         title: commitmentsById[0].title,
-        basisDate,
+        priority: commitmentsById[0].priority ?? undefined,
+        basisDate: expenditure?.basis_date,
         prevTotalExpenditure: getFixedNumber(prevExpenditure?.total, 0),
         prevTotalExecution: getFixedNumber(prevExecution?.total, 0),
         prevExpenditureGovRatio: getFixedNumber(prevExpenditure?.gov_ratio),
@@ -94,10 +97,18 @@ export default async function routes(fastify: TFastify) {
     querystring: Type.Object({}),
   }
 
-  fastify.get('/commitment/basis-date', { schema: schema2 }, async (req, reply) => {
-    const { rows } = await pool.query(getBasisDate)
+  fastify.get('/commitment/option', { schema: schema2 }, async (req, reply) => {
+    const [_, __, ___] = await Promise.all([
+      pool.query(getBasisDates),
+      pool.query(getFiscalYears),
+      pool.query(getLocalGovCodes),
+    ])
 
-    return rows.map((row) => row.basis_date)
+    return {
+      basisDates: _.rows.map((row) => row.basis_date),
+      fiscalYears: __.rows.map((row) => row.fiscal_year),
+      localGovCodes: ___.rows.map((row) => row.sfrnd_code),
+    }
   })
 }
 

@@ -135,7 +135,7 @@ CREATE TABLE commitment (
 CREATE TABLE finance (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   category int NOT NULL,
-  basis_date timestamptz,
+  basis_date timestamptz NOT NULL,
   fiscal_year int,
   gov bigint,
   sido bigint,

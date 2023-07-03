@@ -1,6 +1,7 @@
 /* @name getCommitments */
 SELECT id,
   title,
+  priority,
   basis_date,
   category,
   total,
@@ -11,6 +12,7 @@ SELECT id,
 FROM (
     SELECT commitment.id,
       title,
+      priority,
       finance.basis_date,
       finance.category,
       sum(gov_expenditure) AS gov_expenditure,

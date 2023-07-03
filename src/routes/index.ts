@@ -38,6 +38,7 @@ export type TFastify = typeof fastify
 
 fastify.register(cors, {
   origin: [
+    'localhost:3000',
     'http://localhost:3000',
     'https://jikida.app',
     'https://jikida.vercel.app',
