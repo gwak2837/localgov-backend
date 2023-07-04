@@ -19,6 +19,8 @@ import {
 } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import { nationalTasks120 } from '../../common/president'
+import { IGetCefinBusinessResult } from './sql/getCefinBusiness'
+import getCefinBusiness from './sql/getCefinBusiness.sql'
 import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
 import getCefinByOffice from './sql/getCefinByOffice.sql'
 import { IGetCefinRatioResult } from './sql/getCefinRatio'
@@ -207,37 +209,69 @@ export default async function routes(fastify: TFastify) {
     // Validate the querystring
     const { id, nationalTaskId, isCefin } = req.query
 
-    const { rows } = isCefin
-      ? // await pool.query<IGetCefinBusinessResult>(getCefinBusiness, [id])
-        await pool.query<IGetLofinBusinessResult>(getLofinBusiness, [id])
-      : await pool.query<IGetLofinBusinessResult>(getLofinBusiness, [id])
+    if (isCefin) {
+      const { rows } = await pool.query<IGetCefinBusinessResult>(getCefinBusiness, [id])
 
-    const sidoCode = +`${rows[0].sfrnd_code}`.slice(0, 2)
-    const searchQuery = `${sido[sidoCode]} ${rows[0].detail_bsns_nm}`
+      const searchQuery = `${rows[0].offc_nm} ${rows[0].sactv_nm}`
+      const business = {
+        officeName: rows[0].offc_nm,
+        name: rows[0].sactv_nm,
+        field: rows[0].fld_nm,
+        sector: rows[0].sect_nm,
+      }
 
-    const [bard, naver, youtube, google] = await Promise.all([
-      getAnswerFromGoogleBard(nationalTaskId, rows[0]).catch((err) => err.message),
-      searchFromNaver(searchQuery),
-      searchFromYouTube(searchQuery),
-      searchFromGoogle(searchQuery),
-    ])
+      const [positiveBard, negativeBard, naver, youtube, google] = await Promise.all([
+        bot.ask(getPrompt(nationalTaskId, business, true, true), String(Date.now())),
+        bot.ask(getPrompt(nationalTaskId, business, false, true), String(Date.now() + 1)),
+        searchFromNaver(searchQuery),
+        searchFromYouTube(searchQuery),
+        searchFromGoogle(searchQuery),
+      ])
 
-    return {
-      nationalTask: nationalTasks120[nationalTaskId],
-      business: rows[0],
-      bard,
-      naver,
-      youtube,
-      google,
+      return {
+        nationalTask: nationalTasks120[nationalTaskId],
+        business: rows[0],
+        bard: {
+          positive: positiveBard,
+          negative: negativeBard,
+        },
+        naver,
+        youtube,
+        google,
+      }
+    } else {
+      const { rows } = await pool.query<IGetLofinBusinessResult>(getLofinBusiness, [id])
+
+      const sidoCode = +`${rows[0].sfrnd_code}`.slice(0, 2)
+      const searchQuery = `${sido[sidoCode]} ${rows[0].detail_bsns_nm}`
+      const business = {
+        officeName: sigungu[rows[0].sfrnd_code],
+        name: rows[0].detail_bsns_nm,
+        field: lofinFields[rows[0].realm_code],
+        sector: lofinSectors[rows[0].sect_code],
+      }
+
+      const [positiveBard, negativeBard, naver, youtube, google] = await Promise.all([
+        bot.ask(getPrompt(nationalTaskId, business, true, false), String(Date.now() + 2)),
+        bot.ask(getPrompt(nationalTaskId, business, false, false), String(Date.now() + 3)),
+        searchFromNaver(searchQuery),
+        searchFromYouTube(searchQuery),
+        searchFromGoogle(searchQuery),
+      ])
+
+      return {
+        nationalTask: nationalTasks120[nationalTaskId],
+        business: rows[0],
+        bard: {
+          positive: positiveBard,
+          negative: negativeBard,
+        },
+        naver,
+        youtube,
+        google,
+      }
     }
   })
-}
-
-async function getAnswerFromGoogleBard(nationalTaskId: number, business: Record<string, any>) {
-  return Promise.all([
-    bot.ask(getPrompt(nationalTaskId, business, true), String(Date.now())),
-    bot.ask(getPrompt(nationalTaskId, business, false), String(Date.now())),
-  ])
 }
 
 async function searchFromNaver(query: string) {
@@ -270,31 +304,39 @@ async function searchFromGoogle(query: string) {
   return result.items
 }
 
-function getPrompt(nationalTaskId: number, business: Record<string, any>, isPositive: boolean) {
-  const localGovName = sigungu[business.sfrnd_code]
+function getPrompt(
+  nationalTaskId: number,
+  business: Record<string, any>,
+  isPositive: boolean,
+  isCenter: boolean
+) {
+  const officeName = business.officeName
 
-  const prefix = isPositive
-    ? `대한민국 윤석열 대통령의 120대 국정과제 중 하나와 대한민국 지방자치단체인 ${localGovName}에서 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 국정과제와 지방자치단체 사업은 서로 밀접하게 연관되어 있는데, 그 근거를 자세히 설명해줘:`
-    : `대한민국 윤석열 대통령의 120대 국정과제 중 하나와 대한민국 지방자치단체인 ${localGovName}에서 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 국정과제와 지방자치단체 사업은 서로 하나도 연관되어 있지 않는데, 그 근거를 자세히 설명해줘:`
+  const prefix = isCenter
+    ? isPositive
+      ? `대한민국 윤석열 대통령의 120대 국정과제 중 하나와 중앙부처인 ${officeName}에서 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 국정과제와 지방자치단체 사업은 서로 밀접하게 연관되어 있는데, 그 근거를 자세히 설명해줘:`
+      : `대한민국 윤석열 대통령의 120대 국정과제 중 하나와 중앙부처인 ${officeName}에서 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 국정과제와 지방자치단체 사업은 서로 하나도 연관되어 있지 않는데, 그 근거를 자세히 설명해줘:`
+    : isPositive
+    ? `대한민국 윤석열 대통령의 120대 국정과제 중 하나와 대한민국 지방자치단체인 ${officeName}에서 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 국정과제와 지방자치단체 사업은 서로 밀접하게 연관되어 있는데, 그 근거를 자세히 설명해줘:`
+    : `대한민국 윤석열 대통령의 120대 국정과제 중 하나와 대한민국 지방자치단체인 ${officeName}에서 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 국정과제와 지방자치단체 사업은 서로 하나도 연관되어 있지 않는데, 그 근거를 자세히 설명해줘:`
+
+  const detail = isCenter
+    ? `중앙부처 사업:
+- 분야: ${business.field}
+- 부문: ${business.sector}
+- 주관: ${officeName}
+- 제목: ${business.name}`
+    : `지방자치단체 사업:
+- 분야: ${business.field}
+- 부문: ${business.sector}
+- 주관: ${officeName}
+- 제목: ${business.name}`
 
   return `${prefix}
 
 대통령 국정과제:
 ${nationalTasks120[nationalTaskId]}
 
-지방자치단체 사업:
-- 분야: ${lofinFields[business.realm_code]}
-- 부문: ${lofinSectors[business.sect_code]}
-- 주관: ${localGovName}
-- 제목: ${business.detail_bsns_nm}
+${detail}
 `
-
-  // - ${(business.excut_de as Date).getFullYear()}년 예산
-  //   - 예산현액: ${business.budget_crntam}원
-  //     - 국비: ${business.nxndr}원
-  //     - 시도비: ${business.cty}원
-  //     - 시군구비: ${business.signgunon}원
-  //     - 기타: ${business.etc_crntam}원
-  //   - 집행액: ${business.expndtram}원
-  //   - 편성액: ${business.orgnztnam}원
 }
