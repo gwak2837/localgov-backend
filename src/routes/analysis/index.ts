@@ -213,16 +213,14 @@ export default async function routes(fastify: TFastify) {
       const { rows } = await pool.query<IGetCefinBusinessResult>(getCefinBusiness, [id])
 
       const searchQuery = `${rows[0].offc_nm} ${rows[0].sactv_nm}`
-      const business = {
-        officeName: rows[0].offc_nm,
-        name: rows[0].sactv_nm,
-        field: rows[0].fld_nm,
-        sector: rows[0].sect_nm,
-      }
+      // const business = {
+      //   officeName: rows[0].offc_nm,
+      //   name: rows[0].sactv_nm,
+      //   field: rows[0].fld_nm,
+      //   sector: rows[0].sect_nm,
+      // }
 
-      const [positiveBard, negativeBard, naver, youtube, google] = await Promise.all([
-        bot.ask(getPrompt(nationalTaskId, business, true, true), String(Date.now())),
-        bot.ask(getPrompt(nationalTaskId, business, false, true), String(Date.now() + 1)),
+      const [naver, youtube, google] = await Promise.all([
         searchFromNaver(searchQuery),
         searchFromYouTube(searchQuery),
         searchFromGoogle(searchQuery),
@@ -231,10 +229,6 @@ export default async function routes(fastify: TFastify) {
       return {
         nationalTask: nationalTasks120[nationalTaskId],
         business: rows[0],
-        bard: {
-          positive: positiveBard,
-          negative: negativeBard,
-        },
         naver,
         youtube,
         google,
@@ -244,16 +238,16 @@ export default async function routes(fastify: TFastify) {
 
       const sidoCode = +`${rows[0].sfrnd_code}`.slice(0, 2)
       const searchQuery = `${sido[sidoCode]} ${rows[0].detail_bsns_nm}`
-      const business = {
-        officeName: sigungu[rows[0].sfrnd_code],
-        name: rows[0].detail_bsns_nm,
-        field: lofinFields[rows[0].realm_code],
-        sector: lofinSectors[rows[0].sect_code],
-      }
+      // const business = {
+      //   officeName: sigungu[rows[0].sfrnd_code],
+      //   name: rows[0].detail_bsns_nm,
+      //   field: lofinFields[rows[0].realm_code],
+      //   sector: lofinSectors[rows[0].sect_code],
+      // }
 
-      const [positiveBard, negativeBard, naver, youtube, google] = await Promise.all([
-        bot.ask(getPrompt(nationalTaskId, business, true, false), String(Date.now() + 2)),
-        bot.ask(getPrompt(nationalTaskId, business, false, false), String(Date.now() + 3)),
+      const [naver, youtube, google] = await Promise.all([
+        // bot.ask(getPrompt(nationalTaskId, business, true, false), String(Date.now() + 2)),
+        // bot.ask(getPrompt(nationalTaskId, business, false, false), String(Date.now() + 3)),
         searchFromNaver(searchQuery),
         searchFromYouTube(searchQuery),
         searchFromGoogle(searchQuery),
@@ -262,10 +256,6 @@ export default async function routes(fastify: TFastify) {
       return {
         nationalTask: nationalTasks120[nationalTaskId],
         business: rows[0],
-        bard: {
-          positive: positiveBard,
-          negative: negativeBard,
-        },
         naver,
         youtube,
         google,

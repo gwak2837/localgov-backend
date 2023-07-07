@@ -17,6 +17,7 @@ import amchart from './analysis'
 import candidate from './candidate'
 import centerExpenditure from './centerExpenditure'
 import commitment from './commitment'
+import eduCommitment from './eduCommitment'
 import localCommitment from './localCommitment'
 import localExpenditure from './localExpenditure'
 
@@ -86,6 +87,7 @@ fastify.register(amchart)
 fastify.register(candidate)
 fastify.register(centerExpenditure)
 fastify.register(commitment)
+fastify.register(eduCommitment)
 fastify.register(localCommitment)
 fastify.register(localExpenditure)
 

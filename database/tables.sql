@@ -143,3 +143,33 @@ CREATE TABLE finance (
   etc bigint,
   commitment_id bigint REFERENCES commitment ON DELETE CASCADE
 );
+
+CREATE TABLE edu_commitment (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  title text NOT NULL,
+  content text NOT NULL,
+  sfrnd_code int NOT NULL,
+  primary_dept text NOT NULL,
+  support_dept text [],
+  main_body text [] NOT NULL,
+  start_period int NOT NULL,
+  end_period int NOT NULL,
+  field_code int NOT NULL,
+  sector_code int,
+  priority int,
+  progress int NOT NULL,
+  center_gov_aid int []
+);
+
+CREATE TABLE edu_finance (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  title text,
+  basis_date timestamptz NOT NULL,
+  category int NOT NULL,
+  fiscal_year int,
+  itself bigint,
+  gov bigint,
+  sido bigint,
+  etc bigint,
+  commitment_id bigint REFERENCES edu_commitment ON DELETE CASCADE
+);
