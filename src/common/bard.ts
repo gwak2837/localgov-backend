@@ -6,13 +6,13 @@ import { GOOGLE_BARD_API_KEY, GOOGLE_BARD_TOKEN } from './constants'
 
 const { TextServiceClient } = v1beta2
 
-export const bot = new Bard(GOOGLE_BARD_TOKEN)
+export const bard = new Bard(GOOGLE_BARD_TOKEN)
 
 export async function startBardBot() {
-  return bot.ask('Hello', 'Hello')
+  return bard.ask('Hello', 'Hello')
 }
 
-export const client = new TextServiceClient({
+export const bardBeta = new TextServiceClient({
   authClient: new GoogleAuth().fromAPIKey(GOOGLE_BARD_API_KEY),
 })
 
@@ -26,7 +26,7 @@ Local government projects:
 - Supervision: Daegu Main Office
 - Title: Support for passport office expenses`
 
-// client
+// bardBeta
 //   .generateText({
 //     model: 'models/text-bison-001',
 //     prompt: {

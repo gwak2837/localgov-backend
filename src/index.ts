@@ -16,17 +16,13 @@ pool
       `🚅 Connected to ${PGURI} at ${new Date(rows[0].current_timestamp).toLocaleString()}`
     )
   )
-  .catch((error) => {
-    throw new Error('Cannot connect to PostgreSQL server... \n' + error)
-  })
+  .catch((error) => console.error('Cannot connect to PostgreSQL server... \n' + error))
 
 // startRedisClient()
 //   .then((value) =>
 //     console.log(`📮 Connected to ${REDIS_CONNECTION_STRING} at ${value.toLocaleString()}`)
 //   )
-//   .catch((error) => {
-//     console.error('Cannot connect to Redis server... \n' + error)
-//   })
+//   .catch((error) => console.error('Cannot connect to Redis server... \n' + error))
 
 startServer()
   .then((url) => {
@@ -34,14 +30,10 @@ startServer()
     if (NODE_ENV !== 'production' && nets.en0)
       console.log(`🚀 On Your Network: https://${nets.en0[1].address}:${PORT}`)
   })
-  .catch((error) => {
-    throw new Error('Cannot start API server... \n' + error)
-  })
+  .catch((error) => console.error('Cannot start API server... \n' + error))
 
 startBardBot()
   .then((answer) =>
     console.log(`✨ Connected to Google Bard at ${new Date().toLocaleString()}. ${answer}`)
   )
-  .catch((error) => {
-    throw new Error('Cannot start Google Bard... \n' + error)
-  })
+  .catch((error) => console.error('Cannot start Google Bard... \n' + error))

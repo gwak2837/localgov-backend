@@ -120,6 +120,7 @@ CREATE TABLE commitment (
   title text NOT NULL,
   content text NOT NULL,
   sfrnd_code int NOT NULL,
+  election_date timestamptz NOT NULL,
   field_code int NOT NULL,
   sector_code int,
   priority int,
@@ -172,4 +173,14 @@ CREATE TABLE edu_finance (
   sido bigint,
   etc bigint,
   commitment_id bigint REFERENCES edu_commitment ON DELETE CASCADE
+);
+
+CREATE TABLE ai (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  creation_date timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  who int NOT NULL,
+  category int NOT NULL,
+  reference_id bigint NOT NULL,
+  kind int NOT NULL,
+  content text NOT NULL
 );

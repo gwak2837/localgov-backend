@@ -1,4 +1,4 @@
-export const nationalTasks120 = [
+export const presidentCommitments = [
   `- 주관: 중소벤처기업부
 - 제목: 코로나19 피해 소상공인·자영업자의 완전한 회복과 새로운 도약
 - 과제목표

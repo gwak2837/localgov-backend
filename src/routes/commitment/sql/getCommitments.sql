@@ -1,5 +1,5 @@
 /* @name getCommitments */
-SELECT commitment.id,
+SELECT commitment2.id,
   prmsRealmName,
   prmsTitle,
   prmmCont,
@@ -12,9 +12,9 @@ SELECT commitment.id,
   wiwName AS candidate__wiwName,
   partyName AS candidate__partyName,
   krName AS candidate__krName
-FROM commitment
-  JOIN candidate ON candidate.id = commitment.candidate_id
+FROM commitment2
+  JOIN candidate ON candidate.id = commitment2.candidate_id
   AND candidate.id = ANY ($1)
-WHERE commitment.id < $2
-ORDER BY commitment.id DESC
+WHERE commitment2.id < $2
+ORDER BY commitment2.id DESC
 LIMIT $3;

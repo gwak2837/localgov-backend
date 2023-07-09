@@ -13,12 +13,12 @@ export interface IDeleteCommitmentsQuery {
   result: IDeleteCommitmentsResult;
 }
 
-const deleteCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"DELETE FROM commitment\nWHERE id = ANY($1)"};
+const deleteCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"DELETE FROM commitment2\nWHERE id = ANY($1)"};
 
 /**
  * Query generated from SQL:
  * ```
- * DELETE FROM commitment
+ * DELETE FROM commitment2
  * WHERE id = ANY($1)
  * ```
  */

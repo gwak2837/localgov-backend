@@ -1,5 +1,5 @@
 /* @name updateCommitments */
-UPDATE commitment
+UPDATE commitment2
 SET prmsRealmName = new.prmsRealmName,
   prmsTitle = new.prmsTitle,
   prmmCont = new.prmmCont
@@ -9,4 +9,4 @@ FROM (
       unnest($3::text []) AS prmsTitle,
       unnest($4::text []) AS prmmCont
   ) AS new
-WHERE commitment.id = new.id;
+WHERE commitment2.id = new.id;
