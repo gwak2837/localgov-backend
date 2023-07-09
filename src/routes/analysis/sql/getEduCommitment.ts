@@ -6,6 +6,7 @@ export type IGetEduCommitmentParams = void;
 
 /** 'GetEduCommitment' return type */
 export interface IGetEduCommitmentResult {
+  sfrnd_code: number;
   title: string;
 }
 
@@ -15,13 +16,15 @@ export interface IGetEduCommitmentQuery {
   result: IGetEduCommitmentResult;
 }
 
-const getEduCommitmentIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT title\nFROM edu_commitment"};
+const getEduCommitmentIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT sfrnd_code,\n  title\nFROM edu_commitment\nWHERE id = $1"};
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT title
+ * SELECT sfrnd_code,
+ *   title
  * FROM edu_commitment
+ * WHERE id = $1
  * ```
  */
 export const getEduCommitment = new PreparedQuery<IGetEduCommitmentParams,IGetEduCommitmentResult>(getEduCommitmentIR);

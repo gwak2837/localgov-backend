@@ -28,6 +28,10 @@ import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
 import getCefinByOffice from './sql/getCefinByOffice.sql'
 import { IGetCefinRatioResult } from './sql/getCefinRatio'
 import getCefinRatio from './sql/getCefinRatio.sql'
+import { IGetEduCommitmentResult } from './sql/getEduCommitment'
+import getEduCommitment from './sql/getEduCommitment.sql'
+import { IGetLocalCommitmentResult } from './sql/getLocalCommitment'
+import getLocalCommitment from './sql/getLocalCommitment.sql'
 import { IGetLofinBusinessResult } from './sql/getLofinBusiness'
 import getLofinBusiness from './sql/getLofinBusiness.sql'
 import { IGetLofinByDistrictResult } from './sql/getLofinByDistrict'
@@ -35,7 +39,6 @@ import getLofinByDistrict from './sql/getLofinByDistrict.sql'
 import { IGetLofinRatioResult } from './sql/getLofinRatio'
 import getLofinRatio from './sql/getLofinRatio.sql'
 import getPromptFromCefin from './sql/getPromptFromCefin.sql'
-import { IGetPromptFromLoComResult } from './sql/getPromptFromLoCom'
 import getPromptFromLoCom from './sql/getPromptFromLoCom.sql'
 import getPromptFromLoEdu from './sql/getPromptFromLoEdu.sql'
 import getPromptFromLofin from './sql/getPromptFromLofin.sql'
@@ -226,14 +229,14 @@ export default async function routes(fastify: TFastify) {
 
   const schema3 = {
     querystring: Type.Object({
-      id: Type.String(),
       category: Type.Number(),
+      id: Type.String(),
     }),
   }
 
   fastify.get('/analytics/business', { schema: schema3 }, async (req, reply) => {
     // Validate the querystring
-    const { id, category } = req.query
+    const { category, id } = req.query
 
     if (category === Category.centerExpenditure) {
       const { rows } = await pool.query<IGetCefinBusinessResult>(getCefinBusiness, [id])
@@ -268,11 +271,11 @@ export default async function routes(fastify: TFastify) {
         youtube,
         google,
       }
-    } else if (category === Category.eduCommitment) {
-      const { rows } = await pool.query<IGetLofinBusinessResult>(getLofinBusiness, [id])
+    } else if (category === Category.localCommitment) {
+      const { rows } = await pool.query<IGetLocalCommitmentResult>(getLocalCommitment, [id])
 
       const sidoCode = +`${rows[0].sfrnd_code}`.slice(0, 2)
-      const searchQuery = `${sido[sidoCode]} ${rows[0].detail_bsns_nm}`
+      const searchQuery = `${sido[sidoCode]} ${rows[0].title}`
 
       const [naver, youtube, google] = await Promise.all([
         searchFromNaver(searchQuery),
@@ -285,11 +288,11 @@ export default async function routes(fastify: TFastify) {
         youtube,
         google,
       }
-    } else if (category === Category.localCommitment) {
-      const { rows } = await pool.query<IGetLofinBusinessResult>(getLofinBusiness, [id])
+    } else if (category === Category.eduCommitment) {
+      const { rows } = await pool.query<IGetEduCommitmentResult>(getEduCommitment, [id])
 
       const sidoCode = +`${rows[0].sfrnd_code}`.slice(0, 2)
-      const searchQuery = `${sido[sidoCode]} ${rows[0].detail_bsns_nm}`
+      const searchQuery = `${sido[sidoCode]} ${rows[0].title}`
 
       const [naver, youtube, google] = await Promise.all([
         searchFromNaver(searchQuery),

@@ -1,3 +1,5 @@
 /* @name getEduCommitment */
-SELECT title
-FROM edu_commitment;
+SELECT sfrnd_code,
+  title
+FROM edu_commitment
+WHERE id = $1;
