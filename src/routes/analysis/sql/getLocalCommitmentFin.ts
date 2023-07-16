@@ -1,35 +1,27 @@
 /** Types generated for queries found in "src/routes/analysis/sql/getLocalCommitmentFin.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** 'GetLocalCommitmentFin' parameters type */
-export type IGetLocalCommitmentFinParams = void;
+/** Query 'GetLocalCommitmentFin' is invalid, so its result is assigned type 'never' */
+export type IGetLocalCommitmentFinResult = never;
 
-/** 'GetLocalCommitmentFin' return type */
-export interface IGetLocalCommitmentFinResult {
-  basis_date: Date | null;
-  category: number;
-  commitment_id: string | null;
-  etc_expenditure: string | null;
-  fiscal_year: number | null;
-  gov_expenditure: string | null;
-  id: string;
-  sido_expenditure: string | null;
-  sigungu_expenditure: string | null;
-}
+/** Query 'GetLocalCommitmentFin' is invalid, so its parameters are assigned type 'never' */
+export type IGetLocalCommitmentFinParams = never;
 
-/** 'GetLocalCommitmentFin' query type */
-export interface IGetLocalCommitmentFinQuery {
-  params: IGetLocalCommitmentFinParams;
-  result: IGetLocalCommitmentFinResult;
-}
-
-const getLocalCommitmentFinIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT *\nFROM finance"};
+const getLocalCommitmentFinIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  category,\n  basis_date,\n  fiscal_year,\n  gov,\n  sido,\n  sigungu,\n  etc\nFROM finance\nWHERE commitment_id = $1"};
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT *
+ * SELECT id,
+ *   category,
+ *   basis_date,
+ *   fiscal_year,
+ *   gov,
+ *   sido,
+ *   sigungu,
+ *   etc
  * FROM finance
+ * WHERE commitment_id = $1
  * ```
  */
 export const getLocalCommitmentFin = new PreparedQuery<IGetLocalCommitmentFinParams,IGetLocalCommitmentFinResult>(getLocalCommitmentFinIR);

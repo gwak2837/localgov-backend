@@ -8,7 +8,6 @@ export type IGetEduCommitmentFinParams = void;
 export interface IGetEduCommitmentFinResult {
   basis_date: Date;
   category: number;
-  commitment_id: string | null;
   etc: string | null;
   fiscal_year: number | null;
   gov: string | null;
@@ -24,13 +23,22 @@ export interface IGetEduCommitmentFinQuery {
   result: IGetEduCommitmentFinResult;
 }
 
-const getEduCommitmentFinIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT *\nFROM edu_finance"};
+const getEduCommitmentFinIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  title,\n  basis_date,\n  category,\n  fiscal_year,\n  itself,\n  gov,\n  sido,\n  etc\nFROM edu_finance\nWHERE commitment_id = $1"};
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT *
+ * SELECT id,
+ *   title,
+ *   basis_date,
+ *   category,
+ *   fiscal_year,
+ *   itself,
+ *   gov,
+ *   sido,
+ *   etc
  * FROM edu_finance
+ * WHERE commitment_id = $1
  * ```
  */
 export const getEduCommitmentFin = new PreparedQuery<IGetEduCommitmentFinParams,IGetEduCommitmentFinResult>(getEduCommitmentFinIR);
