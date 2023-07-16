@@ -4,6 +4,7 @@ import rateLimit from '@fastify/rate-limit'
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 import Fastify from 'fastify'
+import { FastifySSEPlugin } from 'fastify-sse-v2'
 
 import {
   K_SERVICE,
@@ -61,6 +62,8 @@ fastify.register(multipart, {
     files: 10,
   },
 })
+
+fastify.register(FastifySSEPlugin)
 
 const schema = {
   schema: {

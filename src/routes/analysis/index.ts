@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { Type } from '@sinclair/typebox'
 import fetch from 'node-fetch'
 import { v4 as uuidv4 } from 'uuid'
@@ -30,8 +31,10 @@ import { IGetCefinRatioResult } from './sql/getCefinRatio'
 import getCefinRatio from './sql/getCefinRatio.sql'
 import { IGetEduCommitmentResult } from './sql/getEduCommitment'
 import getEduCommitment from './sql/getEduCommitment.sql'
+import getEduCommitmentFin from './sql/getEduCommitmentFin.sql'
 import { IGetLocalCommitmentResult } from './sql/getLocalCommitment'
 import getLocalCommitment from './sql/getLocalCommitment.sql'
+import getLocalCommitmentFin from './sql/getLocalCommitmentFin.sql'
 import { IGetLofinBusinessResult } from './sql/getLofinBusiness'
 import getLofinBusiness from './sql/getLofinBusiness.sql'
 import { IGetLofinByDistrictResult } from './sql/getLofinByDistrict'
@@ -55,7 +58,8 @@ const CategoryValues = Object.values(Category).filter((v) => !isNaN(Number(v)))
 
 enum AI {
   bard = 0,
-  chatGPT3_5,
+  chatGPT3,
+  chatGPT3_16K,
   chatGPT4,
 }
 
@@ -227,6 +231,40 @@ export default async function routes(fastify: TFastify) {
     }
   })
 
+  fastify.get('/chat', (request, reply) => {
+    console.log('👀 - connect')
+
+    const headers = reply.getHeaders()
+
+    for (const key in headers) {
+      const value = headers[key]
+      if (value) {
+        reply.raw.setHeader(key, value)
+      }
+    }
+
+    reply.raw.setHeader('Content-Type', 'text/event-stream')
+    reply.raw.setHeader('content-encoding', 'identity')
+    reply.raw.setHeader('Cache-Control', 'no-cache,no-transform')
+    reply.raw.setHeader('x-no-compression', 1)
+
+    const a = setInterval(() => {
+      const time = new Date().toISOString()
+      console.log('👀 - message', time)
+      reply.raw.write(`time: ${time}`)
+    }, 1000)
+
+    request.raw.addListener('close', () => {
+      console.log('👀 - close2')
+      clearInterval(a)
+    })
+
+    request.raw.on('close', () => {
+      console.log('👀 - close')
+      clearInterval(a)
+    })
+  })
+
   const schema3 = {
     querystring: Type.Object({
       category: Type.Number(),
@@ -234,77 +272,108 @@ export default async function routes(fastify: TFastify) {
     }),
   }
 
-  fastify.get('/analytics/business', { schema: schema3 }, async (req, reply) => {
+  fastify.get('/analytics/business', { schema: schema3 }, async (req, res) => {
     // Validate the querystring
     const { category, id } = req.query
 
-    if (category === Category.centerExpenditure) {
-      const { rows } = await pool.query<IGetCefinBusinessResult>(getCefinBusiness, [id])
+    const { who, when, field, sector, title, content, finance } = await (async (): Promise<any> => {
+      if (category === Category.centerExpenditure) {
+        const { rows } = await pool.query<IGetCefinBusinessResult>(getCefinBusiness, [id])
+        const business = rows[0]
+        return {
+          who: business.who_name,
+          when: `${business.when_year}년`,
+          field: business.field,
+          sector: business.sector,
+          title: business.title,
+          finance: {
+            y_prey_first_kcur_amt: business.y_prey_first_kcur_amt,
+            y_prey_fnl_frc_amt: business.y_prey_fnl_frc_amt,
+            y_yy_medi_kcur_amt: business.y_yy_dfn_medi_kcur_amt,
+            y_yy_dfn_medi_kcur_amt: business.y_yy_dfn_medi_kcur_amt,
+          },
+        }
+      } else if (category === Category.localExpenditure) {
+        const { rows } = await pool.query<IGetLofinBusinessResult>(getLofinBusiness, [id])
+        const business = rows[0]
+        return {
+          who: sido[business.who_code],
+          when: `${business.when_year}년`,
+          field: lofinFields[business.field_code],
+          sector: lofinSectors[business.sector_code ?? 0],
+          title: business.title,
+          finance: {
+            gov: business.nxndr,
+            sido: business.cty,
+            sigungu: business.signgunon,
+            etc: business.etc_crntam,
+            expndtram: business.expndtram,
+            orgnztnam: business.orgnztnam,
+          },
+        }
+      } else if (category === Category.localCommitment) {
+        const [{ rows }, { rows: rows2 }] = await Promise.all([
+          pool.query<IGetLocalCommitmentResult>(getLocalCommitment, [id]),
+          pool.query<IGetLocalCommitmentResult>(getLocalCommitmentFin, [id]),
+        ])
+        const commitment = rows[0]
+        const finances = rows2
 
-      const searchQuery = `${rows[0].offc_nm} ${rows[0].sactv_nm}`
+        return {
+          who: sido[commitment.who_code],
+          when: commitment.when_date
+            ? formatKoreanDate(commitment.when_date.toISOString())
+            : undefined,
+          field: lofinFields[commitment.field_code],
+          sector: lofinSectors[commitment.sector_code ?? 0],
+          title: commitment.title,
+          content: commitment.content,
+          finance: finances,
+        }
+      } else {
+        const [{ rows }, { rows: rows2 }] = await Promise.all([
+          pool.query<IGetEduCommitmentResult>(getEduCommitment, [id]),
+          pool.query<IGetEduCommitmentResult>(getEduCommitmentFin, [id]),
+        ])
+        const commitment = rows[0]
+        const finances = rows2
 
-      const [naver, youtube, google] = await Promise.all([
-        searchFromNaver(searchQuery),
-        searchFromYouTube(searchQuery),
-        searchFromGoogle(searchQuery),
-      ])
-
-      return {
-        naver,
-        youtube,
-        google,
+        return {
+          who: sido[commitment.who_code],
+          when: commitment.when_date
+            ? formatKoreanDate(commitment.when_date.toISOString())
+            : undefined,
+          field: lofinFields[commitment.field_code],
+          sector: lofinSectors[commitment.sector_code ?? 0],
+          title: commitment.title,
+          content: commitment.content,
+          finance: finances,
+        }
       }
-    } else if (category === Category.localExpenditure) {
-      const { rows } = await pool.query<IGetLofinBusinessResult>(getLofinBusiness, [id])
+    })()
 
-      const sidoCode = +`${rows[0].sfrnd_code}`.slice(0, 2)
-      const searchQuery = `${sido[sidoCode]} ${rows[0].detail_bsns_nm}`
+    const searchQuery = `${who} ${title}`
 
-      const [naver, youtube, google] = await Promise.all([
-        searchFromNaver(searchQuery),
-        searchFromYouTube(searchQuery),
-        searchFromGoogle(searchQuery),
-      ])
+    const [naver, youtube, google] = await Promise.all([
+      searchFromNaver(searchQuery),
+      searchFromYouTube(searchQuery),
+      searchFromGoogle(searchQuery),
+    ])
 
-      return {
-        naver,
-        youtube,
-        google,
-      }
-    } else if (category === Category.localCommitment) {
-      const { rows } = await pool.query<IGetLocalCommitmentResult>(getLocalCommitment, [id])
-
-      const sidoCode = +`${rows[0].sfrnd_code}`.slice(0, 2)
-      const searchQuery = `${sido[sidoCode]} ${rows[0].title}`
-
-      const [naver, youtube, google] = await Promise.all([
-        searchFromNaver(searchQuery),
-        searchFromYouTube(searchQuery),
-        searchFromGoogle(searchQuery),
-      ])
-
-      return {
-        naver,
-        youtube,
-        google,
-      }
-    } else if (category === Category.eduCommitment) {
-      const { rows } = await pool.query<IGetEduCommitmentResult>(getEduCommitment, [id])
-
-      const sidoCode = +`${rows[0].sfrnd_code}`.slice(0, 2)
-      const searchQuery = `${sido[sidoCode]} ${rows[0].title}`
-
-      const [naver, youtube, google] = await Promise.all([
-        searchFromNaver(searchQuery),
-        searchFromYouTube(searchQuery),
-        searchFromGoogle(searchQuery),
-      ])
-
-      return {
-        naver,
-        youtube,
-        google,
-      }
+    return {
+      business: {
+        who,
+        when,
+        field,
+        sector,
+        category,
+        title,
+        content,
+        finance,
+      },
+      naver,
+      youtube,
+      google,
     }
   })
 
@@ -336,9 +405,14 @@ export default async function routes(fastify: TFastify) {
     ])
 
     if (rowCount2 !== 0) {
+      const bard = rows2.filter((row) => row.who === AI.bard)
+
       return {
-        bard: rows2.filter((row) => row.who === AI.bard),
-        chatGPT3: rows2.filter((row) => row.who === AI.chatGPT3_5),
+        bard: {
+          positive: bard.filter((row) => row.kind === PromptKind.positive)[0],
+          negative: bard.filter((row) => row.kind === PromptKind.negative)[0],
+        },
+        chatGPT3: rows2.filter((row) => row.who === AI.chatGPT3),
         chatGPT4: rows2.filter((row) => row.who === AI.chatGPT4),
       }
     }
@@ -370,10 +444,18 @@ export default async function routes(fastify: TFastify) {
       [bardPositive, bardNegative],
     ])
 
+    const creationDate = new Date()
+
     return {
       bard: {
-        positive: bardPositive,
-        negative: bardNegative,
+        positive: {
+          creationDate,
+          content: bardPositive,
+        },
+        negative: {
+          creationDate,
+          content: bardNegative,
+        },
       },
     }
   })
