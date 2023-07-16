@@ -4,8 +4,8 @@ SELECT id,
   basis_date,
   category,
   fiscal_year,
-  itself,
   gov,
+  itself AS sigungu,
   sido,
   etc
 FROM edu_finance

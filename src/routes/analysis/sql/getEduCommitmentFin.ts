@@ -12,8 +12,8 @@ export interface IGetEduCommitmentFinResult {
   fiscal_year: number | null;
   gov: string | null;
   id: string;
-  itself: string | null;
   sido: string | null;
+  sigungu: string | null;
   title: string | null;
 }
 
@@ -23,7 +23,7 @@ export interface IGetEduCommitmentFinQuery {
   result: IGetEduCommitmentFinResult;
 }
 
-const getEduCommitmentFinIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  title,\n  basis_date,\n  category,\n  fiscal_year,\n  itself,\n  gov,\n  sido,\n  etc\nFROM edu_finance\nWHERE commitment_id = $1"};
+const getEduCommitmentFinIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  title,\n  basis_date,\n  category,\n  fiscal_year,\n  gov,\n  itself AS sigungu,\n  sido,\n  etc\nFROM edu_finance\nWHERE commitment_id = $1"};
 
 /**
  * Query generated from SQL:
@@ -33,8 +33,8 @@ const getEduCommitmentFinIR: any = {"usedParamSet":{},"params":[],"statement":"S
  *   basis_date,
  *   category,
  *   fiscal_year,
- *   itself,
  *   gov,
+ *   itself AS sigungu,
  *   sido,
  *   etc
  * FROM edu_finance

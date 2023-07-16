@@ -6,14 +6,14 @@ export type IGetLofinBusinessParams = void;
 
 /** 'GetLofinBusiness' return type */
 export interface IGetLofinBusinessResult {
-  cty: string;
-  etc_crntam: string;
+  etc: string;
   expndtram: string;
   field_code: number;
-  nxndr: string;
+  gov: string;
   orgnztnam: string;
   sector_code: number | null;
-  signgunon: string;
+  sido: string;
+  sigungu: string;
   title: string;
   when_year: number | null;
   who_code: number;
@@ -25,7 +25,7 @@ export interface IGetLofinBusinessQuery {
   result: IGetLofinBusinessResult;
 }
 
-const getLofinBusinessIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT sfrnd_code AS who_code,\n  DATE_PART('year', excut_de) AS when_year,\n  realm_code AS field_code,\n  sect_code AS sector_code,\n  detail_bsns_nm AS title,\n  nxndr,\n  cty,\n  signgunon,\n  etc_crntam,\n  expndtram,\n  orgnztnam\nFROM local_expenditure\nWHERE id = $1"};
+const getLofinBusinessIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT sfrnd_code AS who_code,\n  DATE_PART('year', excut_de) AS when_year,\n  realm_code AS field_code,\n  sect_code AS sector_code,\n  detail_bsns_nm AS title,\n  nxndr AS gov,\n  cty AS sido,\n  signgunon AS sigungu,\n  etc_crntam AS etc,\n  expndtram,\n  orgnztnam\nFROM local_expenditure\nWHERE id = $1"};
 
 /**
  * Query generated from SQL:
@@ -35,10 +35,10 @@ const getLofinBusinessIR: any = {"usedParamSet":{},"params":[],"statement":"SELE
  *   realm_code AS field_code,
  *   sect_code AS sector_code,
  *   detail_bsns_nm AS title,
- *   nxndr,
- *   cty,
- *   signgunon,
- *   etc_crntam,
+ *   nxndr AS gov,
+ *   cty AS sido,
+ *   signgunon AS sigungu,
+ *   etc_crntam AS etc,
  *   expndtram,
  *   orgnztnam
  * FROM local_expenditure

@@ -307,10 +307,10 @@ export default async function routes(fastify: TFastify) {
             title: business.title,
             finances: [
               {
-                gov: business.nxndr,
-                sido: business.cty,
-                sigungu: business.signgunon,
-                etc: business.etc_crntam,
+                gov: business.gov,
+                sido: business.sido,
+                sigungu: business.sigungu,
+                etc: business.etc,
                 expndtram: business.expndtram,
                 orgnztnam: business.orgnztnam,
               },

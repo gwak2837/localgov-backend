@@ -1,11 +1,11 @@
 /* @name getLocalCommitmentFin */
 SELECT id,
-  category,
   basis_date,
+  category,
   fiscal_year,
-  gov,
-  sido,
-  sigungu,
-  etc
+  gov_expenditure AS gov,
+  sido_expenditure AS sido,
+  sigungu_expenditure AS sigungu,
+  etc_expenditure AS etc
 FROM finance
 WHERE commitment_id = $1;
