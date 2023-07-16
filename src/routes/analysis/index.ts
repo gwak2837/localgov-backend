@@ -276,81 +276,86 @@ export default async function routes(fastify: TFastify) {
     // Validate the querystring
     const { category, id } = req.query
 
-    const { who, when, field, sector, title, content, finance } = await (async (): Promise<any> => {
-      if (category === Category.centerExpenditure) {
-        const { rows } = await pool.query<IGetCefinBusinessResult>(getCefinBusiness, [id])
-        const business = rows[0]
-        return {
-          who: business.who_name,
-          when: `${business.when_year}년`,
-          field: business.field,
-          sector: business.sector,
-          title: business.title,
-          finance: {
-            y_prey_first_kcur_amt: business.y_prey_first_kcur_amt,
-            y_prey_fnl_frc_amt: business.y_prey_fnl_frc_amt,
-            y_yy_medi_kcur_amt: business.y_yy_dfn_medi_kcur_amt,
-            y_yy_dfn_medi_kcur_amt: business.y_yy_dfn_medi_kcur_amt,
-          },
-        }
-      } else if (category === Category.localExpenditure) {
-        const { rows } = await pool.query<IGetLofinBusinessResult>(getLofinBusiness, [id])
-        const business = rows[0]
-        return {
-          who: sido[business.who_code],
-          when: `${business.when_year}년`,
-          field: lofinFields[business.field_code],
-          sector: lofinSectors[business.sector_code ?? 0],
-          title: business.title,
-          finance: {
-            gov: business.nxndr,
-            sido: business.cty,
-            sigungu: business.signgunon,
-            etc: business.etc_crntam,
-            expndtram: business.expndtram,
-            orgnztnam: business.orgnztnam,
-          },
-        }
-      } else if (category === Category.localCommitment) {
-        const [{ rows }, { rows: rows2 }] = await Promise.all([
-          pool.query<IGetLocalCommitmentResult>(getLocalCommitment, [id]),
-          pool.query<IGetLocalCommitmentResult>(getLocalCommitmentFin, [id]),
-        ])
-        const commitment = rows[0]
-        const finances = rows2
+    const { who, when, field, sector, title, content, finances } =
+      await (async (): Promise<any> => {
+        if (category === Category.centerExpenditure) {
+          const { rows } = await pool.query<IGetCefinBusinessResult>(getCefinBusiness, [id])
+          const business = rows[0]
+          return {
+            who: business.who_name,
+            when: `${business.when_year}년`,
+            field: business.field,
+            sector: business.sector,
+            title: business.title,
+            finances: [
+              {
+                y_prey_first_kcur_amt: business.y_prey_first_kcur_amt,
+                y_prey_fnl_frc_amt: business.y_prey_fnl_frc_amt,
+                y_yy_medi_kcur_amt: business.y_yy_dfn_medi_kcur_amt,
+                y_yy_dfn_medi_kcur_amt: business.y_yy_dfn_medi_kcur_amt,
+              },
+            ],
+          }
+        } else if (category === Category.localExpenditure) {
+          const { rows } = await pool.query<IGetLofinBusinessResult>(getLofinBusiness, [id])
+          const business = rows[0]
+          return {
+            who: sido[business.who_code],
+            when: `${business.when_year}년`,
+            field: lofinFields[business.field_code],
+            sector: lofinSectors[business.sector_code ?? 0],
+            title: business.title,
+            finances: [
+              {
+                gov: business.nxndr,
+                sido: business.cty,
+                sigungu: business.signgunon,
+                etc: business.etc_crntam,
+                expndtram: business.expndtram,
+                orgnztnam: business.orgnztnam,
+              },
+            ],
+          }
+        } else if (category === Category.localCommitment) {
+          const [{ rows }, { rows: rows2 }] = await Promise.all([
+            pool.query<IGetLocalCommitmentResult>(getLocalCommitment, [id]),
+            pool.query<IGetLocalCommitmentResult>(getLocalCommitmentFin, [id]),
+          ])
+          const commitment = rows[0]
+          const finances = rows2
 
-        return {
-          who: sido[commitment.who_code],
-          when: commitment.when_date
-            ? formatKoreanDate(commitment.when_date.toISOString())
-            : undefined,
-          field: lofinFields[commitment.field_code],
-          sector: lofinSectors[commitment.sector_code ?? 0],
-          title: commitment.title,
-          content: commitment.content,
-          finance: finances,
-        }
-      } else {
-        const [{ rows }, { rows: rows2 }] = await Promise.all([
-          pool.query<IGetEduCommitmentResult>(getEduCommitment, [id]),
-          pool.query<IGetEduCommitmentResult>(getEduCommitmentFin, [id]),
-        ])
-        const commitment = rows[0]
-        const finances = rows2
+          return {
+            who: sido[commitment.who_code],
+            when: commitment.when_date
+              ? formatKoreanDate(commitment.when_date.toISOString())
+              : undefined,
+            field: lofinFields[commitment.field_code],
+            sector: lofinSectors[commitment.sector_code ?? 0],
+            title: commitment.title,
+            content: commitment.content,
+            finances,
+          }
+        } else {
+          const [{ rows }, { rows: rows2 }] = await Promise.all([
+            pool.query<IGetEduCommitmentResult>(getEduCommitment, [id]),
+            pool.query<IGetEduCommitmentResult>(getEduCommitmentFin, [id]),
+          ])
+          const commitment = rows[0]
+          const finances = rows2
 
-        return {
-          who: sido[commitment.who_code],
-          when: commitment.when_date
-            ? formatKoreanDate(commitment.when_date.toISOString())
-            : undefined,
-          field: lofinFields[commitment.field_code],
-          sector: lofinSectors[commitment.sector_code ?? 0],
-          title: commitment.title,
-          content: commitment.content,
-          finance: finances,
+          return {
+            who: sido[commitment.who_code],
+            when: commitment.when_date
+              ? formatKoreanDate(commitment.when_date.toISOString())
+              : undefined,
+            field: lofinFields[commitment.field_code],
+            sector: lofinSectors[commitment.sector_code ?? 0],
+            title: commitment.title,
+            content: commitment.content,
+            finances,
+          }
         }
-      }
-    })()
+      })()
 
     const searchQuery = `${who} ${title}`
 
@@ -369,7 +374,7 @@ export default async function routes(fastify: TFastify) {
         category,
         title,
         content,
-        finance,
+        finances,
       },
       naver,
       youtube,
