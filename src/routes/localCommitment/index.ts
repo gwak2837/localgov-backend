@@ -38,24 +38,24 @@ export default async function routes(fastify: TFastify) {
 
     return uniqueCommitmentIds.map((id) => {
       const commitmentsById = commitments.filter((commitment) => commitment.id === id)
-      const uniqueDates = Array.from(new Set(commitmentsById.map((s) => s.basis_date.getTime())))
+      const uniqueDates = Array.from(new Set(commitmentsById.map((s) => s.basis_date?.getTime())))
       const maxDate = findMaxDate(uniqueDates.map((d) => new Date(d)))
 
       const prevExpenditure = commitmentsById.find(
         (commitment) =>
-          commitment.basis_date.getTime() !== maxDate.getTime() && commitment.category === 1
+          commitment.basis_date?.getTime() !== maxDate?.getTime() && commitment.category === 1
       )
       const prevExecution = commitmentsById.find(
         (commitment) =>
-          commitment.basis_date.getTime() !== maxDate.getTime() && commitment.category === 2
+          commitment.basis_date?.getTime() !== maxDate?.getTime() && commitment.category === 2
       )
       const expenditure = commitmentsById.find(
         (commitment) =>
-          commitment.basis_date.getTime() === maxDate.getTime() && commitment.category === 1
+          commitment.basis_date?.getTime() === maxDate?.getTime() && commitment.category === 1
       )
       const execution = commitmentsById.find(
         (commitment) =>
-          commitment.basis_date.getTime() === maxDate.getTime() && commitment.category === 2
+          commitment.basis_date?.getTime() === maxDate?.getTime() && commitment.category === 2
       )
 
       const ratiosById = completionRatios.filter((ratio) => ratio.id === id)
