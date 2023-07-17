@@ -118,23 +118,24 @@ CREATE TABLE commitment2 (
 CREATE TABLE commitment (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   title text NOT NULL,
-  content text NOT NULL,
+  content text,
   sfrnd_code int NOT NULL,
-  election_date timestamptz NOT NULL,
+  election_date date NOT NULL,
+  primary_dept text [] NOT NULL,
+  support_dept text [],
+  main_body text [] NOT NULL,
+  start_period int NOT NULL,
+  end_period int NOT NULL,
   field_code int NOT NULL,
   sector_code int,
   priority int,
   progress int NOT NULL,
-  primary_dept text NOT NULL,
-  support_dept text [],
-  main_body text [] NOT NULL,
-  center_gov_aid int [],
-  start_period int NOT NULL,
-  end_period int NOT NULL
+  center_gov_aid int []
 );
 
 CREATE TABLE finance (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  title text,
   category int NOT NULL,
   basis_date timestamptz NOT NULL,
   fiscal_year int,

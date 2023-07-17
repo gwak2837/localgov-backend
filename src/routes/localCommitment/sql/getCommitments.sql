@@ -13,7 +13,7 @@ SELECT id,
   END AS gov_ratio
 FROM (
     SELECT commitment.id,
-      title,
+      commitment.title,
       priority,
       field_code,
       sector_code,
