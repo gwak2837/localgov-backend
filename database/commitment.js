@@ -15,10 +15,27 @@ const workbook = read(readFileSync('./database/공약 예산.xlsx'))
 
 const electionCategory = {
   지자체장: 0,
-  교육감: 0,
+  교육감: 1,
 }
 
 const sigungu = {
+  서울: 11,
+  부산: 26,
+  대구: 27,
+  인천: 28,
+  광주: 29,
+  대전: 30,
+  울산: 31,
+  세종: 32,
+  경기: 41,
+  강원: 42,
+  충북: 43,
+  충남: 44,
+  전북: 45,
+  전남: 46,
+  경북: 47,
+  경남: 48,
+  제주: 49,
   서울본청: 1100000,
   서울종로구: 1111000,
   서울중구: 1112000,
@@ -324,7 +341,13 @@ try {
   await client.query('BEGIN')
 
   for (const sheetName of workbook.SheetNames) {
-    if (!sheetName.startsWith('서울본청') && sheetName !== '서울강동구') continue
+    if (
+      !sheetName.startsWith('서울본청') &&
+      sheetName !== '서울강동구' &&
+      sheetName !== '서울교육감' &&
+      sheetName !== '경기교육감'
+    )
+      continue
 
     console.log('👀 ~ sheetName:', sheetName)
 
@@ -380,8 +403,6 @@ try {
     const electionId = rows[0]?.id
 
     for (let i = 0; i < commitmentRowIds.length; i++) {
-      console.log('👀 ~ i:', i)
-
       const commitmentRowId = commitmentRowIds[i]
 
       const { rows } = await client.query(
@@ -403,20 +424,32 @@ try {
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING id`,
         [
-          sheet[`${titleHeader}${commitmentRowId}`].w,
-          sheet[`${contentHeader}${commitmentRowId}`]?.w,
-          sheet[`${primaryDeptHeader}${commitmentRowId}`].w.split(',').map((c) => c.trim()),
-          sheet[`${supportDeptHeader}${commitmentRowId}`]?.w.split(',').map((c) => c.trim()),
-          sheet[`${mainBodyHeader}${commitmentRowId}`]?.w.split(',').map((c) => c.trim()),
-          getStartPeriodCode(sheet[`${startPeriodHeader}${commitmentRowId}`].w),
-          getEndPeriodCode(sheet[`${endPeriodHeader}${commitmentRowId}`].w),
-          getFieldCode(sheet[`${fieldHeader}${commitmentRowId}`].w),
-          sectors[sheet[`${sectorHeader}${commitmentRowId}`]?.w],
-          sheet[`${priorityHeader}${commitmentRowId}`]?.w,
-          getProgessCode(sheet[`${progressHeader}${commitmentRowId}`]?.w.trim()),
+          sheet[`${titleHeader}${commitmentRowId}`].w.replace(/^\s+|\s+$/gm, ''),
+          sheet[`${contentHeader}${commitmentRowId}`]?.w.replace(/^\s+|\s+$/gm, ''),
+          sheet[`${primaryDeptHeader}${commitmentRowId}`].w
+            .split(',')
+            .map((c) => c.replace(/^\s+|\s+$/gm, '')),
+          sheet[`${supportDeptHeader}${commitmentRowId}`]?.w
+            .split(',')
+            .map((c) => c.replace(/^\s+|\s+$/gm, '')),
+          sheet[`${mainBodyHeader}${commitmentRowId}`]?.w
+            .split(',')
+            .map((c) => c.replace(/^\s+|\s+$/gm, '')),
+          getStartPeriodCode(
+            sheet[`${startPeriodHeader}${commitmentRowId}`].w.replace(/^\s+|\s+$/gm, '')
+          ),
+          getEndPeriodCode(
+            sheet[`${endPeriodHeader}${commitmentRowId}`]?.w.replace(/^\s+|\s+$/gm, '')
+          ),
+          getFieldCode(sheet[`${fieldHeader}${commitmentRowId}`].w.replace(/^\s+|\s+$/gm, '')),
+          sectors[sheet[`${sectorHeader}${commitmentRowId}`]?.w.replace(/^\s+|\s+$/gm, '')],
+          sheet[`${priorityHeader}${commitmentRowId}`]?.w.replace(/^\s+|\s+$/gm, ''),
+          getProgessCode(
+            sheet[`${progressHeader}${commitmentRowId}`]?.w.replace(/^\s+|\s+$/gm, '')
+          ),
           sheet[`${centerGovAidHeader}${commitmentRowId}`]?.w
             .split(',')
-            .map((c) => getCenterGovAidCode(c.trim())),
+            .map((c) => getCenterGovAidCode(c.replace(/^\s+|\s+$/gm, ''))),
           electionId,
         ]
       )
@@ -446,10 +479,10 @@ try {
               basis_date,
               category,
               fiscal_year,
-              gov_expenditure,
-              sido_expenditure,
-              sigungu_expenditure,
-              etc_expenditure,
+              gov,
+              sido,
+              sigungu,
+              etc,
               commitment_id
             ) 
             VALUES (
@@ -642,15 +675,20 @@ function getStartPeriodCode(startPeriod) {
     case '개선':
       return 3
     case '계속/신규':
+    case '신규,계속':
+    case '신규, 계속':
+    case '신규/계속':
     case '확대':
       return 4
     default:
-      throw Error(`정의되지 않은 \`시작시기\`입니다. ${startPeriod}`)
+      throw Error(`정의되지 않은 \`startPeriod\`입니다. \`${startPeriod}\``)
   }
 }
 
 function getEndPeriodCode(endPeriod) {
   switch (endPeriod) {
+    case undefined:
+      return null
     case '올해':
       return 0
     case '임기내':
@@ -662,11 +700,13 @@ function getEndPeriodCode(endPeriod) {
     case '임기후':
     case '임기 후':
     case '임기내,임기후':
+    case '임기 내,임기 후':
+    case '임기 내, 임기 후':
     case '임기 내/후':
     case '임기내/후':
       return 3
     default:
-      throw Error(`정의되지 않은 \`완료시기\`입니다. ${endPeriod}`)
+      throw Error(`정의되지 않은 \`endPeriod\`입니다. \`${endPeriod}\``)
   }
 }
 

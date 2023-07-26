@@ -1,24 +1,11 @@
 /** Types generated for queries found in "src/routes/analysis/sql/getEduCommitment.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** 'GetEduCommitment' parameters type */
-export type IGetEduCommitmentParams = void;
+/** Query 'GetEduCommitment' is invalid, so its result is assigned type 'never' */
+export type IGetEduCommitmentResult = never;
 
-/** 'GetEduCommitment' return type */
-export interface IGetEduCommitmentResult {
-  content: string;
-  field_code: number;
-  sector_code: number | null;
-  title: string;
-  when_date: Date;
-  who_code: number;
-}
-
-/** 'GetEduCommitment' query type */
-export interface IGetEduCommitmentQuery {
-  params: IGetEduCommitmentParams;
-  result: IGetEduCommitmentResult;
-}
+/** Query 'GetEduCommitment' is invalid, so its parameters are assigned type 'never' */
+export type IGetEduCommitmentParams = never;
 
 const getEduCommitmentIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT sfrnd_code AS who_code,\n  edu_finance.basis_date AS when_date,\n  field_code AS field_code,\n  sector_code AS sector_code,\n  edu_commitment.title,\n  content\nFROM edu_commitment\n  JOIN edu_finance ON edu_finance.commitment_id = edu_commitment.id\n  AND edu_commitment.id = $1\nORDER BY edu_finance.basis_date DESC\nLIMIT 1"};
 

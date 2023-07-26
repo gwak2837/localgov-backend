@@ -1,28 +1,11 @@
 /** Types generated for queries found in "src/routes/eduCommitment/sql/getCommitments.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** 'GetCommitments' parameters type */
-export type IGetCommitmentsParams = void;
+/** Query 'GetCommitments' is invalid, so its result is assigned type 'never' */
+export type IGetCommitmentsResult = never;
 
-/** 'GetCommitments' return type */
-export interface IGetCommitmentsResult {
-  basis_date: Date;
-  category: number;
-  field_code: number;
-  gov_ratio: string | null;
-  id: string;
-  priority: number | null;
-  sector_code: number | null;
-  sfrnd_code: number;
-  title: string;
-  total: string | null;
-}
-
-/** 'GetCommitments' query type */
-export interface IGetCommitmentsQuery {
-  params: IGetCommitmentsParams;
-  result: IGetCommitmentsResult;
-}
+/** Query 'GetCommitments' is invalid, so its parameters are assigned type 'never' */
+export type IGetCommitmentsParams = never;
 
 const getCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  title,\n  sfrnd_code,\n  field_code,\n  sector_code,\n  priority,\n  basis_date,\n  category,\n  total,\n  CASE\n    WHEN total > 0 THEN round(100 * gov / total, 1)\n    ELSE NULL\n  END AS gov_ratio\nFROM (\n    SELECT edu_commitment.id,\n      edu_commitment.title,\n      sfrnd_code,\n      field_code,\n      sector_code,\n      priority,\n      edu_finance.basis_date,\n      edu_finance.category,\n      sum(gov) AS gov,\n      sum(itself) + sum(gov) + sum(sido) + sum(etc) AS total\n    FROM edu_commitment\n      LEFT JOIN edu_finance ON edu_finance.commitment_id = edu_commitment.id\n      AND (\n        $1::int [] IS NULL\n        OR edu_commitment.sfrnd_code = ANY($1)\n      )\n      AND (\n        CASE\n          WHEN $2::timestamptz IS NULL THEN edu_finance.basis_date = ANY(\n            SELECT DISTINCT basis_date\n            FROM edu_finance\n            ORDER BY basis_date DESC\n            LIMIT 2\n          )\n          ELSE edu_finance.basis_date = ANY(\n            ARRAY [$2, (SELECT DISTINCT basis_date FROM edu_finance WHERE basis_date < $2 ORDER BY basis_date DESC LIMIT 1)]\n          )\n        END\n      )\n    GROUP BY edu_commitment.id,\n      edu_finance.basis_date,\n      edu_finance.category\n    ORDER BY edu_commitment.id\n  ) AS temp"};
 

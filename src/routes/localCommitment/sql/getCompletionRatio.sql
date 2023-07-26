@@ -1,25 +1,27 @@
 /* @name getCompletionRatio */
 SELECT commitment.id,
   finance.category,
-  sum(gov_expenditure) + sum(sido_expenditure) + sum(sigungu_expenditure) + sum(etc_expenditure) AS total
+  sum(gov) + sum(sido) + sum(sigungu) + sum(etc) AS total
 FROM commitment
+  JOIN election ON election.id = commitment.election_id
+  AND election.category = $1
+  AND (
+    $2::int [] IS NULL
+    OR election.district = ANY($2)
+  )
   JOIN finance ON finance.commitment_id = commitment.id
   AND finance.basis_date = CASE
-    WHEN $1::timestamptz IS NULL THEN (
+    WHEN $3::timestamptz IS NULL THEN (
       SELECT basis_date
       FROM finance
       ORDER BY basis_date DESC
       LIMIT 1
     )
-    ELSE $1
+    ELSE $3
   END
   AND (
-    $2::int [] IS NULL
-    OR finance.fiscal_year = ANY($2)
-  )
-  AND (
-    $3::int [] IS NULL
-    OR commitment.sfrnd_code = ANY($3)
+    $4::int [] IS NULL
+    OR finance.fiscal_year = ANY($4)
   )
 GROUP BY commitment.id,
   finance.category

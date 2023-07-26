@@ -27,6 +27,6 @@ pool.on('error', (err) => {
     console.error(err.message)
     throw BadGatewayError('Database query error')
   } else {
-    throw BadGatewayError(err.message)
+    throw BadGatewayError('Database error: ' + err.message)
   }
 })

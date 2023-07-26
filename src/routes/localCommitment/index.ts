@@ -4,7 +4,9 @@ import { NotFoundError } from '../../common/fastify'
 import { lofinFields, lofinSectors } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import getBasisDates from './sql/getBasisDates.sql'
+import { IGetCommitmentsResult } from './sql/getCommitments'
 import getCommitments from './sql/getCommitments.sql'
+import { IGetCompletionRatioResult } from './sql/getCompletionRatio'
 import getCompletionRatio from './sql/getCompletionRatio.sql'
 import getFiscalYears from './sql/getFiscalYears.sql'
 import getLocalGovCodes from './sql/getLocalGovCodes.sql'
@@ -13,19 +15,26 @@ import { TFastify } from '..'
 export default async function routes(fastify: TFastify) {
   const schema = {
     querystring: Type.Object({
+      electionCategory: Type.Number(),
+      localCodes: Type.Array(Type.Number()),
+
+      fiscalYears: Type.Optional(Type.Array(Type.Number())),
       basisDate: Type.Optional(Type.String()),
       showRatio: Type.Optional(Type.Boolean()),
-      fiscalYears: Type.Optional(Type.Array(Type.Number())),
-      localCodes: Type.Optional(Type.Array(Type.Number())),
     }),
   }
 
-  fastify.get('/commitment/local', { schema }, async (req, reply) => {
-    const { basisDate, fiscalYears, localCodes, showRatio } = req.query
+  fastify.get('/commitment', { schema }, async (req, reply) => {
+    const { electionCategory, basisDate, fiscalYears, localCodes, showRatio } = req.query
 
     const [_, __] = await Promise.all([
-      pool.query(getCommitments, [basisDate, localCodes]),
-      pool.query(getCompletionRatio, [basisDate, fiscalYears, localCodes]),
+      pool.query<IGetCommitmentsResult>(getCommitments, [electionCategory, localCodes, basisDate]),
+      pool.query<IGetCompletionRatioResult>(getCompletionRatio, [
+        electionCategory,
+        localCodes,
+        basisDate,
+        fiscalYears,
+      ]),
     ])
 
     if (_.rowCount === 0)
@@ -38,24 +47,28 @@ export default async function routes(fastify: TFastify) {
 
     return uniqueCommitmentIds.map((id) => {
       const commitmentsById = commitments.filter((commitment) => commitment.id === id)
-      const uniqueDates = Array.from(new Set(commitmentsById.map((s) => s.basis_date?.getTime())))
-      const maxDate = findMaxDate(uniqueDates.map((d) => new Date(d)))
+      const uniqueDates = Array.from(new Set(commitmentsById.map((s) => s.basis_date.getTime())))
+      const latestDate = getLatestDate(uniqueDates.map((d) => new Date(d)))
 
       const prevExpenditure = commitmentsById.find(
         (commitment) =>
-          commitment.basis_date?.getTime() !== maxDate?.getTime() && commitment.category === 1
+          commitment.basis_date.getTime() !== latestDate.getTime() &&
+          commitment.finance__category === 1
       )
       const prevExecution = commitmentsById.find(
         (commitment) =>
-          commitment.basis_date?.getTime() !== maxDate?.getTime() && commitment.category === 2
+          commitment.basis_date.getTime() !== latestDate.getTime() &&
+          commitment.finance__category === 2
       )
       const expenditure = commitmentsById.find(
         (commitment) =>
-          commitment.basis_date?.getTime() === maxDate?.getTime() && commitment.category === 1
+          commitment.basis_date.getTime() === latestDate.getTime() &&
+          commitment.finance__category === 1
       )
       const execution = commitmentsById.find(
         (commitment) =>
-          commitment.basis_date?.getTime() === maxDate?.getTime() && commitment.category === 2
+          commitment.basis_date.getTime() === latestDate.getTime() &&
+          commitment.finance__category === 2
       )
 
       const ratiosById = completionRatios.filter((ratio) => ratio.id === id)
@@ -63,34 +76,52 @@ export default async function routes(fastify: TFastify) {
       const expenditure2 = ratiosById.find((ratio) => ratio.category === 1)
       const execution2 = ratiosById.find((ratio) => ratio.category === 2)
 
+      const commitment = commitmentsById[0]
+
       return {
         id,
-        title: commitmentsById[0].title,
-        field: lofinFields[commitmentsById[0].field_code],
-        sector: lofinSectors[commitmentsById[0].sector_code],
+        title: commitment.title,
+        field: lofinFields[commitment.field_code],
+        sector: commitment.sector_code ? lofinSectors[commitment.sector_code] : undefined,
         priority: commitmentsById[0].priority ?? undefined,
         basisDate: expenditure?.basis_date,
         prevTotalExpenditure: getFixedNumber(prevExpenditure?.total, 0),
         prevTotalExecution: getFixedNumber(prevExecution?.total, 0),
-        prevExpenditureGovRatio: getFixedNumber(prevExpenditure?.gov_ratio),
-        prevExecutionGovRatio: getFixedNumber(prevExecution?.gov_ratio),
+        prevExpenditureGovRatio: getFixedNumber(
+          (100 * +(prevExpenditure?.gov ?? 0)) / +(prevExpenditure?.total ?? 0)
+        ),
+        prevExecutionGovRatio: getFixedNumber(
+          (100 * +(prevExecution?.gov ?? 0)) / +(prevExecution?.total ?? 0)
+        ),
         totalExpenditure: getFixedNumber(expenditure?.total, 0),
         totalExecution: getFixedNumber(execution?.total, 0),
-        expenditureGovRatio: getFixedNumber(expenditure?.gov_ratio),
-        executionGovRatio: getFixedNumber(execution?.gov_ratio),
+        expenditureGovRatio: getFixedNumber(
+          (100 * +(expenditure?.gov ?? 0)) / +(expenditure?.total ?? 0)
+        ),
+        executionGovRatio: getFixedNumber(
+          (100 * +(execution?.gov ?? 0)) / +(execution?.total ?? 0)
+        ),
         selectedExpenditure: getFixedNumber(expenditure2?.total, 0),
         selectedExecution: getFixedNumber(execution2?.total, 0),
 
         ...(showRatio && {
           expenditureChangeRatio: getFixedNumber(
-            (100 * (expenditure?.total - prevExpenditure?.total)) / prevExpenditure?.total
+            (100 * (+(expenditure?.total ?? 0) - +(prevExpenditure?.total ?? 0))) /
+              +(prevExpenditure?.total ?? 1)
           ),
           excutionChangeRatio: getFixedNumber(
-            (100 * (execution?.total - prevExecution?.total)) / prevExecution?.total
+            (100 * (+(execution?.total ?? 0) - +(prevExecution?.total ?? 0))) /
+              +(prevExecution?.total ?? 0)
           ),
-          prevExecutionRatio: getFixedNumber((100 * prevExecution?.total) / prevExpenditure?.total),
-          executionRatio: getFixedNumber((100 * execution?.total) / expenditure?.total),
-          completionRatio: getFixedNumber((100 * execution2?.total) / expenditure2?.total),
+          prevExecutionRatio: getFixedNumber(
+            (100 * +(prevExecution?.total ?? 0)) / +(prevExpenditure?.total ?? 0)
+          ),
+          executionRatio: getFixedNumber(
+            (100 * +(execution?.total ?? 0)) / +(expenditure?.total ?? 0)
+          ),
+          completionRatio: getFixedNumber(
+            (100 * +(execution2?.total ?? 0)) / +(expenditure2?.total ?? 0)
+          ),
         }),
       }
     })
@@ -115,7 +146,7 @@ export default async function routes(fastify: TFastify) {
   })
 }
 
-function findMaxDate(dates: Date[]) {
+function getLatestDate(dates: Date[]) {
   let maxDate = dates[0] // 첫 번째 날짜를 최대 날짜 초기값으로 설정
 
   for (let i = 1; i < dates.length; i++) {
@@ -127,6 +158,6 @@ function findMaxDate(dates: Date[]) {
   return maxDate
 }
 
-function getFixedNumber(a: number | string, fractionDigits = 1) {
+function getFixedNumber(a: number | string | null | undefined, fractionDigits = 1) {
   return a === 0 ? 0 : a ? +(+a).toFixed(fractionDigits) : undefined
 }

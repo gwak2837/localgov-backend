@@ -1,21 +1,11 @@
 /** Types generated for queries found in "src/routes/eduCommitment/sql/getCompletionRatio.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** 'GetCompletionRatio' parameters type */
-export type IGetCompletionRatioParams = void;
+/** Query 'GetCompletionRatio' is invalid, so its result is assigned type 'never' */
+export type IGetCompletionRatioResult = never;
 
-/** 'GetCompletionRatio' return type */
-export interface IGetCompletionRatioResult {
-  category: number;
-  id: string;
-  total: string | null;
-}
-
-/** 'GetCompletionRatio' query type */
-export interface IGetCompletionRatioQuery {
-  params: IGetCompletionRatioParams;
-  result: IGetCompletionRatioResult;
-}
+/** Query 'GetCompletionRatio' is invalid, so its parameters are assigned type 'never' */
+export type IGetCompletionRatioParams = never;
 
 const getCompletionRatioIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT edu_commitment.id,\n  edu_finance.category,\n  sum(itself) + sum(gov) + sum(sido) + sum(etc) AS total\nFROM edu_commitment\n  JOIN edu_finance ON edu_finance.commitment_id = edu_commitment.id\n  AND (\n    $1::int [] IS NULL\n    OR edu_commitment.sfrnd_code = ANY($1)\n  )\n  AND edu_finance.basis_date = CASE\n    WHEN $2::timestamptz IS NULL THEN (\n      SELECT basis_date\n      FROM edu_finance\n      ORDER BY basis_date DESC\n      LIMIT 1\n    )\n    ELSE $2\n  END\n  AND (\n    $3::int [] IS NULL\n    OR edu_finance.fiscal_year = ANY($3)\n  )\nGROUP BY edu_commitment.id,\n  edu_finance.category\nORDER BY edu_commitment.id"};
 

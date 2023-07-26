@@ -1,19 +1,11 @@
 /** Types generated for queries found in "src/routes/eduCommitment/sql/getBasisDates.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** 'GetBasisDate' parameters type */
-export type IGetBasisDateParams = void;
+/** Query 'GetBasisDate' is invalid, so its result is assigned type 'never' */
+export type IGetBasisDateResult = never;
 
-/** 'GetBasisDate' return type */
-export interface IGetBasisDateResult {
-  basis_date: Date;
-}
-
-/** 'GetBasisDate' query type */
-export interface IGetBasisDateQuery {
-  params: IGetBasisDateParams;
-  result: IGetBasisDateResult;
-}
+/** Query 'GetBasisDate' is invalid, so its parameters are assigned type 'never' */
+export type IGetBasisDateParams = never;
 
 const getBasisDateIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT DISTINCT basis_date\nFROM edu_finance\nORDER BY basis_date DESC"};
 

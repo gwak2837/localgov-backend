@@ -1,19 +1,11 @@
 /** Types generated for queries found in "src/routes/eduCommitment/sql/getFiscalYears.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** 'GetFiscalYears' parameters type */
-export type IGetFiscalYearsParams = void;
+/** Query 'GetFiscalYears' is invalid, so its result is assigned type 'never' */
+export type IGetFiscalYearsResult = never;
 
-/** 'GetFiscalYears' return type */
-export interface IGetFiscalYearsResult {
-  fiscal_year: number | null;
-}
-
-/** 'GetFiscalYears' query type */
-export interface IGetFiscalYearsQuery {
-  params: IGetFiscalYearsParams;
-  result: IGetFiscalYearsResult;
-}
+/** Query 'GetFiscalYears' is invalid, so its parameters are assigned type 'never' */
+export type IGetFiscalYearsParams = never;
 
 const getFiscalYearsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT DISTINCT fiscal_year\nFROM edu_finance\nWHERE fiscal_year IS NOT NULL\nORDER BY fiscal_year"};
 

@@ -1,23 +1,11 @@
 /** Types generated for queries found in "src/routes/analysis/sql/getPromptFromLoEdu.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** 'GetPromptFromLoEdu' parameters type */
-export type IGetPromptFromLoEduParams = void;
+/** Query 'GetPromptFromLoEdu' is invalid, so its result is assigned type 'never' */
+export type IGetPromptFromLoEduResult = never;
 
-/** 'GetPromptFromLoEdu' return type */
-export interface IGetPromptFromLoEduResult {
-  field_code: number;
-  sector_code: number | null;
-  title: string;
-  when_: Date;
-  who_code: number;
-}
-
-/** 'GetPromptFromLoEdu' query type */
-export interface IGetPromptFromLoEduQuery {
-  params: IGetPromptFromLoEduParams;
-  result: IGetPromptFromLoEduResult;
-}
+/** Query 'GetPromptFromLoEdu' is invalid, so its parameters are assigned type 'never' */
+export type IGetPromptFromLoEduParams = never;
 
 const getPromptFromLoEduIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT sfrnd_code AS who_code,\n  edu_finance.basis_date AS when_,\n  field_code,\n  sector_code,\n  edu_commitment.title\nFROM edu_commitment\n  JOIN edu_finance ON edu_finance.commitment_id = edu_commitment.id\n  AND edu_commitment.id = $1"};
 

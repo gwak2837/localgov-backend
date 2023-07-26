@@ -1,19 +1,11 @@
 /** Types generated for queries found in "src/routes/localCommitment/sql/getLocalGovCodes.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
-/** 'GetLocalGovCodes' parameters type */
-export type IGetLocalGovCodesParams = void;
+/** Query 'GetLocalGovCodes' is invalid, so its result is assigned type 'never' */
+export type IGetLocalGovCodesResult = never;
 
-/** 'GetLocalGovCodes' return type */
-export interface IGetLocalGovCodesResult {
-  sfrnd_code: number;
-}
-
-/** 'GetLocalGovCodes' query type */
-export interface IGetLocalGovCodesQuery {
-  params: IGetLocalGovCodesParams;
-  result: IGetLocalGovCodesResult;
-}
+/** Query 'GetLocalGovCodes' is invalid, so its parameters are assigned type 'never' */
+export type IGetLocalGovCodesParams = never;
 
 const getLocalGovCodesIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT DISTINCT sfrnd_code\nFROM commitment\nORDER BY sfrnd_code"};
 

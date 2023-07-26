@@ -6,7 +6,7 @@ export type IGetBasisDateParams = void;
 
 /** 'GetBasisDate' return type */
 export interface IGetBasisDateResult {
-  basis_date: Date | null;
+  basis_date: Date;
 }
 
 /** 'GetBasisDate' query type */
