@@ -17,9 +17,9 @@ import {
 import amchart from './analysis'
 import candidate from './candidate'
 import centerExpenditure from './centerExpenditure'
-import commitment from './commitment'
+import localCommitment from './commitment'
+import commitment from './commitment2'
 import eduCommitment from './eduCommitment'
-import localCommitment from './localCommitment'
 import localExpenditure from './localExpenditure'
 
 const fastify = Fastify({
