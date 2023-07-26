@@ -20,7 +20,7 @@ export default async function routes(fastify: TFastify) {
     }),
   }
 
-  fastify.get('/commitment', { schema }, async (req, reply) => {
+  fastify.get('/commitment/local', { schema }, async (req, reply) => {
     const { basisDate, fiscalYears, localCodes, showRatio } = req.query
 
     const [_, __] = await Promise.all([
@@ -100,7 +100,7 @@ export default async function routes(fastify: TFastify) {
     querystring: Type.Object({}),
   }
 
-  fastify.get('/commitment/option', { schema: schema2 }, async (req, reply) => {
+  fastify.get('/commitment/local/option', { schema: schema2 }, async (req, reply) => {
     const [_, __, ___] = await Promise.all([
       pool.query(getBasisDates),
       pool.query(getFiscalYears),

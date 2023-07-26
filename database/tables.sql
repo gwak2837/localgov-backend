@@ -23,22 +23,6 @@ CREATE TABLE local_expenditure (
   sect_code int NOT NULL
 );
 
--- getLofinRatio
-CREATE INDEX sfrnd_code__excut_de__sect_code ON local_expenditure(sfrnd_code, excut_de, sect_code);
-
--- getLocalExpendituresByRealm
--- getLocalExpenditures
--- getLofinRatio
-CREATE INDEX sfrnd_code__excut_de__realm_code__detail_bsns_nm ON local_expenditure(sfrnd_code, excut_de, realm_code, detail_bsns_nm);
-
--- getLofinByDistrict
-CREATE INDEX sfrnd_code__realm_code__excut_de ON local_expenditure(sfrnd_code, realm_code, excut_de);
-
--- getLofinByDistrict
-CREATE INDEX sfrnd_code__sect_code__excut_de ON local_expenditure(sfrnd_code, sect_code, excut_de);
-
-CREATE INDEX excut_de__realm_code__detail_bsns_nm ON local_expenditure(excut_de, realm_code, detail_bsns_nm);
-
 /* 
  FSCL_YY 회계연도	
  OFFC_NM	소관명	
@@ -69,23 +53,67 @@ CREATE TABLE center_expenditure (
   Y_YY_DFN_MEDI_KCUR_AMT bigint NOT NULL
 );
 
-CREATE INDEX FSCL_YY__OFFC_NM__SACTV_NM ON center_expenditure(FSCL_YY, OFFC_NM, SACTV_NM);
-
-CREATE TABLE smart_evaluation (
+/* 
+ category
+ 0: 지자체장
+ 1: 교육감
+ */
+CREATE TABLE election (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  s1 int NOT NULL,
-  s2 int NOT NULL,
-  s3 int NOT NULL,
-  m1 int NOT NULL,
-  m2 int NOT NULL,
-  a1 int NOT NULL,
-  a2 int NOT NULL,
-  a3 int NOT NULL,
-  r1 int NOT NULL,
-  r2 int NOT NULL,
-  r3 int NOT NULL,
-  t1 int NOT NULL,
-  t2 int NOT NULL
+  category int,
+  election_date date,
+  location int
+);
+
+CREATE TABLE commitment (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  title text NOT NULL,
+  content text,
+  primary_dept text [],
+  support_dept text [],
+  main_body text [],
+  start_period int NOT NULL,
+  end_period int NOT NULL,
+  field_code int NOT NULL,
+  sector_code int,
+  priority int,
+  progress int,
+  center_gov_aid int [],
+  election_id bigint REFERENCES election ON DELETE CASCADE
+);
+
+CREATE TABLE finance (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  title text,
+  category int NOT NULL,
+  basis_date date NOT NULL,
+  fiscal_year int,
+  gov bigint,
+  sido bigint,
+  sigungu bigint,
+  etc bigint,
+  commitment_id bigint REFERENCES commitment ON DELETE CASCADE
+);
+
+CREATE TABLE "user" (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  creation_time timestamptz DEFAULT CURRENT_TIMESTAMP,
+  nickname text,
+  oauth_kakao varchar(100) UNIQUE,
+  phone_number varchar(20) UNIQUE
+);
+
+CREATE TABLE smartplus_question (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  content text NOT NULL
+);
+
+CREATE TABLE smartplus_answer (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  answer int NOT NULL,
+  business_id bigint NOT NULL,
+  question_id bigint NOT NULL REFERENCES smartplus_question ON DELETE CASCADE,
+  user_id bigint NOT NULL REFERENCES "user" ON DELETE CASCADE
 );
 
 /* 
@@ -113,67 +141,6 @@ CREATE TABLE commitment2 (
   prmsTitle text NOT NULL,
   prmmCont text,
   candidate_id bigint REFERENCES candidate ON DELETE CASCADE
-);
-
-CREATE TABLE commitment (
-  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  title text NOT NULL,
-  content text,
-  sfrnd_code int NOT NULL,
-  election_date date NOT NULL,
-  primary_dept text [] NOT NULL,
-  support_dept text [],
-  main_body text [] NOT NULL,
-  start_period int NOT NULL,
-  end_period int NOT NULL,
-  field_code int NOT NULL,
-  sector_code int,
-  priority int,
-  progress int NOT NULL,
-  center_gov_aid int []
-);
-
-CREATE TABLE finance (
-  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  title text,
-  category int NOT NULL,
-  basis_date timestamptz NOT NULL,
-  fiscal_year int,
-  gov bigint,
-  sido bigint,
-  sigungu bigint,
-  etc bigint,
-  commitment_id bigint REFERENCES commitment ON DELETE CASCADE
-);
-
-CREATE TABLE edu_commitment (
-  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  title text NOT NULL,
-  content text NOT NULL,
-  sfrnd_code int NOT NULL,
-  primary_dept text NOT NULL,
-  support_dept text [],
-  main_body text [] NOT NULL,
-  start_period int NOT NULL,
-  end_period int NOT NULL,
-  field_code int NOT NULL,
-  sector_code int,
-  priority int,
-  progress int NOT NULL,
-  center_gov_aid int []
-);
-
-CREATE TABLE edu_finance (
-  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  title text,
-  basis_date timestamptz NOT NULL,
-  category int NOT NULL,
-  fiscal_year int,
-  itself bigint,
-  gov bigint,
-  sido bigint,
-  etc bigint,
-  commitment_id bigint REFERENCES edu_commitment ON DELETE CASCADE
 );
 
 CREATE TABLE ai (

@@ -19,7 +19,7 @@ export interface IGetPromptFromLoComQuery {
   result: IGetPromptFromLoComResult;
 }
 
-const getPromptFromLoComIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT sfrnd_code AS who_code,\n  finance.basis_date AS when_,\n  field_code,\n  sector_code,\n  title\nFROM commitment\n  JOIN finance ON finance.commitment_id = commitment.id\n  AND commitment.id = $1"};
+const getPromptFromLoComIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT sfrnd_code AS who_code,\n  finance.basis_date AS when_,\n  field_code,\n  sector_code,\n  commitment.title\nFROM commitment\n  JOIN finance ON finance.commitment_id = commitment.id\n  AND commitment.id = $1"};
 
 /**
  * Query generated from SQL:
@@ -28,7 +28,7 @@ const getPromptFromLoComIR: any = {"usedParamSet":{},"params":[],"statement":"SE
  *   finance.basis_date AS when_,
  *   field_code,
  *   sector_code,
- *   title
+ *   commitment.title
  * FROM commitment
  *   JOIN finance ON finance.commitment_id = commitment.id
  *   AND commitment.id = $1

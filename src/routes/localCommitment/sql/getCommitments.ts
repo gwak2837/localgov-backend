@@ -23,7 +23,7 @@ export interface IGetCommitmentsQuery {
   result: IGetCommitmentsResult;
 }
 
-const getCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  title,\n  priority,\n  field_code,\n  sector_code,\n  basis_date,\n  category,\n  total,\n  CASE\n    WHEN total > 0 THEN round(100 * gov_expenditure / total, 1)\n    ELSE NULL\n  END AS gov_ratio\nFROM (\n    SELECT commitment.id,\n      title,\n      priority,\n      field_code,\n      sector_code,\n      finance.basis_date,\n      finance.category,\n      sum(gov_expenditure) AS gov_expenditure,\n      sum(gov_expenditure) + sum(sido_expenditure) + sum(sigungu_expenditure) + sum(etc_expenditure) AS total\n    FROM commitment\n      LEFT JOIN finance ON finance.commitment_id = commitment.id\n      AND (\n        CASE\n          WHEN $1::timestamptz IS NULL THEN finance.basis_date = ANY(\n            SELECT DISTINCT basis_date\n            FROM finance\n            ORDER BY basis_date DESC\n            LIMIT 2\n          )\n          ELSE finance.basis_date = ANY(\n            ARRAY [$1, (select distinct basis_date from finance where basis_date < $1 order by basis_date desc limit 1)]\n          )\n        END\n      )\n      AND (\n        $2::int [] IS NULL\n        OR commitment.sfrnd_code = ANY($2)\n      )\n    GROUP BY commitment.id,\n      finance.basis_date,\n      finance.category\n    ORDER BY commitment.id\n  ) AS temp"};
+const getCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT id,\n  title,\n  priority,\n  field_code,\n  sector_code,\n  basis_date,\n  category,\n  total,\n  CASE\n    WHEN total > 0 THEN round(100 * gov_expenditure / total, 1)\n    ELSE NULL\n  END AS gov_ratio\nFROM (\n    SELECT commitment.id,\n      commitment.title,\n      priority,\n      field_code,\n      sector_code,\n      finance.basis_date,\n      finance.category,\n      sum(gov_expenditure) AS gov_expenditure,\n      sum(gov_expenditure) + sum(sido_expenditure) + sum(sigungu_expenditure) + sum(etc_expenditure) AS total\n    FROM commitment\n      LEFT JOIN finance ON finance.commitment_id = commitment.id\n      AND (\n        CASE\n          WHEN $1::timestamptz IS NULL THEN finance.basis_date = ANY(\n            SELECT DISTINCT finance.basis_date\n            FROM commitment\n              JOIN finance ON finance.commitment_id = commitment.id\n              AND commitment.sfrnd_code = any($2)\n            ORDER BY finance.basis_date DESC\n            LIMIT 2\n          )\n          ELSE finance.basis_date = ANY(\n            ARRAY [$1, (\n              select distinct basis_date \n              FROM commitment\n                JOIN finance ON finance.commitment_id = commitment.id\n                AND commitment.sfrnd_code = any($2) \n              WHERE basis_date < $1 \n              order by basis_date desc \n              limit 1\n            )]\n          )\n        END\n      )\n      AND (\n        $2::int [] IS NULL\n        OR commitment.sfrnd_code = ANY($2)\n      )\n    GROUP BY commitment.id,\n      finance.basis_date,\n      finance.category\n    ORDER BY commitment.id\n  ) AS temp"};
 
 /**
  * Query generated from SQL:
@@ -42,7 +42,7 @@ const getCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT
  *   END AS gov_ratio
  * FROM (
  *     SELECT commitment.id,
- *       title,
+ *       commitment.title,
  *       priority,
  *       field_code,
  *       sector_code,
@@ -55,13 +55,23 @@ const getCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT
  *       AND (
  *         CASE
  *           WHEN $1::timestamptz IS NULL THEN finance.basis_date = ANY(
- *             SELECT DISTINCT basis_date
- *             FROM finance
- *             ORDER BY basis_date DESC
+ *             SELECT DISTINCT finance.basis_date
+ *             FROM commitment
+ *               JOIN finance ON finance.commitment_id = commitment.id
+ *               AND commitment.sfrnd_code = any($2)
+ *             ORDER BY finance.basis_date DESC
  *             LIMIT 2
  *           )
  *           ELSE finance.basis_date = ANY(
- *             ARRAY [$1, (select distinct basis_date from finance where basis_date < $1 order by basis_date desc limit 1)]
+ *             ARRAY [$1, (
+ *               select distinct basis_date 
+ *               FROM commitment
+ *                 JOIN finance ON finance.commitment_id = commitment.id
+ *                 AND commitment.sfrnd_code = any($2) 
+ *               WHERE basis_date < $1 
+ *               order by basis_date desc 
+ *               limit 1
+ *             )]
  *           )
  *         END
  *       )

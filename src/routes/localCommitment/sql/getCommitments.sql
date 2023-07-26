@@ -26,13 +26,23 @@ FROM (
       AND (
         CASE
           WHEN $1::timestamptz IS NULL THEN finance.basis_date = ANY(
-            SELECT DISTINCT basis_date
-            FROM finance
-            ORDER BY basis_date DESC
+            SELECT DISTINCT finance.basis_date
+            FROM commitment
+              JOIN finance ON finance.commitment_id = commitment.id
+              AND commitment.sfrnd_code = any($2)
+            ORDER BY finance.basis_date DESC
             LIMIT 2
           )
           ELSE finance.basis_date = ANY(
-            ARRAY [$1, (select distinct basis_date from finance where basis_date < $1 order by basis_date desc limit 1)]
+            ARRAY [$1, (
+              select distinct basis_date 
+              FROM commitment
+                JOIN finance ON finance.commitment_id = commitment.id
+                AND commitment.sfrnd_code = any($2) 
+              WHERE basis_date < $1 
+              order by basis_date desc 
+              limit 1
+            )]
           )
         END
       )

@@ -6,7 +6,7 @@ export type IGetLocalCommitmentParams = void;
 
 /** 'GetLocalCommitment' return type */
 export interface IGetLocalCommitmentResult {
-  content: string;
+  content: string | null;
   field_code: number;
   sector_code: number | null;
   title: string;
