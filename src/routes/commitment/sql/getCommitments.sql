@@ -1,20 +1,50 @@
 /* @name getCommitments */
-SELECT commitment2.id,
-  prmsRealmName,
-  prmsTitle,
-  prmmCont,
-  candidate_id,
-  candidate.id AS candidate__id,
-  sgId AS candidate__sgId,
-  sgTypecode AS candidate__sgTypecode,
-  sggName AS candidate__sggName,
-  sidoName AS candidate__sidoName,
-  wiwName AS candidate__wiwName,
-  partyName AS candidate__partyName,
-  krName AS candidate__krName
-FROM commitment2
-  JOIN candidate ON candidate.id = commitment2.candidate_id
-  AND candidate.id = ANY ($1)
-WHERE commitment2.id < $2
-ORDER BY commitment2.id DESC
-LIMIT $3;
+SELECT commitment.id,
+  commitment.title,
+  commitment.priority,
+  commitment.field_code,
+  commitment.sector_code,
+  election.category AS election__category,
+  election.district,
+  finance.basis_date,
+  finance.category AS finance__category,
+  sum(gov) AS gov,
+  sum(gov) + sum(sido) + sum(sigungu) + sum(etc) AS total
+FROM commitment
+  JOIN election ON election.id = commitment.election_id
+  AND election.category = $1
+  AND (
+    $2::int [] IS NULL
+    OR election.district = ANY($2)
+  )
+  JOIN finance ON finance.commitment_id = commitment.id
+  AND (
+    CASE
+      WHEN $3::timestamptz IS NULL THEN finance.basis_date = ANY(
+        SELECT DISTINCT finance.basis_date
+        FROM commitment
+          JOIN election ON election.id = commitment.election_id
+          AND election.district = ANY($2)
+          JOIN finance ON finance.commitment_id = commitment.id
+        ORDER BY finance.basis_date DESC
+        LIMIT 2
+      )
+      ELSE finance.basis_date = ANY(
+        ARRAY [$3, (
+              SELECT DISTINCT basis_date 
+              FROM commitment
+                JOIN election ON election.id = commitment.election_id
+                AND election.district = ANY($2)
+                JOIN finance ON finance.commitment_id = commitment.id
+              WHERE basis_date < $3 
+              order by basis_date desc 
+              limit 1
+            )]
+      )
+    END
+  )
+GROUP BY commitment.id,
+  election.id,
+  finance.basis_date,
+  finance.category
+ORDER BY commitment.id;
