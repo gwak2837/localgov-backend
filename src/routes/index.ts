@@ -17,9 +17,8 @@ import {
 import amchart from './analysis'
 import candidate from './candidate'
 import centerExpenditure from './centerExpenditure'
-import localCommitment from './commitment'
-import commitment from './commitment2'
-import eduCommitment from './eduCommitment'
+import commitment from './commitment'
+import commitment2 from './commitment2'
 import localExpenditure from './localExpenditure'
 
 const fastify = Fastify({
@@ -89,9 +88,8 @@ fastify.get('/', schema, async (request, _) => {
 fastify.register(amchart)
 fastify.register(candidate)
 fastify.register(centerExpenditure)
+fastify.register(commitment2)
 fastify.register(commitment)
-fastify.register(eduCommitment)
-fastify.register(localCommitment)
 fastify.register(localExpenditure)
 
 export default async function startServer() {

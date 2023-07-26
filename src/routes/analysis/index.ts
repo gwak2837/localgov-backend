@@ -29,12 +29,9 @@ import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
 import getCefinByOffice from './sql/getCefinByOffice.sql'
 import { IGetCefinRatioResult } from './sql/getCefinRatio'
 import getCefinRatio from './sql/getCefinRatio.sql'
-import { IGetEduCommitmentResult } from './sql/getEduCommitment'
-import getEduCommitment from './sql/getEduCommitment.sql'
-import getEduCommitmentFin from './sql/getEduCommitmentFin.sql'
 import { IGetLocalCommitmentResult } from './sql/getLocalCommitment'
-import getLocalCommitment from './sql/getLocalCommitment.sql'
-import getLocalCommitmentFin from './sql/getLocalCommitmentFin.sql'
+import getCommitment from './sql/getLocalCommitment.sql'
+import getCommitmentFin from './sql/getLocalCommitmentFin.sql'
 import { IGetLofinBusinessResult } from './sql/getLofinBusiness'
 import getLofinBusiness from './sql/getLofinBusiness.sql'
 import { IGetLofinByDistrictResult } from './sql/getLofinByDistrict'
@@ -316,35 +313,16 @@ export default async function routes(fastify: TFastify) {
               },
             ],
           }
-        } else if (category === Category.localCommitment) {
-          const [{ rows }, { rows: rows2 }] = await Promise.all([
-            pool.query<IGetLocalCommitmentResult>(getLocalCommitment, [id]),
-            pool.query<IGetLocalCommitmentResult>(getLocalCommitmentFin, [id]),
-          ])
-          const commitment = rows[0]
-          const finances = rows2
-
-          return {
-            who: sido[commitment.who_code],
-            when: commitment.when_date
-              ? formatKoreanDate(commitment.when_date.toISOString())
-              : undefined,
-            field: lofinFields[commitment.field_code],
-            sector: lofinSectors[commitment.sector_code ?? 0],
-            title: commitment.title,
-            content: commitment.content,
-            finances,
-          }
         } else {
           const [{ rows }, { rows: rows2 }] = await Promise.all([
-            pool.query<IGetEduCommitmentResult>(getEduCommitment, [id]),
-            pool.query<IGetEduCommitmentResult>(getEduCommitmentFin, [id]),
+            pool.query<IGetLocalCommitmentResult>(getCommitment, [id]),
+            pool.query<IGetLocalCommitmentResult>(getCommitmentFin, [id]),
           ])
           const commitment = rows[0]
           const finances = rows2
 
           return {
-            who: sido[commitment.who_code],
+            who: commitment.who_code ? sido[commitment.who_code] : undefined,
             when: commitment.when_date
               ? formatKoreanDate(commitment.when_date.toISOString())
               : undefined,
