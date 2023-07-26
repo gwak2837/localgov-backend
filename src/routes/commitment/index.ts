@@ -128,20 +128,24 @@ export default async function routes(fastify: TFastify) {
   })
 
   const schema2 = {
-    querystring: Type.Object({}),
+    querystring: Type.Object({
+      electionCategory: Type.Number(),
+    }),
   }
 
-  fastify.get('/commitment/local/option', { schema: schema2 }, async (req, reply) => {
+  fastify.get('/commitment/option', { schema: schema2 }, async (req, reply) => {
+    const { electionCategory } = req.query
+
     const [_, __, ___] = await Promise.all([
       pool.query(getBasisDates),
       pool.query(getFiscalYears),
-      pool.query(getLocalGovCodes),
+      pool.query(getLocalGovCodes, [electionCategory]),
     ])
 
     return {
       basisDates: _.rows.map((row) => row.basis_date),
       fiscalYears: __.rows.map((row) => row.fiscal_year),
-      localGovCodes: ___.rows.map((row) => row.sfrnd_code),
+      localGovCodes: ___.rows.map((row) => row.district),
     }
   })
 }

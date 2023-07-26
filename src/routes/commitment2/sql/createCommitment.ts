@@ -1,4 +1,4 @@
-/** Types generated for queries found in "src/routes/commitment/sql/createCommitment.sql" */
+/** Types generated for queries found in "src/routes/commitment2/sql/createCommitment.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
 /** 'CreateCommitment' parameters type */

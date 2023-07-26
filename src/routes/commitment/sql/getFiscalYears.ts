@@ -1,4 +1,4 @@
-/** Types generated for queries found in "src/routes/localCommitment/sql/getFiscalYears.sql" */
+/** Types generated for queries found in "src/routes/commitment/sql/getFiscalYears.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
 /** 'GetFiscalYears' parameters type */

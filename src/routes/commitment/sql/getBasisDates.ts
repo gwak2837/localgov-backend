@@ -1,4 +1,4 @@
-/** Types generated for queries found in "src/routes/localCommitment/sql/getBasisDates.sql" */
+/** Types generated for queries found in "src/routes/commitment/sql/getBasisDates.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
 /** 'GetBasisDate' parameters type */

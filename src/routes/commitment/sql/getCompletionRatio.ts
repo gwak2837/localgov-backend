@@ -1,4 +1,4 @@
-/** Types generated for queries found in "src/routes/localCommitment/sql/getCompletionRatio.sql" */
+/** Types generated for queries found in "src/routes/commitment/sql/getCompletionRatio.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
 /** 'GetCompletionRatio' parameters type */

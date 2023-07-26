@@ -1,4 +1,4 @@
-/** Types generated for queries found in "src/routes/commitment/sql/deleteCommitments.sql" */
+/** Types generated for queries found in "src/routes/commitment2/sql/deleteCommitments.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
 /** 'DeleteCommitments' parameters type */

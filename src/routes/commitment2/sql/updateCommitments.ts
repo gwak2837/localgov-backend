@@ -1,4 +1,4 @@
-/** Types generated for queries found in "src/routes/commitment/sql/updateCommitments.sql" */
+/** Types generated for queries found in "src/routes/commitment2/sql/updateCommitments.sql" */
 import { PreparedQuery } from '@pgtyped/query';
 
 /** 'UpdateCommitments' parameters type */

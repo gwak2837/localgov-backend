@@ -40,7 +40,6 @@ import { IGetLofinRatioResult } from './sql/getLofinRatio'
 import getLofinRatio from './sql/getLofinRatio.sql'
 import getPromptFromCefin from './sql/getPromptFromCefin.sql'
 import getPromptFromLoCom from './sql/getPromptFromLoCom.sql'
-import getPromptFromLoEdu from './sql/getPromptFromLoEdu.sql'
 import getPromptFromLofin from './sql/getPromptFromLofin.sql'
 import { TFastify } from '..'
 
@@ -48,7 +47,6 @@ enum Category {
   centerExpenditure = 0,
   localExpenditure,
   localCommitment,
-  eduCommitment,
 }
 
 const CategoryValues = Object.values(Category).filter((v) => !isNaN(Number(v)))
@@ -378,8 +376,6 @@ export default async function routes(fastify: TFastify) {
         ? pool.query(getPromptFromCefin, [businessId])
         : category === Category.localCommitment
         ? pool.query(getPromptFromLoCom, [businessId])
-        : category === Category.eduCommitment
-        ? pool.query(getPromptFromLoEdu, [businessId])
         : pool.query(getPromptFromLofin, [businessId])
 
     const [{ rows }, { rows: rows2, rowCount: rowCount2 }] = await Promise.all([

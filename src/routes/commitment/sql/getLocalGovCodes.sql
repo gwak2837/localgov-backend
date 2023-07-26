@@ -1,4 +1,5 @@
 /* @name getLocalGovCodes */
-SELECT DISTINCT sfrnd_code
-FROM commitment
-ORDER BY sfrnd_code;
+SELECT DISTINCT district
+FROM election
+WHERE category = $1
+ORDER BY district;
