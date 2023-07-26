@@ -145,7 +145,7 @@ export default async function routes(fastify: TFastify) {
     return {
       basisDates: _.rows.map((row) => row.basis_date),
       fiscalYears: __.rows.map((row) => row.fiscal_year),
-      localGovCodes: ___.rows.map((row) => row.district),
+      localCodes: ___.rows.map((row) => row.district),
     }
   })
 }
