@@ -60,9 +60,9 @@ CREATE TABLE center_expenditure (
  */
 CREATE TABLE election (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  category int,
-  election_date date,
-  location int
+  category int NOT NULL,
+  election_date date NOT NULL,
+  location int NOT NULL
 );
 
 CREATE TABLE commitment (
@@ -79,9 +79,16 @@ CREATE TABLE commitment (
   priority int,
   progress int,
   center_gov_aid int [],
-  election_id bigint REFERENCES election ON DELETE CASCADE
+  election_id bigint NOT NULL REFERENCES election ON DELETE CASCADE
 );
 
+/* 
+ category
+ 0: 지자체장
+ 1: 교육감
+ 2: 교육감
+ 3: 교육감
+ */
 CREATE TABLE finance (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   title text,
@@ -92,7 +99,7 @@ CREATE TABLE finance (
   sido bigint,
   sigungu bigint,
   etc bigint,
-  commitment_id bigint REFERENCES commitment ON DELETE CASCADE
+  commitment_id bigint NOT NULL REFERENCES commitment ON DELETE CASCADE
 );
 
 CREATE TABLE "user" (
@@ -105,13 +112,16 @@ CREATE TABLE "user" (
 
 CREATE TABLE smartplus_question (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  content text NOT NULL
+  content text NOT NULL,
+  category int NOT NULL,
+  is_visible boolean NOT NULL
 );
 
 CREATE TABLE smartplus_answer (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   answer int NOT NULL,
   business_id bigint NOT NULL,
+  business_category int NOT NULL,
   question_id bigint NOT NULL REFERENCES smartplus_question ON DELETE CASCADE,
   user_id bigint NOT NULL REFERENCES "user" ON DELETE CASCADE
 );

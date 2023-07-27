@@ -20,6 +20,7 @@ import centerExpenditure from './centerExpenditure'
 import commitment from './commitment'
 import commitment2 from './commitment2'
 import localExpenditure from './localExpenditure'
+import smartplus from './smartplus'
 
 const fastify = Fastify({
   // logger: NODE_ENV === 'development',
@@ -91,6 +92,7 @@ fastify.register(centerExpenditure)
 fastify.register(commitment2)
 fastify.register(commitment)
 fastify.register(localExpenditure)
+fastify.register(smartplus)
 
 export default async function startServer() {
   try {

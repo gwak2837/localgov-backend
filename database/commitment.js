@@ -1,4 +1,4 @@
-// yarn node ./temp/commitment-local-gov.js
+// yarn node ./database/commitment.js
 
 import { readFileSync } from 'fs'
 
@@ -19,23 +19,23 @@ const electionCategory = {
 }
 
 const sigungu = {
-  서울: 11,
-  부산: 26,
-  대구: 27,
-  인천: 28,
-  광주: 29,
-  대전: 30,
-  울산: 31,
-  세종: 32,
-  경기: 41,
-  강원: 42,
-  충북: 43,
-  충남: 44,
-  전북: 45,
-  전남: 46,
-  경북: 47,
-  경남: 48,
-  제주: 49,
+  서울교육감: 11,
+  부산교육감: 26,
+  대구교육감: 27,
+  인천교육감: 28,
+  광주교육감: 29,
+  대전교육감: 30,
+  울산교육감: 31,
+  세종교육감: 32,
+  경기교육감: 41,
+  강원교육감: 42,
+  충북교육감: 43,
+  충남교육감: 44,
+  전북교육감: 45,
+  전남교육감: 46,
+  경북교육감: 47,
+  경남교육감: 48,
+  제주교육감: 49,
   서울본청: 1100000,
   서울종로구: 1111000,
   서울중구: 1112000,
@@ -341,6 +341,8 @@ try {
   await client.query('BEGIN')
 
   for (const sheetName of workbook.SheetNames) {
+    // if (sheetName !== '서울강동구') continue
+
     if (
       !sheetName.startsWith('서울본청') &&
       sheetName !== '서울강동구' &&
@@ -360,7 +362,6 @@ try {
       contentHeader,
       electionCategoryHeader,
       electionDateHeader,
-      electionDistrictHeader,
       primaryDeptHeader,
       supportDeptHeader,
       mainBodyHeader,
@@ -379,6 +380,7 @@ try {
       sidoHeader,
       sigunguHeader,
       etcHeader,
+      unitHeader,
     } = getHeaderPosition(
       sheet,
       cells.filter((key) => isHeader.test(key))
@@ -397,10 +399,11 @@ try {
       [
         electionCategory[sheet[`${electionCategoryHeader}2`]?.w],
         sheet[`${electionDateHeader}2`]?.w,
-        sigungu[sheet[`${electionDistrictHeader}2`]?.w],
+        sigungu[sheetName.split('-')[0]],
       ]
     )
-    const electionId = rows[0]?.id
+
+    const electionId = +rows[0]?.id
 
     for (let i = 0; i < commitmentRowIds.length; i++) {
       const commitmentRowId = commitmentRowIds[i]
@@ -454,13 +457,14 @@ try {
         ]
       )
 
-      const commitmentId = rows[0].id
+      const commitmentId = +rows[0].id
 
       const promises = []
 
       let lastTitle
       let lastBasisDate
       let lastCategory
+      const unit = +sheet[`${unitHeader}1`].v.match(/\d+/g).pop()
 
       for (let j = commitmentRowId; j < (commitmentRowIds[i + 1] ?? +lastRowIndex + 1); j++) {
         console.log('👀 ~ j:', j)
@@ -472,6 +476,31 @@ try {
         if (title) lastTitle = title
         if (basisDate) lastBasisDate = basisDate
         if (category) lastCategory = category
+
+        const values =
+          lastCategory === '예산' || lastCategory === '집행'
+            ? [
+                title ?? lastTitle,
+                new Date(basisDate ?? lastBasisDate),
+                getFinanceCategoryCode(category ?? lastCategory),
+                +sheet[`${fiscalYearHeader}${j}`].v,
+                getMoney(sheet[`${govHeader}${j}`]?.v, unit),
+                getMoney(sheet[`${sidoHeader}${j}`]?.v, unit),
+                getMoney(sheet[`${sigunguHeader}${j}`]?.v, unit),
+                getMoney(sheet[`${etcHeader}${j}`]?.v, unit),
+                commitmentId,
+              ]
+            : [
+                title ?? lastTitle,
+                new Date(basisDate ?? lastBasisDate),
+                getFinanceCategoryCode(category ?? lastCategory),
+                null,
+                null,
+                null,
+                null,
+                null,
+                commitmentId,
+              ]
 
         const promise = client.query(
           `INSERT INTO finance (
@@ -488,29 +517,7 @@ try {
             VALUES (
               $1, $2, $3, $4, $5, $6, $7, $8, $9
             )`,
-          lastCategory === '예산' || lastCategory === '집행'
-            ? [
-                title ?? lastTitle,
-                new Date(basisDate ?? lastBasisDate),
-                getFinanceCategoryCode(category ?? lastCategory),
-                +sheet[`${fiscalYearHeader}${j}`].v,
-                getMoney(sheet[`${govHeader}${j}`]?.v),
-                getMoney(sheet[`${sidoHeader}${j}`]?.v),
-                getMoney(sheet[`${sigunguHeader}${j}`]?.v),
-                getMoney(sheet[`${etcHeader}${j}`]?.v),
-                commitmentId,
-              ]
-            : [
-                title ?? lastTitle,
-                new Date(basisDate ?? lastBasisDate),
-                getFinanceCategoryCode(category ?? lastCategory),
-                null,
-                null,
-                null,
-                null,
-                null,
-                commitmentId,
-              ]
+          values
         )
 
         promises.push(promise)
@@ -559,17 +566,15 @@ function getHeaderPosition(sheet, headers) {
     else if (sheet[header].v === '과제명') result.financeTitleHeader = getFirstEnglishPart(header)
     else if (sheet[header].v === '유형') result.financeCategoryHeader = getFirstEnglishPart(header)
     else if (sheet[header].v === '회계년도') result.fiscalYearHeader = getFirstEnglishPart(header)
-    else if (
-      sheet[header].v === '국비' ||
-      sheet[header].v === '국비 (백만원)' ||
-      sheet[header].v === '국고/특교'
-    )
+    else if (sheet[header].v === '국비' || sheet[header].v === '국고/특교')
       result.govHeader = getFirstEnglishPart(header)
     else if (sheet[header].v === '시도비' || sheet[header].v === '자체')
       result.sidoHeader = getFirstEnglishPart(header)
     else if (sheet[header].v === '시군구비' || sheet[header].v === '지자체')
       result.sigunguHeader = getFirstEnglishPart(header)
-    else if (sheet[header].v === '기타') result.etcHeader = getFirstEnglishPart(header)
+    else if (sheet[header].v === '기타' || sheet[header].v === '민간/기타')
+      result.etcHeader = getFirstEnglishPart(header)
+    else if (sheet[header].v.startsWith('단위:')) result.unitHeader = getFirstEnglishPart(header)
   }
 
   return result
@@ -725,8 +730,8 @@ function getFinanceCategoryCode(financeCategory) {
   }
 }
 
-function getMoney(money) {
+function getMoney(money, unit) {
   if (money === '미정') return null
 
-  return +(money ?? 0) * 1_000_000
+  return +(money ?? 0) * unit
 }

@@ -262,8 +262,8 @@ export default async function routes(fastify: TFastify) {
 
   const schema3 = {
     querystring: Type.Object({
-      category: Type.Number(),
       id: Type.String(),
+      category: Type.Number(),
     }),
   }
 
