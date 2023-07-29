@@ -118,12 +118,13 @@ CREATE TABLE smartplus_question (
 );
 
 CREATE TABLE smartplus_answer (
-  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  answer int NOT NULL,
   business_id bigint NOT NULL,
   business_category int NOT NULL,
   question_id bigint NOT NULL REFERENCES smartplus_question ON DELETE CASCADE,
-  user_id bigint NOT NULL REFERENCES "user" ON DELETE CASCADE
+  user_id bigint NOT NULL REFERENCES "user" ON DELETE CASCADE,
+  answer int NOT NULL,
+  --
+  PRIMARY KEY (business_id, business_category, question_id, user_id)
 );
 
 /* 

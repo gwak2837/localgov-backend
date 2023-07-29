@@ -1,8 +1,5 @@
 /* @name getAnswers */
-SELECT id,
-  answer,
-  business_id,
-  business_category,
+SELECT answer,
   question_id
 FROM smartplus_answer
 WHERE business_id = $1

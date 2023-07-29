@@ -13,24 +13,33 @@ export interface ICreateAnswersQuery {
   result: ICreateAnswersResult;
 }
 
-const createAnswersIR: any = {"usedParamSet":{},"params":[],"statement":"INSERT INTO smartplus_answer(\n    answer,\n    business_id,\n    business_category,\n    question_id\n  )\nSELECT *\nFROM unnest(\n    $1::int [],\n    $2::bigint [],\n    $3::int [],\n    $4::bigint []\n  )"};
+const createAnswersIR: any = {"usedParamSet":{},"params":[],"statement":"INSERT INTO smartplus_answer(\n    business_id,\n    business_category,\n    question_id,\n    user_id,\n    answer\n  )\nSELECT *\nFROM unnest(\n    $1::bigint [],\n    $2::int [],\n    $3::bigint [],\n    $4::bigint [],\n    $5::int []\n  ) ON CONFLICT (\n    business_id,\n    business_category,\n    question_id,\n    user_id\n  ) DO\nUPDATE\nSET answer = EXCLUDED.answer"};
 
 /**
  * Query generated from SQL:
  * ```
  * INSERT INTO smartplus_answer(
- *     answer,
  *     business_id,
  *     business_category,
- *     question_id
+ *     question_id,
+ *     user_id,
+ *     answer
  *   )
  * SELECT *
  * FROM unnest(
- *     $1::int [],
- *     $2::bigint [],
- *     $3::int [],
- *     $4::bigint []
- *   )
+ *     $1::bigint [],
+ *     $2::int [],
+ *     $3::bigint [],
+ *     $4::bigint [],
+ *     $5::int []
+ *   ) ON CONFLICT (
+ *     business_id,
+ *     business_category,
+ *     question_id,
+ *     user_id
+ *   ) DO
+ * UPDATE
+ * SET answer = EXCLUDED.answer
  * ```
  */
 export const createAnswers = new PreparedQuery<ICreateAnswersParams,ICreateAnswersResult>(createAnswersIR);

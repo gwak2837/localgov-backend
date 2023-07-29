@@ -352,9 +352,17 @@ export default async function routes(fastify: TFastify) {
         content,
         finances,
       },
-      naver,
+      naver: naver.map((n: any) => ({
+        link: n.link,
+        title: n.title,
+        content: n.description,
+      })),
       youtube,
-      google,
+      google: google.map((g: any) => ({
+        link: g.link,
+        title: g.htmlTitle,
+        content: g.htmlSnippet,
+      })),
     }
   })
 
