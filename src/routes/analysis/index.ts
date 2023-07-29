@@ -29,9 +29,10 @@ import { IGetCefinByOfficeResult } from './sql/getCefinByOffice'
 import getCefinByOffice from './sql/getCefinByOffice.sql'
 import { IGetCefinRatioResult } from './sql/getCefinRatio'
 import getCefinRatio from './sql/getCefinRatio.sql'
-import { IGetLocalCommitmentResult } from './sql/getLocalCommitment'
-import getCommitment from './sql/getLocalCommitment.sql'
-import getCommitmentFin from './sql/getLocalCommitmentFin.sql'
+import { IGetCommitmentResult } from './sql/getCommitment'
+import getCommitment from './sql/getCommitment.sql'
+import { IGetCommitmentFinResult } from './sql/getCommitmentFin'
+import getCommitmentFin from './sql/getCommitmentFin.sql'
 import { IGetLofinBusinessResult } from './sql/getLofinBusiness'
 import getLofinBusiness from './sql/getLofinBusiness.sql'
 import { IGetLofinByDistrictResult } from './sql/getLofinByDistrict'
@@ -313,14 +314,18 @@ export default async function routes(fastify: TFastify) {
           }
         } else {
           const [{ rows }, { rows: rows2 }] = await Promise.all([
-            pool.query<IGetLocalCommitmentResult>(getCommitment, [id]),
-            pool.query<IGetLocalCommitmentResult>(getCommitmentFin, [id]),
+            pool.query<IGetCommitmentResult>(getCommitment, [id]),
+            pool.query<IGetCommitmentFinResult>(getCommitmentFin, [id]),
           ])
           const commitment = rows[0]
           const finances = rows2
 
           return {
-            who: commitment.who_code ? sido[commitment.who_code] : undefined,
+            who: commitment.who_code
+              ? commitment.who_code < 100
+                ? sido[commitment.who_code]
+                : sigungu[commitment.who_code]
+              : undefined,
             when: commitment.when_date
               ? formatKoreanDate(commitment.when_date.toISOString())
               : undefined,
