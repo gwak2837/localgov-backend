@@ -28,3 +28,15 @@ export function decodeElectionTypeCode(electionTypeCode: number) {
       throw InternalServerError('Invalid `sgTypecode`')
   }
 }
+
+export const encodeElectionCategory = {
+  지자체장: 0,
+  교육감: 1,
+  대통령: 2,
+} as Record<string, number>
+
+export const decodeElectionCategory = {
+  0: '지자체장',
+  1: '교육감',
+  2: '대통령',
+} as Record<number, string>

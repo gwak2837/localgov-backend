@@ -2,10 +2,11 @@
 SELECT id,
   creation_date,
   who,
-  kind,
+  category,
   content
 FROM ai
 WHERE creation_date > CURRENT_TIMESTAMP - INTERVAL '1 day'
   AND creation_date < CURRENT_TIMESTAMP
-  AND category = $1
-  AND reference_id = $2;
+  AND business_id = $1
+  AND business_category = $2
+  AND commitment_id = $3;

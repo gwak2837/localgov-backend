@@ -268,6 +268,11 @@ export const sigungu = {
 
 export const sigunguCodes = Object.keys(sigungu).map((key) => +key)
 
+export const localCode = {
+  ...sido,
+  ...sigungu,
+}
+
 export const lofinFields = {
   10: '일반공공행정',
   20: '공공질서 및 안전',

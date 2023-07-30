@@ -152,8 +152,9 @@ CREATE TABLE ai (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   creation_date timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   who int NOT NULL,
+  business_id bigint NOT NULL,
+  business_category int NOT NULL,
+  commitment_id bigint NOT NULL,
   category int NOT NULL,
-  reference_id bigint NOT NULL,
-  kind int NOT NULL,
   content text NOT NULL
 );

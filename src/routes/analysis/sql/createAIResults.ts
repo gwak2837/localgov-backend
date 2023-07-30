@@ -13,19 +13,27 @@ export interface ICreateAiResultsQuery {
   result: ICreateAiResultsResult;
 }
 
-const createAiResultsIR: any = {"usedParamSet":{},"params":[],"statement":"INSERT INTO ai (who, category, reference_id, kind, content)\nSELECT *\nFROM unnest(\n    $1::int [],\n    $2::int [],\n    $3::bigint [],\n    $4::int [],\n    $5::text []\n  )"};
+const createAiResultsIR: any = {"usedParamSet":{},"params":[],"statement":"INSERT INTO ai (\n    who,\n    business_id,\n    business_category,\n    commitment_id,\n    category,\n    content\n  )\nSELECT *\nFROM unnest(\n    $1::int [],\n    $2::bigint [],\n    $3::int [],\n    $4::bigint [],\n    $5::int [],\n    $6::text []\n  )"};
 
 /**
  * Query generated from SQL:
  * ```
- * INSERT INTO ai (who, category, reference_id, kind, content)
+ * INSERT INTO ai (
+ *     who,
+ *     business_id,
+ *     business_category,
+ *     commitment_id,
+ *     category,
+ *     content
+ *   )
  * SELECT *
  * FROM unnest(
  *     $1::int [],
- *     $2::int [],
- *     $3::bigint [],
- *     $4::int [],
- *     $5::text []
+ *     $2::bigint [],
+ *     $3::int [],
+ *     $4::bigint [],
+ *     $5::int [],
+ *     $6::text []
  *   )
  * ```
  */

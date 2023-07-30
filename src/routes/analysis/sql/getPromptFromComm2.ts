@@ -24,7 +24,7 @@ export interface IGetPromptFromComm2Query {
   result: IGetPromptFromComm2Result;
 }
 
-const getPromptFromComm2IR: any = {"usedParamSet":{},"params":[],"statement":"SELECT election.district AS who_code,\n  election.category,\n  primary_dept,\n  finance.basis_date AS when_date,\n  field_code AS field_code,\n  sector_code AS sector_code,\n  commitment.title,\n  content\nFROM commitment\n  JOIN election ON election.id = commitment.election_id\n  LEFT JOIN finance ON finance.commitment_id = commitment.id\n  AND commitment.id = $1\nORDER BY finance.basis_date DESC\nLIMIT 1"};
+const getPromptFromComm2IR: any = {"usedParamSet":{},"params":[],"statement":"SELECT election.district AS who_code,\n  election.category,\n  primary_dept,\n  finance.basis_date AS when_date,\n  field_code,\n  sector_code,\n  commitment.title,\n  content\nFROM commitment\n  JOIN election ON election.id = commitment.election_id\n  LEFT JOIN finance ON finance.commitment_id = commitment.id\n  AND commitment.id = $1\nORDER BY finance.basis_date DESC\nLIMIT 1"};
 
 /**
  * Query generated from SQL:
@@ -33,8 +33,8 @@ const getPromptFromComm2IR: any = {"usedParamSet":{},"params":[],"statement":"SE
  *   election.category,
  *   primary_dept,
  *   finance.basis_date AS when_date,
- *   field_code AS field_code,
- *   sector_code AS sector_code,
+ *   field_code,
+ *   sector_code,
  *   commitment.title,
  *   content
  * FROM commitment

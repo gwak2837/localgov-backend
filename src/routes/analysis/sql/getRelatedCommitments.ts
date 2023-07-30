@@ -9,7 +9,7 @@ export interface IGetRelatedCommitmentsResult {
   category: number | null;
   content: string | null;
   district: number | null;
-  election_date: Date | null;
+  election_date: string | null;
   field_code: number | null;
   id: string | null;
   title: string | null;
@@ -21,7 +21,7 @@ export interface IGetRelatedCommitmentsQuery {
   result: IGetRelatedCommitmentsResult;
 }
 
-const getRelatedCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT commitment.id,\n  title,\n  content,\n  field_code,\n  election.category,\n  election.election_date,\n  election.district\nFROM commitment\n  JOIN election ON election.id = commitment.election_id\nWHERE field_code = $1\nUNION ALL\nSELECT commitment.id,\n  title,\n  content,\n  field_code,\n  election.category,\n  election.election_date,\n  election.district\nFROM commitment\n  JOIN election ON election.id = commitment.election_id\nWHERE field_code != $1\nLIMIT 20"};
+const getRelatedCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT commitment.id,\n  title,\n  content,\n  field_code,\n  election.category,\n  election.election_date::text,\n  election.district\nFROM commitment\n  JOIN election ON election.id = commitment.election_id\nWHERE field_code = $1\nUNION ALL\nSELECT commitment.id,\n  title,\n  content,\n  field_code,\n  election.category,\n  election.election_date::text,\n  election.district\nFROM commitment\n  JOIN election ON election.id = commitment.election_id\nWHERE field_code != $1\nLIMIT 20"};
 
 /**
  * Query generated from SQL:
@@ -31,7 +31,7 @@ const getRelatedCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":
  *   content,
  *   field_code,
  *   election.category,
- *   election.election_date,
+ *   election.election_date::text,
  *   election.district
  * FROM commitment
  *   JOIN election ON election.id = commitment.election_id
@@ -42,7 +42,7 @@ const getRelatedCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":
  *   content,
  *   field_code,
  *   election.category,
- *   election.election_date,
+ *   election.election_date::text,
  *   election.district
  * FROM commitment
  *   JOIN election ON election.id = commitment.election_id

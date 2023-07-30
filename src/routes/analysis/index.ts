@@ -12,6 +12,7 @@ import {
 } from '../../common/constants'
 import { BadRequestError, NotFoundError } from '../../common/fastify'
 import {
+  localCode,
   lofinFields,
   lofinSectors,
   sido,
@@ -40,10 +41,12 @@ import { IGetLofinRatioResult } from './sql/getLofinRatio'
 import getLofinRatio from './sql/getLofinRatio.sql'
 import getPromptFromCefin from './sql/getPromptFromCefin.sql'
 import getPromptFromComm2 from './sql/getPromptFromComm2.sql'
-import getPromptFromComm from './sql/getPromptFromLoCom.sql'
+import getPromptFromComm from './sql/getPromptFromComm.sql'
 import getPromptFromLofin from './sql/getPromptFromLofin.sql'
 import getRelatedCommitments from './sql/getRelatedCommitments.sql'
 import { TFastify } from '..'
+import { decodeElectionCategory } from '../../common/election'
+import { IGetAiResultResult } from './sql/getAIResult'
 
 enum Category {
   centerExpenditure = 0,
@@ -60,7 +63,7 @@ enum AI {
   chatGPT4,
 }
 
-enum PromptKind {
+enum PromptCategory {
   negative = 0,
   positive,
 }
@@ -228,40 +231,6 @@ export default async function routes(fastify: TFastify) {
     }
   })
 
-  fastify.get('/chat', (request, reply) => {
-    console.log('👀 - connect')
-
-    const headers = reply.getHeaders()
-
-    for (const key in headers) {
-      const value = headers[key]
-      if (value) {
-        reply.raw.setHeader(key, value)
-      }
-    }
-
-    reply.raw.setHeader('Content-Type', 'text/event-stream')
-    reply.raw.setHeader('content-encoding', 'identity')
-    reply.raw.setHeader('Cache-Control', 'no-cache,no-transform')
-    reply.raw.setHeader('x-no-compression', 1)
-
-    const a = setInterval(() => {
-      const time = new Date().toISOString()
-      console.log('👀 - message', time)
-      reply.raw.write(`time: ${time}`)
-    }, 1000)
-
-    request.raw.addListener('close', () => {
-      console.log('👀 - close2')
-      clearInterval(a)
-    })
-
-    request.raw.on('close', () => {
-      console.log('👀 - close')
-      clearInterval(a)
-    })
-  })
-
   const schema3 = {
     querystring: Type.Object({
       id: Type.String(),
@@ -362,7 +331,15 @@ export default async function routes(fastify: TFastify) {
         content,
         finances,
       },
-      relatedCommitments: relatedCommitments.rows,
+      relatedCommitments: relatedCommitments.rows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        field: lofinFields[row.field_code],
+        category: decodeElectionCategory[row.category],
+        electionDate: row.election_date,
+        district: localCode[row.district],
+      })),
       naver: naver.map((n: any) => ({
         link: n.link,
         title: n.title,
@@ -397,7 +374,7 @@ export default async function routes(fastify: TFastify) {
         : businessCategory === Category.localCommitment
         ? pool.query(getPromptFromComm, [businessId])
         : pool.query(getPromptFromLofin, [businessId]),
-      pool.query(getAIResult, [businessCategory, businessId]),
+      pool.query<IGetAiResultResult>(getAIResult, [businessId, businessCategory, commitmentId]),
       pool.query(getPromptFromComm2, [commitmentId]),
     ])
 
@@ -406,51 +383,51 @@ export default async function routes(fastify: TFastify) {
 
       return {
         bard: {
-          positive: bard.filter((row) => row.kind === PromptKind.positive)[0],
-          negative: bard.filter((row) => row.kind === PromptKind.negative)[0],
+          positive: bard.find((row) => row.category === PromptCategory.positive),
+          negative: bard.find((row) => row.category === PromptCategory.negative),
         },
         chatGPT3: AIResult.rows.filter((row) => row.who === AI.chatGPT3),
         chatGPT4: AIResult.rows.filter((row) => row.who === AI.chatGPT4),
       }
     }
 
-    const businessFromDB = businessResult.rows[0]
+    const business_ = businessResult.rows[0]
 
     const business = {
       who:
-        businessFromDB.who_name ?? businessFromDB.who_code === 0
-          ? businessFromDB.primary_dept
-          : businessFromDB.who_code < 100
-          ? sido[businessFromDB.who_code]
-          : sigungu[businessFromDB.who_code],
-      when: businessFromDB.when_
-        ? formatKoreanDate(businessFromDB.when_)
-        : `${businessFromDB.when_year}년`,
-      field: businessFromDB.field ?? lofinFields[businessFromDB.field_code],
-      sector: businessFromDB.sector ?? lofinSectors[businessFromDB.sector_code],
-      title: businessFromDB.title,
-      content: businessFromDB.content,
+        business_.who_name ?? business_.who_code === 0
+          ? business_.primary_dept
+          : business_.who_code < 100
+          ? sido[business_.who_code]
+          : sigungu[business_.who_code],
+      category: businessCategory,
+      when: business_.when_ ? formatKoreanDate(business_.when_) : `${business_.when_year}년`,
+      field: business_.field ?? lofinFields[business_.field_code],
+      sector: business_.sector ?? lofinSectors[business_.sector_code] ?? '',
+      title: business_.title,
+      content: business_.content ?? '',
     }
 
-    const commitmentFromDB = commitmentResult.rows[0]
+    const commitment_ = commitmentResult.rows[0]
 
     const commitment = {
       who:
-        commitmentFromDB.who_code === 0
-          ? commitmentFromDB.primary_dept
-          : commitmentFromDB.who_code < 100
-          ? sido[commitmentFromDB.who_code]
-          : sigungu[commitmentFromDB.who_code],
-      when: commitmentFromDB.when_date
-        ? formatKoreanDate(commitmentFromDB.when_date.toISOString())
+        commitment_.who_code === 0
+          ? commitment_.primary_dept
+          : commitment_.who_code < 100
+          ? sido[commitment_.who_code]
+          : sigungu[commitment_.who_code],
+      category: decodeElectionCategory[commitment_.category],
+      when: commitment_.when_date
+        ? formatKoreanDate(commitment_.when_date.toISOString())
         : '2023년 3월 9일',
-      field: lofinFields[commitmentFromDB.field_code],
-      sector: lofinSectors[commitmentFromDB.sector_code],
-      title: commitmentFromDB.title,
-      content: commitmentFromDB.content,
+      field: lofinFields[commitment_.field_code],
+      sector: lofinSectors[commitment_.sector_code] ?? '',
+      title: commitment_.title,
+      content: commitment_.content ?? '',
     }
 
-    const prompts = getPrompts(commitment, business, businessCategory)
+    const prompts = getPrompts(commitment, business)
 
     const [bardPositive, bardNegative] = await Promise.all([
       ...prompts.map((prompt, i) => bard.ask(prompt, uuidv4())),
@@ -459,9 +436,10 @@ export default async function routes(fastify: TFastify) {
 
     pool.query(createAIResults, [
       [AI.bard, AI.bard],
-      [businessCategory, businessCategory],
       [businessId, businessId],
-      [PromptKind.positive, PromptKind.negative],
+      [businessCategory, businessCategory],
+      [commitmentId, commitmentId],
+      [PromptCategory.positive, PromptCategory.negative],
       [bardPositive, bardNegative],
     ])
 
@@ -512,48 +490,50 @@ async function searchFromGoogle(query: string) {
   return result.items
 }
 
-function getPrompts(commitment: any, business: Record<string, any>, category: number) {
-  const commitmentCategory = commitment.category
+function getPrompts(commitment: any, business: Record<string, any>) {
   const who = business.who
   const when = business.when
+  const businessCategory = business.category
 
-  const businessCategory = Category.centerExpenditure
-    ? '중앙부처 사업'
-    : Category.localExpenditure
-    ? `${who} 지방자치단체 사업`
-    : Category.localCommitment
-    ? `${who} 지방자치단체장 공약`
-    : `${who} 교육감 공약`
+  const businessTitle =
+    businessCategory === Category.centerExpenditure
+      ? '중앙부처 사업'
+      : businessCategory === Category.localExpenditure
+      ? `${who} 지방자치단체 사업`
+      : businessCategory === Category.localCommitment
+      ? `${who} 지방자치단체장 공약`
+      : `${who} 교육감 공약`
 
-  const prefixes = (
-    category === Category.centerExpenditure
+  const commitmentCategory = commitment.category
+
+  const businessPrompts =
+    businessCategory === Category.centerExpenditure
       ? [
-          `중앙부처인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 밀접하게 연관되어 있는데`,
-          `중앙부처인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 하나도 연관되어 있지 않는데`,
+          `중앙부처인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 밀접하게 연관되어 있는데`,
+          `중앙부처인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 하나도 연관되어 있지 않는데`,
         ]
-      : category === Category.localExpenditure
+      : businessCategory === Category.localExpenditure
       ? [
-          `대한민국 지방자치단체인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 밀접하게 연관되어 있는데`,
-          `대한민국 지방자치단체인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 하나도 연관되어 있지 않는데`,
+          `대한민국 지방자치단체인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 밀접하게 연관되어 있는데`,
+          `대한민국 지방자치단체인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 하나도 연관되어 있지 않는데`,
         ]
-      : category === Category.localCommitment
+      : businessCategory === Category.localCommitment
       ? [
-          `대한민국 지방자치단체인 ${who}에서 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 밀접하게 연관되어 있는데`,
-          `대한민국 지방자치단체인 ${who}에서 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 하나도 연관되어 있지 않는데`,
+          `대한민국 지방자치단체인 ${who}에서 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 밀접하게 연관되어 있는데`,
+          `대한민국 지방자치단체인 ${who}에서 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 하나도 연관되어 있지 않는데`,
         ]
       : [
-          `대한민국 ${who} 교육감이 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 밀접하게 연관되어 있는데`,
-          `대한민국 ${who} 교육감이 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 하나도 연관되어 있지 않는데`,
+          `대한민국 ${who} 교육감이 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 밀접하게 연관되어 있는데`,
+          `대한민국 ${who} 교육감이 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 하나도 연관되어 있지 않는데`,
         ]
-  ).map(
-    (prefix) => `${commitmentCategory} 공약과 ${prefix}, 연관성 비율과 그 근거를 자세히 설명해줘.`
-  )
 
-  return prefixes.map(
-    (prefix) => `${prefix}
+  return businessPrompts.map(
+    (
+      businessPrompt
+    ) => `${commitment.who} ${commitmentCategory} 공약과 ${businessPrompt}, 연관성 비율과 그 근거를 자세히 설명해줘.
 
 
-${commitmentCategory} 공약:
+${commitment.who} ${commitmentCategory} 공약:
 - 분야: ${commitment.field}
 - 부문: ${commitment.sector}
 - 주관: ${commitment.who}
@@ -561,12 +541,13 @@ ${commitmentCategory} 공약:
 - 내용: ${commitment.content}
 
 
-${businessCategory}:
+${businessTitle}:
 - 분야: ${business.field}
 - 부문: ${business.sector}
 - 주관: ${who}
 - 제목: ${business.title}
-- 내용: ${business.content}`
+- 내용: ${business.content}
+`
   )
 }
 

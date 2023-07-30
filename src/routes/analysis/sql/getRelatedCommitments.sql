@@ -4,7 +4,7 @@ SELECT commitment.id,
   content,
   field_code,
   election.category,
-  election.election_date,
+  election.election_date::text,
   election.district
 FROM commitment
   JOIN election ON election.id = commitment.election_id
@@ -15,7 +15,7 @@ SELECT commitment.id,
   content,
   field_code,
   election.category,
-  election.election_date,
+  election.election_date::text,
   election.district
 FROM commitment
   JOIN election ON election.id = commitment.election_id
