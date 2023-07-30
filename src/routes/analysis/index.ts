@@ -317,7 +317,7 @@ export default async function routes(fastify: TFastify) {
       searchFromNaver(searchQuery),
       searchFromYouTube(searchQuery),
       searchFromGoogle(searchQuery),
-      pool.query(getRelatedCommitments, [field_code]),
+      pool.query(getRelatedCommitments, [field_code, id]),
     ])
 
     return {
