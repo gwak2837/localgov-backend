@@ -25,7 +25,7 @@ export interface IGetCommitmentsQuery {
   result: IGetCommitmentsResult;
 }
 
-const getCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT commitment.id,\n  commitment.title,\n  commitment.priority,\n  commitment.field_code,\n  commitment.sector_code,\n  election.category AS election__category,\n  election.district,\n  finance.basis_date,\n  finance.category AS finance__category,\n  sum(gov) AS gov,\n  sum(gov) + sum(sido) + sum(sigungu) + sum(etc) AS total\nFROM commitment\n  JOIN election ON election.id = commitment.election_id\n  AND election.category = $1\n  AND (\n    $2::int [] IS NULL\n    OR election.district = ANY($2)\n  )\n  JOIN finance ON finance.commitment_id = commitment.id\n  AND (\n    CASE\n      WHEN $3::timestamptz IS NULL THEN finance.basis_date = ANY(\n        SELECT DISTINCT finance.basis_date\n        FROM commitment\n          JOIN election ON election.id = commitment.election_id\n          AND election.district = ANY($2)\n          JOIN finance ON finance.commitment_id = commitment.id\n        ORDER BY finance.basis_date DESC\n        LIMIT 2\n      )\n      ELSE finance.basis_date = ANY(\n        ARRAY [$3, (\n              SELECT DISTINCT basis_date \n              FROM commitment\n                JOIN election ON election.id = commitment.election_id\n                AND election.district = ANY($2)\n                JOIN finance ON finance.commitment_id = commitment.id\n              WHERE basis_date < $3 \n              order by basis_date desc \n              limit 1\n            )]\n      )\n    END\n  )\nGROUP BY commitment.id,\n  election.id,\n  finance.basis_date,\n  finance.category\nORDER BY commitment.id"};
+const getCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT commitment.id,\n  commitment.title,\n  commitment.priority,\n  commitment.field_code,\n  commitment.sector_code,\n  election.category AS election__category,\n  election.district,\n  finance.basis_date,\n  finance.category AS finance__category,\n  sum(gov) AS gov,\n  sum(gov) + sum(sido) + sum(sigungu) + sum(etc) AS total\nFROM commitment\n  JOIN election ON election.id = commitment.election_id\n  AND election.category = $1\n  AND (\n    $2::int [] IS NULL\n    OR election.district = ANY($2)\n  )\n  JOIN finance ON finance.commitment_id = commitment.id\n  AND (\n    CASE\n      WHEN $3::timestamptz IS NULL THEN finance.basis_date = ANY(\n        SELECT DISTINCT finance.basis_date\n        FROM commitment\n          JOIN election ON election.id = commitment.election_id\n          AND election.district = ANY($2)\n          JOIN finance ON finance.commitment_id = commitment.id\n        ORDER BY finance.basis_date DESC\n        LIMIT 2\n      )\n      ELSE finance.basis_date = ANY(\n        ARRAY [$3, (\n              SELECT DISTINCT basis_date \n              FROM commitment\n                JOIN election ON election.id = commitment.election_id\n                AND election.district = ANY($2)\n                JOIN finance ON finance.commitment_id = commitment.id\n              WHERE basis_date < $3 \n              ORDER BY finance.basis_date DESC\n              LIMIT 1\n            )]\n      )\n    END\n  )\nGROUP BY commitment.id,\n  election.id,\n  finance.basis_date,\n  finance.category\nORDER BY commitment.id"};
 
 /**
  * Query generated from SQL:
@@ -68,8 +68,8 @@ const getCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT
  *                 AND election.district = ANY($2)
  *                 JOIN finance ON finance.commitment_id = commitment.id
  *               WHERE basis_date < $3 
- *               order by basis_date desc 
- *               limit 1
+ *               ORDER BY finance.basis_date DESC
+ *               LIMIT 1
  *             )]
  *       )
  *     END

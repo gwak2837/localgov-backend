@@ -20,7 +20,6 @@ import {
   sigunguCodes,
 } from '../../common/lofin'
 import { pool } from '../../common/postgres'
-import { presidentCommitments as presCommitments } from '../../common/president'
 import createAIResults from './sql/createAIResults.sql'
 import getAIResult from './sql/getAIResult.sql'
 import { IGetCefinBusinessResult } from './sql/getCefinBusiness'
@@ -40,8 +39,10 @@ import getLofinByDistrict from './sql/getLofinByDistrict.sql'
 import { IGetLofinRatioResult } from './sql/getLofinRatio'
 import getLofinRatio from './sql/getLofinRatio.sql'
 import getPromptFromCefin from './sql/getPromptFromCefin.sql'
-import getPromptFromLoCom from './sql/getPromptFromLoCom.sql'
+import getPromptFromComm2 from './sql/getPromptFromComm2.sql'
+import getPromptFromComm from './sql/getPromptFromLoCom.sql'
 import getPromptFromLofin from './sql/getPromptFromLofin.sql'
+import getRelatedCommitments from './sql/getRelatedCommitments.sql'
 import { TFastify } from '..'
 
 enum Category {
@@ -272,7 +273,7 @@ export default async function routes(fastify: TFastify) {
     // Validate the querystring
     const { category, id } = req.query
 
-    const { who, when, field, sector, title, content, finances } =
+    const { who, when, field, field_code, sector, title, content, finances } =
       await (async (): Promise<any> => {
         if (category === Category.centerExpenditure) {
           const { rows } = await pool.query<IGetCefinBusinessResult>(getCefinBusiness, [id])
@@ -281,6 +282,7 @@ export default async function routes(fastify: TFastify) {
             who: business.who_name,
             when: `${business.when_year}년`,
             field: business.field,
+            field_code: business.field,
             sector: business.sector,
             title: business.title,
             finances: [
@@ -299,6 +301,7 @@ export default async function routes(fastify: TFastify) {
             who: sido[business.who_code],
             when: `${business.when_year}년`,
             field: lofinFields[business.field_code],
+            field_code: business.field_code,
             sector: lofinSectors[business.sector_code ?? 0],
             title: business.title,
             finances: [
@@ -330,6 +333,7 @@ export default async function routes(fastify: TFastify) {
               ? formatKoreanDate(commitment.when_date.toISOString())
               : undefined,
             field: lofinFields[commitment.field_code],
+            field_code: commitment.field_code,
             sector: lofinSectors[commitment.sector_code ?? 0],
             title: commitment.title,
             content: commitment.content,
@@ -340,10 +344,11 @@ export default async function routes(fastify: TFastify) {
 
     const searchQuery = `${who} ${title}`
 
-    const [naver, youtube, google] = await Promise.all([
+    const [naver, youtube, google, relatedCommitments] = await Promise.all([
       searchFromNaver(searchQuery),
       searchFromYouTube(searchQuery),
       searchFromGoogle(searchQuery),
+      pool.query(getRelatedCommitments, [field_code]),
     ])
 
     return {
@@ -357,6 +362,7 @@ export default async function routes(fastify: TFastify) {
         content,
         finances,
       },
+      relatedCommitments: relatedCommitments.rows,
       naver: naver.map((n: any) => ({
         link: n.link,
         title: n.title,
@@ -373,55 +379,78 @@ export default async function routes(fastify: TFastify) {
 
   const schema4 = {
     querystring: Type.Object({
-      category: Type.Number(),
-      presidentCommitmentId: Type.Number(),
-      businessId: Type.Number(),
+      businessId: Type.String(),
+      businessCategory: Type.Number(),
+      commitmentId: Type.Number(),
     }),
   }
 
   fastify.get('/analytics/ai', { schema: schema4 }, async (req, reply) => {
-    const { category, presidentCommitmentId, businessId } = req.query
+    const { businessId, businessCategory, commitmentId } = req.query
 
-    if (!CategoryValues.includes(category)) throw BadRequestError('Invalid `category`')
+    if (!CategoryValues.includes(businessCategory))
+      throw BadRequestError('Invalid `businessCategory`')
 
-    const promptPromise =
-      category === Category.centerExpenditure
+    const [businessResult, AIResult, commitmentResult] = await Promise.all([
+      businessCategory === Category.centerExpenditure
         ? pool.query(getPromptFromCefin, [businessId])
-        : category === Category.localCommitment
-        ? pool.query(getPromptFromLoCom, [businessId])
-        : pool.query(getPromptFromLofin, [businessId])
-
-    const [{ rows }, { rows: rows2, rowCount: rowCount2 }] = await Promise.all([
-      promptPromise,
-      pool.query(getAIResult, [category, businessId]),
+        : businessCategory === Category.localCommitment
+        ? pool.query(getPromptFromComm, [businessId])
+        : pool.query(getPromptFromLofin, [businessId]),
+      pool.query(getAIResult, [businessCategory, businessId]),
+      pool.query(getPromptFromComm2, [commitmentId]),
     ])
 
-    if (rowCount2 !== 0) {
-      const bard = rows2.filter((row) => row.who === AI.bard)
+    if (AIResult.rowCount !== 0) {
+      const bard = AIResult.rows.filter((row) => row.who === AI.bard)
 
       return {
         bard: {
           positive: bard.filter((row) => row.kind === PromptKind.positive)[0],
           negative: bard.filter((row) => row.kind === PromptKind.negative)[0],
         },
-        chatGPT3: rows2.filter((row) => row.who === AI.chatGPT3),
-        chatGPT4: rows2.filter((row) => row.who === AI.chatGPT4),
+        chatGPT3: AIResult.rows.filter((row) => row.who === AI.chatGPT3),
+        chatGPT4: AIResult.rows.filter((row) => row.who === AI.chatGPT4),
       }
     }
 
-    const businessFromDB = rows[0]
+    const businessFromDB = businessResult.rows[0]
 
     const business = {
-      officeName: businessFromDB.who_name ?? sigungu[businessFromDB.who_code],
+      who:
+        businessFromDB.who_name ?? businessFromDB.who_code === 0
+          ? businessFromDB.primary_dept
+          : businessFromDB.who_code < 100
+          ? sido[businessFromDB.who_code]
+          : sigungu[businessFromDB.who_code],
       when: businessFromDB.when_
         ? formatKoreanDate(businessFromDB.when_)
         : `${businessFromDB.when_year}년`,
       field: businessFromDB.field ?? lofinFields[businessFromDB.field_code],
       sector: businessFromDB.sector ?? lofinSectors[businessFromDB.sector_code],
-      name: businessFromDB.title,
+      title: businessFromDB.title,
+      content: businessFromDB.content,
     }
 
-    const prompts = getPrompts(presidentCommitmentId, business, category)
+    const commitmentFromDB = commitmentResult.rows[0]
+
+    const commitment = {
+      who:
+        commitmentFromDB.who_code === 0
+          ? commitmentFromDB.primary_dept
+          : commitmentFromDB.who_code < 100
+          ? sido[commitmentFromDB.who_code]
+          : sigungu[commitmentFromDB.who_code],
+      when: commitmentFromDB.when_date
+        ? formatKoreanDate(commitmentFromDB.when_date.toISOString())
+        : '2023년 3월 9일',
+      field: lofinFields[commitmentFromDB.field_code],
+      sector: lofinSectors[commitmentFromDB.sector_code],
+      title: commitmentFromDB.title,
+      content: commitmentFromDB.content,
+    }
+
+    const prompts = getPrompts(commitment, business, businessCategory)
 
     const [bardPositive, bardNegative] = await Promise.all([
       ...prompts.map((prompt, i) => bard.ask(prompt, uuidv4())),
@@ -430,7 +459,7 @@ export default async function routes(fastify: TFastify) {
 
     pool.query(createAIResults, [
       [AI.bard, AI.bard],
-      [category, category],
+      [businessCategory, businessCategory],
       [businessId, businessId],
       [PromptKind.positive, PromptKind.negative],
       [bardPositive, bardNegative],
@@ -483,66 +512,61 @@ async function searchFromGoogle(query: string) {
   return result.items
 }
 
-function getPrompts(presCommitmentId: number, business: Record<string, any>, category: number) {
-  const officeName = business.officeName
+function getPrompts(commitment: any, business: Record<string, any>, category: number) {
+  const commitmentCategory = commitment.category
+  const who = business.who
   const when = business.when
+
+  const businessCategory = Category.centerExpenditure
+    ? '중앙부처 사업'
+    : Category.localExpenditure
+    ? `${who} 지방자치단체 사업`
+    : Category.localCommitment
+    ? `${who} 지방자치단체장 공약`
+    : `${who} 교육감 공약`
 
   const prefixes = (
     category === Category.centerExpenditure
       ? [
-          `중앙부처인 ${officeName}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 공약과 중앙부처 사업은 서로 밀접하게 연관되어 있는데`,
-          `중앙부처인 ${officeName}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 공약과 중앙부처 사업은 서로 하나도 연관되어 있지 않는데`,
+          `중앙부처인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 밀접하게 연관되어 있는데`,
+          `중앙부처인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 하나도 연관되어 있지 않는데`,
         ]
       : category === Category.localExpenditure
       ? [
-          `대한민국 지방자치단체인 ${officeName}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 공약과 지방자치단체 사업은 서로 밀접하게 연관되어 있는데`,
-          `대한민국 지방자치단체인 ${officeName}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 대통령 공약과 지방자치단체 사업은 서로 하나도 연관되어 있지 않는데`,
+          `대한민국 지방자치단체인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 밀접하게 연관되어 있는데`,
+          `대한민국 지방자치단체인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 하나도 연관되어 있지 않는데`,
         ]
       : category === Category.localCommitment
       ? [
-          `대한민국 지방자치단체인 ${officeName}에서 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 대통령 공약과 지방자치단체장 공약은 서로 밀접하게 연관되어 있는데`,
-          `대한민국 지방자치단체인 ${officeName}에서 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 대통령 공약과 지방자치단체장 공약은 서로 하나도 연관되어 있지 않는데`,
+          `대한민국 지방자치단체인 ${who}에서 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 밀접하게 연관되어 있는데`,
+          `대한민국 지방자치단체인 ${who}에서 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 하나도 연관되어 있지 않는데`,
         ]
       : [
-          `대한민국 ${officeName} 교육감이 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 대통령 공약과 교육감 공약은 서로 밀접하게 연관되어 있는데`,
-          `대한민국 ${officeName} 교육감이 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 대통령 공약과 교육감 공약은 서로 하나도 연관되어 있지 않는데`,
+          `대한민국 ${who} 교육감이 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 밀접하게 연관되어 있는데`,
+          `대한민국 ${who} 교육감이 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitmentCategory} 공약과 ${businessCategory}은 서로 하나도 연관되어 있지 않는데`,
         ]
   ).map(
-    (prefix) =>
-      `대한민국 윤석열 대통령의 120대 공약 중 하나와 ${prefix}, 연관성 비율과 그 근거를 자세히 설명해줘.`
+    (prefix) => `${commitmentCategory} 공약과 ${prefix}, 연관성 비율과 그 근거를 자세히 설명해줘.`
   )
-
-  const detail = Category.centerExpenditure
-    ? `중앙부처 사업:
-- 분야: ${business.field}
-- 부문: ${business.sector}
-- 주관: ${officeName}
-- 제목: ${business.name}`
-    : Category.localExpenditure
-    ? `지방자치단체 사업:
-- 분야: ${business.field}
-- 부문: ${business.sector}
-- 주관: ${officeName}
-- 제목: ${business.name}`
-    : Category.localCommitment
-    ? `지방자치단체장 공약:
-- 분야: ${business.field}
-- 부문: ${business.sector}
-- 주관: ${officeName}
-- 제목: ${business.name}`
-    : `교육감 공약:
-- 분야: ${business.field}
-- 부문: ${business.sector}
-- 주관: ${officeName}
-- 제목: ${business.name}`
 
   return prefixes.map(
     (prefix) => `${prefix}
 
-대통령 국정과제:
-${presCommitments[presCommitmentId]}
 
-${detail}`
+${commitmentCategory} 공약:
+- 분야: ${commitment.field}
+- 부문: ${commitment.sector}
+- 주관: ${commitment.who}
+- 제목: ${commitment.title}
+- 내용: ${commitment.content}
+
+
+${businessCategory}:
+- 분야: ${business.field}
+- 부문: ${business.sector}
+- 주관: ${who}
+- 제목: ${business.title}
+- 내용: ${business.content}`
   )
 }
 

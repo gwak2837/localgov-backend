@@ -16,9 +16,11 @@ const workbook = read(readFileSync('./database/공약 예산.xlsx'))
 const electionCategory = {
   지자체장: 0,
   교육감: 1,
+  대통령: 2,
 }
 
 const sigungu = {
+  전국: 0,
   서울교육감: 11,
   부산교육감: 26,
   대구교육감: 27,

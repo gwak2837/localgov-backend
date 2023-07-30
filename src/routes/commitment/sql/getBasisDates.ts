@@ -6,7 +6,7 @@ export type IGetBasisDateParams = void;
 
 /** 'GetBasisDate' return type */
 export interface IGetBasisDateResult {
-  basis_date: Date;
+  basis_date: string | null;
 }
 
 /** 'GetBasisDate' query type */
@@ -15,13 +15,16 @@ export interface IGetBasisDateQuery {
   result: IGetBasisDateResult;
 }
 
-const getBasisDateIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT DISTINCT basis_date\nFROM finance\nORDER BY basis_date DESC"};
+const getBasisDateIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT DISTINCT finance.basis_date::text\nFROM finance\n  JOIN commitment ON commitment.id = finance.commitment_id\n  JOIN election ON election.id = commitment.election_id\n  AND election.category = $1\nORDER BY basis_date DESC"};
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT DISTINCT basis_date
+ * SELECT DISTINCT finance.basis_date::text
  * FROM finance
+ *   JOIN commitment ON commitment.id = finance.commitment_id
+ *   JOIN election ON election.id = commitment.election_id
+ *   AND election.category = $1
  * ORDER BY basis_date DESC
  * ```
  */

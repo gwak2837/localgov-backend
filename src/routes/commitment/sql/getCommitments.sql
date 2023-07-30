@@ -37,8 +37,8 @@ FROM commitment
                 AND election.district = ANY($2)
                 JOIN finance ON finance.commitment_id = commitment.id
               WHERE basis_date < $3 
-              order by basis_date desc 
-              limit 1
+              ORDER BY finance.basis_date DESC
+              LIMIT 1
             )]
       )
     END

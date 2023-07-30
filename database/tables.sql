@@ -57,6 +57,7 @@ CREATE TABLE center_expenditure (
  category
  0: 지자체장
  1: 교육감
+ 
  */
 CREATE TABLE election (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -82,13 +83,6 @@ CREATE TABLE commitment (
   election_id bigint NOT NULL REFERENCES election ON DELETE CASCADE
 );
 
-/* 
- category
- 0: 지자체장
- 1: 교육감
- 2: 교육감
- 3: 교육감
- */
 CREATE TABLE finance (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   title text,

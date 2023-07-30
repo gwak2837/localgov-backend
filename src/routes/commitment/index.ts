@@ -137,7 +137,7 @@ export default async function routes(fastify: TFastify) {
     const { electionCategory } = req.query
 
     const [_, __, ___] = await Promise.all([
-      pool.query(getBasisDates),
+      pool.query(getBasisDates, [electionCategory]),
       pool.query(getFiscalYears),
       pool.query(getLocalGovCodes, [electionCategory]),
     ])
