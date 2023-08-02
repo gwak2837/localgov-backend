@@ -243,7 +243,7 @@ export default async function routes(fastify: TFastify) {
     // Validate the querystring
     const { category, id } = req.query
 
-    const { who, when, field, field_code, sector, title, content, finances } =
+    const { who, who_code, when, field, field_code, sector, title, content, finances } =
       await (async (): Promise<any> => {
         if (category === Category.centerExpenditure) {
           const { rows } = await pool.query<IGetCefinBusinessResult>(getCefinBusiness, [id])
@@ -270,6 +270,7 @@ export default async function routes(fastify: TFastify) {
           const business = rows[0]
           return {
             who: sido[business.who_code],
+            who_code: business.who_code,
             when: `${business.when_year}년`,
             field: decodeField[business.field_code],
             field_code: business.field_code,
@@ -300,6 +301,7 @@ export default async function routes(fastify: TFastify) {
                 ? sido[commitment.who_code]
                 : sigungu[commitment.who_code]
               : undefined,
+            who_code: commitment.who_code,
             when: commitment.when_date
               ? formatKoreanDate(commitment.when_date.toISOString())
               : undefined,
@@ -319,7 +321,7 @@ export default async function routes(fastify: TFastify) {
       searchFromNaver(searchQuery),
       searchFromYouTube(searchQuery),
       searchFromGoogle(searchQuery),
-      pool.query(getRelatedCommitments, [field_code ?? 80, id]),
+      pool.query(getRelatedCommitments, [field_code ?? 80, id, who_code]),
     ])
 
     return {

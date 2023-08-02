@@ -349,6 +349,7 @@ try {
       !sheetName.startsWith('서울본청') &&
       sheetName !== '서울강동구' &&
       sheetName !== '서울교육감' &&
+      sheetName !== '윤석열대통령' &&
       sheetName !== '경기교육감'
     )
       continue
@@ -401,7 +402,7 @@ try {
       [
         electionCategory[sheet[`${electionCategoryHeader}2`]?.w],
         sheet[`${electionDateHeader}2`]?.w,
-        sigungu[sheetName.split('-')[0]],
+        sheetName !== '윤석열대통령' ? sigungu[sheetName.split('-')[0]] : 0,
       ]
     )
 
@@ -441,7 +442,7 @@ try {
             .split(',')
             .map((c) => c.replace(/^\s+|\s+$/gm, '')),
           getStartPeriodCode(
-            sheet[`${startPeriodHeader}${commitmentRowId}`].w.replace(/^\s+|\s+$/gm, '')
+            sheet[`${startPeriodHeader}${commitmentRowId}`]?.w.replace(/^\s+|\s+$/gm, '')
           ),
           getEndPeriodCode(
             sheet[`${endPeriodHeader}${commitmentRowId}`]?.w.replace(/^\s+|\s+$/gm, '')
@@ -458,6 +459,8 @@ try {
           electionId,
         ]
       )
+
+      if (sheetName === '윤석열대통령') continue
 
       const commitmentId = +rows[0].id
 
@@ -673,6 +676,8 @@ function getCenterGovAidCode(centerGovAid) {
 
 function getStartPeriodCode(startPeriod) {
   switch (startPeriod) {
+    case undefined:
+      return null
     case '신규':
       return 0
     case '폐지 후 신규':
