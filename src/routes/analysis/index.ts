@@ -13,12 +13,13 @@ import {
 import { BadRequestError, NotFoundError } from '../../common/fastify'
 import {
   localCode,
-  lofinFields,
+  decodeField,
   lofinSectors,
   sido,
   sidoCodes,
   sigungu,
   sigunguCodes,
+  encodeField,
 } from '../../common/lofin'
 import { pool } from '../../common/postgres'
 import createAIResults from './sql/createAIResults.sql'
@@ -121,7 +122,7 @@ export default async function routes(fastify: TFastify) {
       if (!lofin.realm_or_sect_code || !lofin.budget_crntam) continue
 
       const realmOrSectorLabel = isField
-        ? lofinFields[lofin.realm_or_sect_code]
+        ? decodeField[lofin.realm_or_sect_code]
         : lofinSectors[lofin.realm_or_sect_code]
 
       if (lofin.sfrnd_code === currentCode) {
@@ -246,12 +247,13 @@ export default async function routes(fastify: TFastify) {
       await (async (): Promise<any> => {
         if (category === Category.centerExpenditure) {
           const { rows } = await pool.query<IGetCefinBusinessResult>(getCefinBusiness, [id])
+
           const business = rows[0]
           return {
             who: business.who_name,
             when: `${business.when_year}년`,
             field: business.field,
-            field_code: business.field,
+            field_code: encodeField[+business.field],
             sector: business.sector,
             title: business.title,
             finances: [
@@ -269,7 +271,7 @@ export default async function routes(fastify: TFastify) {
           return {
             who: sido[business.who_code],
             when: `${business.when_year}년`,
-            field: lofinFields[business.field_code],
+            field: decodeField[business.field_code],
             field_code: business.field_code,
             sector: lofinSectors[business.sector_code ?? 0],
             title: business.title,
@@ -301,7 +303,7 @@ export default async function routes(fastify: TFastify) {
             when: commitment.when_date
               ? formatKoreanDate(commitment.when_date.toISOString())
               : undefined,
-            field: lofinFields[commitment.field_code],
+            field: decodeField[commitment.field_code],
             field_code: commitment.field_code,
             sector: lofinSectors[commitment.sector_code ?? 0],
             title: commitment.title,
@@ -317,7 +319,7 @@ export default async function routes(fastify: TFastify) {
       searchFromNaver(searchQuery),
       searchFromYouTube(searchQuery),
       searchFromGoogle(searchQuery),
-      pool.query(getRelatedCommitments, [field_code, id]),
+      pool.query(getRelatedCommitments, [field_code ?? 80, id]),
     ])
 
     return {
@@ -335,7 +337,7 @@ export default async function routes(fastify: TFastify) {
         id: row.id,
         title: row.title,
         content: row.content,
-        field: lofinFields[row.field_code],
+        field: decodeField[row.field_code],
         category: decodeElectionCategory[row.category],
         electionDate: row.election_date,
         district: localCode[row.district],
@@ -402,7 +404,7 @@ export default async function routes(fastify: TFastify) {
           : sigungu[business_.who_code],
       category: businessCategory,
       when: business_.when_ ? formatKoreanDate(business_.when_) : `${business_.when_year}년`,
-      field: business_.field ?? lofinFields[business_.field_code],
+      field: business_.field ?? decodeField[business_.field_code],
       sector: business_.sector ?? lofinSectors[business_.sector_code] ?? '',
       title: business_.title,
       content: business_.content ?? '',
@@ -421,7 +423,7 @@ export default async function routes(fastify: TFastify) {
       when: commitment_.when_date
         ? formatKoreanDate(commitment_.when_date.toISOString())
         : '2023년 3월 9일',
-      field: lofinFields[commitment_.field_code],
+      field: decodeField[commitment_.field_code],
       sector: lofinSectors[commitment_.sector_code] ?? '',
       title: commitment_.title,
       content: commitment_.content ?? '',
@@ -509,22 +511,22 @@ function getPrompts(commitment: any, business: Record<string, any>) {
   const businessPrompts =
     businessCategory === Category.centerExpenditure
       ? [
-          `중앙부처인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 밀접하게 연관되어 있는데`,
-          `중앙부처인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 하나도 연관되어 있지 않는데`,
+          `중앙부처인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 연관되어 있는데`,
+          `중앙부처인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 연관되어 있지 않는데`,
         ]
       : businessCategory === Category.localExpenditure
       ? [
-          `대한민국 지방자치단체인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 밀접하게 연관되어 있는데`,
-          `대한민국 지방자치단체인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 하나도 연관되어 있지 않는데`,
+          `대한민국 지방자치단체인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 연관되어 있는데`,
+          `대한민국 지방자치단체인 ${who}에서 ${when}에 실시한 사업 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 연관되어 있지 않는데`,
         ]
       : businessCategory === Category.localCommitment
       ? [
-          `대한민국 지방자치단체인 ${who}에서 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 밀접하게 연관되어 있는데`,
-          `대한민국 지방자치단체인 ${who}에서 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 하나도 연관되어 있지 않는데`,
+          `대한민국 지방자치단체인 ${who}에서 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 연관되어 있는데`,
+          `대한민국 지방자치단체인 ${who}에서 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 연관되어 있지 않는데`,
         ]
       : [
-          `대한민국 ${who} 교육감이 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 밀접하게 연관되어 있는데`,
-          `대한민국 ${who} 교육감이 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 하나도 연관되어 있지 않는데`,
+          `대한민국 ${who} 교육감이 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 연관되어 있는데`,
+          `대한민국 ${who} 교육감이 ${when}에 제시한 공약 간의 연관성을 분석하려고 해. 아래의 ${commitment.who} ${commitmentCategory} 공약과 ${businessTitle}은 서로 연관되어 있지 않는데`,
         ]
 
   return businessPrompts.map(

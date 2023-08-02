@@ -10,7 +10,7 @@ FROM (
       election.district
     FROM commitment
       JOIN election ON election.id = commitment.election_id
-    WHERE field_code = $1
+      AND field_code = $1
       AND commitment.id != $2
     ORDER BY category DESC
   ) AS temp
@@ -24,5 +24,5 @@ SELECT commitment.id,
   election.district
 FROM commitment
   JOIN election ON election.id = commitment.election_id
-WHERE field_code != $1
+  AND field_code != $1
 LIMIT 20;

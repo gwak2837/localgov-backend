@@ -21,7 +21,7 @@ export interface IGetRelatedCommitmentsQuery {
   result: IGetRelatedCommitmentsResult;
 }
 
-const getRelatedCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT *\nFROM (\n    SELECT commitment.id,\n      title,\n      content,\n      field_code,\n      election.category,\n      election.election_date::text,\n      election.district\n    FROM commitment\n      JOIN election ON election.id = commitment.election_id\n    WHERE field_code = $1\n      AND commitment.id != $2\n    ORDER BY category DESC\n  ) AS temp\nUNION ALL\nSELECT commitment.id,\n  title,\n  content,\n  field_code,\n  election.category,\n  election.election_date::text,\n  election.district\nFROM commitment\n  JOIN election ON election.id = commitment.election_id\nWHERE field_code != $1\nLIMIT 20"};
+const getRelatedCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":"SELECT *\nFROM (\n    SELECT commitment.id,\n      title,\n      content,\n      field_code,\n      election.category,\n      election.election_date::text,\n      election.district\n    FROM commitment\n      JOIN election ON election.id = commitment.election_id\n      AND field_code = $1\n      AND commitment.id != $2\n    ORDER BY category DESC\n  ) AS temp\nUNION ALL\nSELECT commitment.id,\n  title,\n  content,\n  field_code,\n  election.category,\n  election.election_date::text,\n  election.district\nFROM commitment\n  JOIN election ON election.id = commitment.election_id\n  AND field_code != $1\nLIMIT 20"};
 
 /**
  * Query generated from SQL:
@@ -37,7 +37,7 @@ const getRelatedCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":
  *       election.district
  *     FROM commitment
  *       JOIN election ON election.id = commitment.election_id
- *     WHERE field_code = $1
+ *       AND field_code = $1
  *       AND commitment.id != $2
  *     ORDER BY category DESC
  *   ) AS temp
@@ -51,7 +51,7 @@ const getRelatedCommitmentsIR: any = {"usedParamSet":{},"params":[],"statement":
  *   election.district
  * FROM commitment
  *   JOIN election ON election.id = commitment.election_id
- * WHERE field_code != $1
+ *   AND field_code != $1
  * LIMIT 20
  * ```
  */

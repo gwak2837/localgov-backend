@@ -13,5 +13,3 @@ FROM commitment
   LEFT JOIN finance ON finance.commitment_id = commitment.id
 ORDER BY finance.basis_date DESC
 LIMIT 1;
-
-;

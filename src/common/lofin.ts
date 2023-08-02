@@ -273,7 +273,24 @@ export const localCode = {
   ...sigungu,
 }
 
-export const lofinFields = {
+export const encodeField = {
+  일반공공행정: 10,
+  '공공질서 및 안전': 20,
+  교육: 50,
+  '문화 및 관광': 60,
+  환경: 70,
+  사회복지: 80,
+  보건: 90,
+  농림해양수산: 100,
+  '산업·중소기업 및 에너지': 110,
+  '교통 및 물류': 120,
+  '국토 및 지역개발': 140,
+  과학기술: 150,
+  예비비: 160,
+  기타: 900,
+} as Record<number, string>
+
+export const decodeField = {
   10: '일반공공행정',
   20: '공공질서 및 안전',
   50: '교육',

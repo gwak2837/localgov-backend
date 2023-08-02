@@ -708,6 +708,7 @@ function getEndPeriodCode(endPeriod) {
     case '임기 후':
     case '임기내,임기후':
     case '임기 내,임기 후':
+    case '임기 내,임기후':
     case '임기 내, 임기 후':
     case '임기 내/후':
     case '임기내/후':
