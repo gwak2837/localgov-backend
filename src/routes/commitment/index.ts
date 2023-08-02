@@ -32,7 +32,7 @@ export default async function routes(fastify: TFastify) {
       pool.query<IGetCompletionRatioResult>(getCompletionRatio, [
         electionCategory,
         localCodes,
-        basisDate,
+        basisDate?.slice(0, 10),
         fiscalYears,
       ]),
     ])
