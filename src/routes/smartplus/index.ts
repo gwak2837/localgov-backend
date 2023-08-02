@@ -76,7 +76,7 @@ export default async function routes(fastify: TFastify) {
   fastify.get('/smartplus/answer', { schema: schema2 }, async (req, reply) => {
     const { businessId, businessCategory } = req.query
 
-    const { rowCount, rows } = await pool.query(getAnswers, [businessId, businessCategory])
+    const { rowCount, rows } = await pool.query(getAnswers, [businessId, businessCategory, 1])
 
     if (rowCount === 0) throw NotFoundError('No SMARTPLUS answer found')
 
