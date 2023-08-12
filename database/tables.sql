@@ -100,8 +100,9 @@ CREATE TABLE "user" (
   id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   creation_time timestamptz DEFAULT CURRENT_TIMESTAMP,
   nickname text,
+  name varchar(20) UNIQUE,
   oauth_kakao varchar(100) UNIQUE,
-  phone_number varchar(20) UNIQUE
+  phone_number varchar(20)
 );
 
 CREATE TABLE smartplus_question (

@@ -5,8 +5,10 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { Type } from '@sinclair/typebox'
 import Fastify from 'fastify'
 import { FastifySSEPlugin } from 'fastify-sse-v2'
+import fastifyJWT from '@fastify/jwt'
 
 import {
+  JWT_SECRET_KEY,
   K_SERVICE,
   LOCALHOST_HTTPS_CERT,
   LOCALHOST_HTTPS_KEY,
@@ -63,6 +65,41 @@ fastify.register(multipart, {
     fieldSize: 1_000,
     files: 10,
   },
+})
+
+fastify.register(fastifyJWT, {
+  secret: JWT_SECRET_KEY,
+  sign: {
+    expiresIn: '3d',
+  },
+  verify: {
+    algorithms: ['HS256'],
+  },
+})
+
+type QuerystringJWT = {
+  Querystring: {
+    jwt?: string
+  }
+}
+
+fastify.addHook<QuerystringJWT>('onRequest', async (req, reply) => {
+  const jwt = req.headers.authorization ?? req.query.jwt
+  if (!jwt) return
+
+  req.headers.authorization = jwt
+
+  try {
+    await req.jwtVerify()
+    // const verifiedJwt = await request.jwtVerify()
+    // if (!verifiedJwt.iat) throw UnauthorizedError('다시 로그인 해주세요')
+
+    // const logoutTime = await redisClient.get(`${verifiedJwt.userId}:logoutTime`)
+    // if (Number(logoutTime) > Number(verifiedJwt.iat) * 1000)
+    //   throw UnauthorizedError('다시 로그인 해주세요')
+  } catch (err) {
+    reply.send(err)
+  }
 })
 
 fastify.register(FastifySSEPlugin)
