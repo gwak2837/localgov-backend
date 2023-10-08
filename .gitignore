@@ -151,3 +151,4 @@ temp
 test
 .DS_Store
 *.xlsx
+*.database

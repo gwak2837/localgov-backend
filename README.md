@@ -2,6 +2,10 @@
 
 정책 전문가패널 구축을 통한 정책랩 제안
 
+## 백업
+
+> https://www.postgresql.org/docs/current/backup.html
+
 ## 프로젝트 메모
 
 ### 데이터
